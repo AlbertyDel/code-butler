@@ -18,7 +18,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  // Автоматически авторизован для демо
+  const [user, setUser] = useState<User | null>({
+    id: '1',
+    email: 'demo@example.com',
+    name: 'Демо пользователь',
+    role: 'individual',
+    createdAt: new Date().toISOString(),
+  });
   const [userRole, setUserRole] = useState<UserRole>('individual');
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {

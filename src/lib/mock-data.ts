@@ -1,0 +1,185 @@
+// Mock данные для демонстрации UI
+// ⚠️ Бизнес-логика: НЕ ИЗМЕНЯТЬ структуру данных
+
+import type { Station, ChargingSession, User, Tariff, Notification, Statistics } from '@/types';
+
+export const mockUser: User = {
+  id: '1',
+  email: 'user@example.com',
+  name: 'Иван Петров',
+  role: 'individual',
+  phone: '+7 999 123-45-67',
+  createdAt: '2024-01-15T10:00:00Z',
+};
+
+export const mockBusinessUser: User = {
+  id: '2',
+  email: 'business@company.ru',
+  name: 'ООО "ЭлектроЗаряд"',
+  role: 'business',
+  organizationId: 'org-1',
+  createdAt: '2024-01-01T10:00:00Z',
+};
+
+export const mockStations: Station[] = [
+  {
+    id: 'st-1',
+    name: 'ЭЗС Москва-Сити',
+    address: 'Пресненская наб., 12',
+    latitude: 55.749,
+    longitude: 37.537,
+    status: 'available',
+    ownerId: '1',
+    createdAt: '2024-01-10T10:00:00Z',
+    connectors: [
+      { id: 'c-1', stationId: 'st-1', type: 'Type2', powerKw: 22, status: 'available' },
+      { id: 'c-2', stationId: 'st-1', type: 'CCS', powerKw: 50, status: 'available' },
+    ],
+  },
+  {
+    id: 'st-2',
+    name: 'ЭЗС ТЦ Европейский',
+    address: 'пл. Киевского Вокзала, 2',
+    latitude: 55.743,
+    longitude: 37.566,
+    status: 'charging',
+    ownerId: '2',
+    organizationId: 'org-1',
+    createdAt: '2024-02-01T10:00:00Z',
+    connectors: [
+      { id: 'c-3', stationId: 'st-2', type: 'Type2', powerKw: 11, status: 'charging' },
+      { id: 'c-4', stationId: 'st-2', type: 'CHAdeMO', powerKw: 50, status: 'available' },
+    ],
+  },
+  {
+    id: 'st-3',
+    name: 'ЭЗС Парк Горького',
+    address: 'ул. Крымский Вал, 9',
+    latitude: 55.731,
+    longitude: 37.601,
+    status: 'offline',
+    ownerId: '2',
+    organizationId: 'org-1',
+    createdAt: '2024-02-15T10:00:00Z',
+    connectors: [
+      { id: 'c-5', stationId: 'st-3', type: 'GB/T', powerKw: 60, status: 'offline' },
+    ],
+  },
+  {
+    id: 'st-4',
+    name: 'ЭЗС ВДНХ',
+    address: 'просп. Мира, 119',
+    latitude: 55.826,
+    longitude: 37.637,
+    status: 'available',
+    ownerId: '1',
+    createdAt: '2024-03-01T10:00:00Z',
+    connectors: [
+      { id: 'c-6', stationId: 'st-4', type: 'Type2', powerKw: 22, status: 'available' },
+      { id: 'c-7', stationId: 'st-4', type: 'CCS', powerKw: 150, status: 'available' },
+    ],
+  },
+];
+
+export const mockSessions: ChargingSession[] = [
+  {
+    id: 'ses-1',
+    stationId: 'st-1',
+    connectorId: 'c-1',
+    userId: '1',
+    startTime: '2024-06-04T12:45:00Z',
+    endTime: '2024-06-04T14:30:00Z',
+    energyKwh: 35,
+    cost: 490,
+    status: 'completed',
+  },
+  {
+    id: 'ses-2',
+    stationId: 'st-2',
+    connectorId: 'c-3',
+    userId: '1',
+    startTime: '2024-06-05T10:00:00Z',
+    energyKwh: 15,
+    cost: 210,
+    status: 'active',
+  },
+  {
+    id: 'ses-3',
+    stationId: 'st-4',
+    connectorId: 'c-7',
+    userId: '1',
+    startTime: '2024-06-03T09:00:00Z',
+    endTime: '2024-06-03T09:45:00Z',
+    energyKwh: 50,
+    cost: 750,
+    status: 'completed',
+  },
+];
+
+export const mockTariffs: Tariff[] = [
+  {
+    id: 'tar-1',
+    organizationId: 'org-1',
+    name: 'Стандартный',
+    pricePerKwh: 14,
+    currency: 'RUB',
+    isActive: true,
+    createdAt: '2024-01-01T10:00:00Z',
+  },
+  {
+    id: 'tar-2',
+    organizationId: 'org-1',
+    name: 'Ночной',
+    pricePerKwh: 8,
+    currency: 'RUB',
+    isActive: true,
+    createdAt: '2024-01-01T10:00:00Z',
+  },
+  {
+    id: 'tar-3',
+    stationId: 'st-2',
+    name: 'Премиум быстрая зарядка',
+    pricePerKwh: 18,
+    currency: 'RUB',
+    isActive: true,
+    createdAt: '2024-02-01T10:00:00Z',
+  },
+];
+
+export const mockNotifications: Notification[] = [
+  {
+    id: 'not-1',
+    userId: '1',
+    title: 'Оплата была успешно обработана',
+    message: 'Ваша недавняя оплата за сеанс зарядки была успешно обработана. 4 июня 2024 года ваша оплата в размере 14,00 долларов США за сеанс зарядки на станции EV Station Central Park, слот № 5, была успешно списана с вашей карты Visa, заканчивающейся на 1234.',
+    type: 'success',
+    isRead: false,
+    createdAt: '2024-06-04T13:40:00Z',
+  },
+  {
+    id: 'not-2',
+    userId: '1',
+    title: 'Расстояние до зарядной станции',
+    message: 'Зарядная станция GreenFlow находится в 3 км от вашего местоположения.',
+    type: 'info',
+    isRead: true,
+    createdAt: '2024-06-04T17:42:00Z',
+  },
+  {
+    id: 'not-3',
+    userId: '1',
+    title: 'Зарядка прошла успешно!',
+    message: '4 июня 2024 года в 12:45 ваш автомобиль успешно завершил зарядку на станции EV Station Central Park, слот № 5. Во время этой сессии ваш автомобиль потреблял 35 кВт·ч энергии, повысив уровень заряда аккумулятора с 20 % до 90 %.',
+    type: 'success',
+    isRead: false,
+    createdAt: '2024-06-04T19:40:00Z',
+  },
+];
+
+export const mockStatistics: Statistics = {
+  totalSessions: 86,
+  totalEnergyKwh: 1735,
+  totalRevenue: 24290,
+  activeStations: 3,
+  averageSessionDuration: 65, // minutes
+};

@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { AppLayout } from "./components/layout/AppLayout";
 import DashboardPage from "./pages/DashboardPage";
 import StationsPage from "./pages/StationsPage";
+import SessionsPage from "./pages/SessionsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,7 +24,7 @@ const App = () => (
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="stations" element={<StationsPage />} />
-              <Route path="charging" element={<DashboardPage />} />
+              <Route path="sessions" element={<SessionsPage />} />
               <Route path="history" element={<DashboardPage />} />
               <Route path="statistics" element={<DashboardPage />} />
               <Route path="settings" element={<DashboardPage />} />

@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
   { to: '/stations', icon: MapPin, label: 'Станции' },
-  { to: '/charging', icon: Zap, label: 'Зарядка' },
+  { to: '/sessions', icon: Zap, label: 'Сессии' },
   { to: '/history', icon: History, label: 'История' },
   { to: '/settings', icon: User, label: 'Профиль' },
 ];

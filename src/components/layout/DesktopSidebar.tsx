@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   MapPin, 
-  Zap, 
+  Zap,
   History, 
   BarChart3, 
   Settings,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import logoCharger from '@/assets/logo-charger.svg';
 
 const individualNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
@@ -37,11 +38,8 @@ export function DesktopSidebar() {
   return (
     <aside className="hidden md:flex w-64 flex-col border-r bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-          <Zap className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <span className="text-lg font-semibold">EV Charge</span>
+      <div className="flex h-16 items-center border-b px-6">
+        <img src={logoCharger} alt="Charger" className="h-7" />
       </div>
 
       {/* Navigation */}

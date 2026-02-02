@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import logoCharger from '@/assets/logo-charger.svg';
 
 export function TopBar() {
   const { user, logout, userRole, switchRole } = useAuth();
@@ -36,12 +37,7 @@ export function TopBar() {
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
       {/* Mobile: Logo, Desktop: Search */}
       {isMobile ? (
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">EV</span>
-          </div>
-          <span className="font-semibold">EV Charge</span>
-        </div>
+        <img src={logoCharger} alt="Charger" className="h-6" />
       ) : (
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

@@ -50,28 +50,6 @@ export function TopBar() {
 
       {/* Right side */}
       <div className="flex items-center gap-2">
-        {/* Role switcher (desktop only) */}
-        {!isMobile && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                {userRole === 'individual' ? 'Физ. лицо' : 'Юр. лицо'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-popover">
-              <DropdownMenuLabel>Режим работы</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => switchRole('individual')}>
-                Физическое лицо
-                {userRole === 'individual' && <Badge variant="secondary" className="ml-2">Активен</Badge>}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => switchRole('business')}>
-                Юридическое лицо
-                {userRole === 'business' && <Badge variant="secondary" className="ml-2">Активен</Badge>}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
 
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative" onClick={() => navigate('/notifications')}>

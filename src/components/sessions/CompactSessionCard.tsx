@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BatteryCharging, Zap } from 'lucide-react';
 import type { ChargingSession, Station } from '@/types';
@@ -7,7 +8,10 @@ interface CompactSessionCardProps {
   station?: Station;
 }
 
-export function CompactSessionCard({ session, station }: CompactSessionCardProps) {
+export const CompactSessionCard = memo(function CompactSessionCard({ 
+  session, 
+  station 
+}: CompactSessionCardProps) {
   const startTime = new Date(session.startTime);
   const now = new Date();
   const durationMs = now.getTime() - startTime.getTime();
@@ -71,4 +75,12 @@ export function CompactSessionCard({ session, station }: CompactSessionCardProps
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for compact session cards
+  const prevSession = prevProps.session;
+  const nextSession = nextProps.session;
+  return prevSession.id === nextSession.id &&
+    prevSession.energyKwh === nextSession.energyKwh &&
+    prevSession.status === nextSession.status &&
+    prevProps.station?.id === nextProps.station?.id;
+});

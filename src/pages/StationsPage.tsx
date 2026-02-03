@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { mockStations } from '@/lib/mock-data';
+import { useStations } from '@/hooks/useStations';
 import { 
   MapPin, 
   Plus,
@@ -10,70 +10,140 @@ import {
   Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { DeleteStationDialog } from '@/components/stations/DeleteStationDialog';
-import type { Station } from '@/types';
+import type { Station, ChargerStatus } from '@/types';
 
-function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { label: string; className: string }> = {
+interface StatusBadgeProps {
+  status: ChargerStatus;
+}
+
+const StatusBadge = memo(function StatusBadge({ status }: StatusBadgeProps) {
+  const config: Record<ChargerStatus, { label: string; className: string }> = {
     available: { label: 'Работает', className: 'status-available' },
     charging: { label: 'Заряжает', className: 'status-charging' },
     offline: { label: 'Не работает', className: 'status-offline' },
     maintenance: { label: 'Не работает', className: 'status-offline' },
   };
 
-  const { label, className } = config[status] || config.offline;
+  const { label, className } = config[status];
 
   return (
     <Badge variant="outline" className={cn('rounded-full font-medium', className)}>
       {label}
     </Badge>
   );
+});
+
+interface StationRowProps {
+  station: Station;
+  onEdit: (station: Station) => void;
+  onDelete: (station: Station) => void;
+  onOpenMaps: (e: React.MouseEvent, station: Station) => void;
 }
 
+const StationRow = memo(function StationRow({ 
+  station, 
+  onEdit, 
+  onDelete, 
+  onOpenMaps 
+}: StationRowProps) {
+  return (
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <button
+              onClick={(e) => onOpenMaps(e, station)}
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
+                station.status === 'available' ? 'bg-primary/10' :
+                station.status === 'charging' ? 'bg-accent' : 'bg-muted'
+              )}
+              title="Открыть на Яндекс Картах"
+            >
+              <MapPin className={cn(
+                "h-6 w-6",
+                station.status === 'available' ? 'text-primary' :
+                station.status === 'charging' ? 'text-accent-foreground' : 'text-muted-foreground'
+              )} />
+            </button>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold truncate">{station.name}</h3>
+                <StatusBadge status={station.status} />
+              </div>
+              <p className="text-sm text-muted-foreground truncate">{station.address}</p>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {station.connectors.map((connector) => (
+                  <Badge key={connector.id} variant="secondary" className="text-xs">
+                    {connector.type} · {connector.powerKw} кВт
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onEdit(station)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onDelete(station)}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if station data changed
+  const prev = prevProps.station;
+  const next = nextProps.station;
+  return prev.id === next.id &&
+    prev.name === next.name &&
+    prev.address === next.address &&
+    prev.status === next.status &&
+    prev.connectors.length === next.connectors.length;
+});
+
 export default function StationsPage() {
-  const { toast } = useToast();
-  const [stations, setStations] = useState<Station[]>(mockStations);
+  const { stations, addStation, updateStation, deleteStation } = useStations();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editStation, setEditStation] = useState<Station | null>(null);
-  const [deleteStation, setDeleteStation] = useState<Station | null>(null);
+  const [stationToDelete, setStationToDelete] = useState<Station | null>(null);
 
-  const handleAddStation = (stationData: Partial<Station>) => {
-    const newStation = stationData as Station;
-    setStations(prev => [...prev, newStation]);
-    toast({
-      title: "Станция добавлена",
-      description: `${newStation.name} успешно добавлена`,
-    });
-  };
-
-  const handleEditStation = (stationData: Partial<Station>) => {
-    setStations(prev => prev.map(station =>
-      station.id === stationData.id ? { ...station, ...stationData } : station
-    ));
+  const handleEditStation = useCallback((stationData: Partial<Station>) => {
+    updateStation(stationData);
     setEditStation(null);
-    toast({
-      title: "Станция обновлена",
-      description: "Изменения сохранены",
-    });
-  };
+  }, [updateStation]);
 
-  const handleDeleteStation = () => {
-    if (!deleteStation) return;
-    setStations(prev => prev.filter(s => s.id !== deleteStation.id));
-    toast({
-      title: "Станция удалена",
-      description: `${deleteStation.name} была удалена`,
-    });
-    setDeleteStation(null);
-  };
+  const handleDeleteStation = useCallback(() => {
+    if (!stationToDelete) return;
+    deleteStation(stationToDelete.id);
+    setStationToDelete(null);
+  }, [stationToDelete, deleteStation]);
 
-  const openInYandexMaps = (e: React.MouseEvent, station: Station) => {
+  const openInYandexMaps = useCallback((e: React.MouseEvent, station: Station) => {
     e.stopPropagation();
     const url = `https://yandex.ru/maps/?pt=${station.longitude},${station.latitude}&z=17&l=map`;
     window.open(url, '_blank');
-  };
+  }, []);
+
+  const handleEdit = useCallback((station: Station) => {
+    setEditStation(station);
+  }, []);
+
+  const handleDelete = useCallback((station: Station) => {
+    setStationToDelete(station);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -104,59 +174,13 @@ export default function StationsPage() {
           </Card>
         ) : (
           stations.map((station) => (
-            <Card key={station.id} className="transition-shadow hover:shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <button
-                      onClick={(e) => openInYandexMaps(e, station)}
-                      className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
-                        station.status === 'available' ? 'bg-primary/10' :
-                        station.status === 'charging' ? 'bg-blue-500/10' : 'bg-muted'
-                      )}
-                      title="Открыть на Яндекс Картах"
-                    >
-                      <MapPin className={cn(
-                        "h-6 w-6",
-                        station.status === 'available' ? 'text-primary' :
-                        station.status === 'charging' ? 'text-blue-600' : 'text-muted-foreground'
-                      )} />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold truncate">{station.name}</h3>
-                        <StatusBadge status={station.status} />
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">{station.address}</p>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {station.connectors.map((connector) => (
-                          <Badge key={connector.id} variant="secondary" className="text-xs">
-                            {connector.type} · {connector.powerKw} кВт
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setEditStation(station)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setDeleteStation(station)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <StationRow
+              key={station.id}
+              station={station}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onOpenMaps={openInYandexMaps}
+            />
           ))
         )}
       </div>
@@ -165,7 +189,7 @@ export default function StationsPage() {
       <AddStationDialog
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        onSubmit={handleAddStation}
+        onSubmit={addStation}
       />
 
       {/* Диалог редактирования */}
@@ -178,9 +202,9 @@ export default function StationsPage() {
 
       {/* Диалог удаления */}
       <DeleteStationDialog
-        open={!!deleteStation}
-        onOpenChange={(open) => !open && setDeleteStation(null)}
-        stationName={deleteStation?.name || ''}
+        open={!!stationToDelete}
+        onOpenChange={(open) => !open && setStationToDelete(null)}
+        stationName={stationToDelete?.name || ''}
         onConfirm={handleDeleteStation}
       />
     </div>

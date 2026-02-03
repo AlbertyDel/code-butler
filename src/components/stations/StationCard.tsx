@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Play, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Station } from '@/types';
+import type { Station, ChargerStatus } from '@/types';
 
 interface StationCardProps {
   station: Station;
@@ -12,24 +13,33 @@ interface StationCardProps {
   showActions?: boolean;
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { label: string; className: string }> = {
+interface StatusBadgeProps {
+  status: ChargerStatus;
+}
+
+const StatusBadge = memo(function StatusBadge({ status }: StatusBadgeProps) {
+  const config: Record<ChargerStatus, { label: string; className: string }> = {
     available: { label: 'Работает', className: 'status-available' },
     charging: { label: 'Заряжает', className: 'status-charging' },
     offline: { label: 'Не работает', className: 'status-offline' },
     maintenance: { label: 'Не работает', className: 'status-offline' },
   };
 
-  const { label, className } = config[status] || config.offline;
+  const { label, className } = config[status];
 
   return (
     <Badge variant="outline" className={cn('rounded-full font-medium', className)}>
       {label}
     </Badge>
   );
-}
+});
 
-export function StationCard({ station, onStart, onStop, showActions = true }: StationCardProps) {
+export const StationCard = memo(function StationCard({ 
+  station, 
+  onStart, 
+  onStop, 
+  showActions = true 
+}: StationCardProps) {
   const openInYandexMaps = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `https://yandex.ru/maps/?pt=${station.longitude},${station.latitude}&z=17&l=map`;
@@ -45,15 +55,15 @@ export function StationCard({ station, onStart, onStop, showActions = true }: St
               onClick={openInYandexMaps}
               className={cn(
                 "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
-                station.status === 'available' ? 'bg-green-500/10' :
-                station.status === 'charging' ? 'bg-blue-500/10' : 'bg-gray-500/10'
+                station.status === 'available' ? 'bg-primary/10' :
+                station.status === 'charging' ? 'bg-accent' : 'bg-muted'
               )}
               title="Открыть на Яндекс Картах"
             >
               <MapPin className={cn(
                 "h-5 w-5",
-                station.status === 'available' ? 'text-green-600' :
-                station.status === 'charging' ? 'text-blue-600' : 'text-gray-500'
+                station.status === 'available' ? 'text-primary' :
+                station.status === 'charging' ? 'text-accent-foreground' : 'text-muted-foreground'
               )} />
             </button>
             <div className="min-w-0 flex-1">
@@ -108,4 +118,14 @@ export function StationCard({ station, onStart, onStop, showActions = true }: St
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if station data or callbacks changed
+  const prev = prevProps.station;
+  const next = nextProps.station;
+  return prev.id === next.id &&
+    prev.name === next.name &&
+    prev.address === next.address &&
+    prev.status === next.status &&
+    prev.connectors.length === next.connectors.length &&
+    prevProps.showActions === nextProps.showActions;
+});

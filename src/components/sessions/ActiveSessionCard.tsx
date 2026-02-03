@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,11 @@ interface ActiveSessionCardProps {
   onStop: (sessionId: string) => void;
 }
 
-export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCardProps) {
+export const ActiveSessionCard = memo(function ActiveSessionCard({ 
+  session, 
+  station, 
+  onStop 
+}: ActiveSessionCardProps) {
   const startTime = new Date(session.startTime);
   const now = new Date();
   const durationMs = now.getTime() - startTime.getTime();
@@ -67,7 +72,7 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
                 className="h-full bg-primary transition-all relative overflow-hidden"
                 style={{ width: `${progress}%` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/30 to-transparent animate-[shimmer_2s_infinite]" />
               </div>
             </div>
           </div>
@@ -105,4 +110,12 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for active session cards
+  const prevSession = prevProps.session;
+  const nextSession = nextProps.session;
+  return prevSession.id === nextSession.id &&
+    prevSession.energyKwh === nextSession.energyKwh &&
+    prevSession.status === nextSession.status &&
+    prevProps.station?.id === nextProps.station?.id;
+});

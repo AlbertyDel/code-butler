@@ -153,15 +153,6 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>О приложении</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>Версия: 1.0.0</p>
-          <p>Приложение для управления зарядными станциями электромобилей</p>
-        </CardContent>
-      </Card>
     </div>
   );
 }

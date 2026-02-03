@@ -9,6 +9,7 @@ import DashboardPage from "./pages/DashboardPage";
 import StationsPage from "./pages/StationsPage";
 import SessionsPage from "./pages/SessionsPage";
 import ProfilePage from "./pages/ProfilePage";
+import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,14 +22,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<AppLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="stations" element={<StationsPage />} />
               <Route path="sessions" element={<SessionsPage />} />
               <Route path="profile" element={<ProfilePage />} />
-              <Route path="settings" element={<ProfilePage />} />
-              <Route path="notifications" element={<DashboardPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

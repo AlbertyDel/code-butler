@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { BatteryCharging, Clock, Zap, MapPin, Square } from 'lucide-react';
 import type { ChargingSession, Station } from '@/types';
-import { cn } from '@/lib/utils';
 
 interface ActiveSessionCardProps {
   session: ChargingSession;
@@ -23,24 +22,26 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
   // Примерный расчёт прогресса (предполагаем целевое значение 50 кВт·ч)
   const targetKwh = 50;
   const progress = Math.min((session.energyKwh / targetKwh) * 100, 100);
+  
+  const connector = station?.connectors[0];
 
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary animate-pulse">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary animate-pulse">
               <BatteryCharging className="h-6 w-6 text-primary-foreground" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">Сессия #{session.id.slice(-4)}</span>
                 <Badge className="bg-primary text-primary-foreground">Активна</Badge>
               </div>
               {station && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {station.name}
+                <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{station.name}</span>
                 </p>
               )}
             </div>
@@ -49,7 +50,7 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
             variant="destructive" 
             size="sm"
             onClick={() => onStop(session.id)}
-            className="gap-1"
+            className="gap-1 shrink-0"
           >
             <Square className="h-3 w-3" />
             Остановить
@@ -71,7 +72,7 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
                 <Clock className="h-4 w-4" />
               </div>
               <p className="mt-1 text-lg font-semibold">
-                {hours > 0 ? `${hours}ч ` : ''}{minutes}м
+                {hours > 0 ? `${hours} ч ` : ''}{minutes} м
               </p>
               <p className="text-xs text-muted-foreground">Время</p>
             </div>
@@ -80,24 +81,17 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
                 <Zap className="h-4 w-4" />
               </div>
               <p className="mt-1 text-lg font-semibold">{session.energyKwh}</p>
-              <p className="text-xs text-muted-foreground">кВт·ч</p>
+              <p className="text-xs text-muted-foreground">Заряжено, кВт·ч</p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                <span className="text-sm">₽</span>
-              </div>
-              <p className="mt-1 text-lg font-semibold">{session.cost}</p>
-              <p className="text-xs text-muted-foreground">Стоимость</p>
+              {connector && (
+                <>
+                  <p className="mt-1 text-lg font-semibold">{connector.powerKw}</p>
+                  <p className="text-xs text-muted-foreground">{connector.type}, кВт</p>
+                </>
+              )}
             </div>
           </div>
-
-          {station?.connectors[0] && (
-            <div className="flex items-center justify-center gap-2 pt-2 text-sm text-muted-foreground">
-              <Badge variant="secondary">{station.connectors[0].type}</Badge>
-              <span>·</span>
-              <span>{station.connectors[0].powerKw} кВт</span>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

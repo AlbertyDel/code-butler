@@ -69,7 +69,8 @@ export default function StationsPage() {
     setDeleteStation(null);
   };
 
-  const openInYandexMaps = (station: Station) => {
+  const openInYandexMaps = (e: React.MouseEvent, station: Station) => {
+    e.stopPropagation();
     const url = `https://yandex.ru/maps/?pt=${station.longitude},${station.latitude}&z=17&l=map`;
     window.open(url, '_blank');
   };
@@ -78,9 +79,7 @@ export default function StationsPage() {
     <div className="space-y-4">
       {/* Заголовок */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Станции</h1>
-        </div>
+        <h1 className="text-2xl font-bold">Станции</h1>
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Добавить
@@ -108,30 +107,28 @@ export default function StationsPage() {
             <Card key={station.id} className="transition-shadow hover:shadow-md">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className={cn(
-                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
-                      station.status === 'available' ? 'bg-primary/10' :
-                      station.status === 'charging' ? 'bg-blue-500/10' : 'bg-muted'
-                    )}>
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <button
+                      onClick={(e) => openInYandexMaps(e, station)}
+                      className={cn(
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
+                        station.status === 'available' ? 'bg-primary/10' :
+                        station.status === 'charging' ? 'bg-blue-500/10' : 'bg-muted'
+                      )}
+                      title="Открыть на Яндекс Картах"
+                    >
                       <MapPin className={cn(
                         "h-6 w-6",
                         station.status === 'available' ? 'text-primary' :
                         station.status === 'charging' ? 'text-blue-600' : 'text-muted-foreground'
                       )} />
-                    </div>
+                    </button>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{station.name}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold truncate">{station.name}</h3>
                         <StatusBadge status={station.status} />
                       </div>
-                      <p className="text-sm text-muted-foreground">{station.address}</p>
-                      <button
-                        onClick={() => openInYandexMaps(station)}
-                        className="mt-1 text-xs text-primary hover:underline"
-                      >
-                        Открыть на карте
-                      </button>
+                      <p className="text-sm text-muted-foreground truncate">{station.address}</p>
                       <div className="mt-2 flex flex-wrap gap-1">
                         {station.connectors.map((connector) => (
                           <Badge key={connector.id} variant="secondary" className="text-xs">
@@ -141,7 +138,7 @@ export default function StationsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0">
                     <Button
                       variant="outline"
                       size="icon"

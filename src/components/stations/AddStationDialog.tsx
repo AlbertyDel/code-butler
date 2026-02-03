@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,14 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import type { Station, ConnectorType } from '@/types';
+import type { Station } from '@/types';
 
 interface AddStationDialogProps {
   open: boolean;
@@ -26,50 +19,71 @@ interface AddStationDialogProps {
   editStation?: Station | null;
 }
 
-const connectorTypes: ConnectorType[] = ['Type2', 'CCS', 'CHAdeMO', 'GB/T'];
+function generateStationId(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = 'CHG-';
+  for (let i = 0; i < 4; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: AddStationDialogProps) {
-  const [name, setName] = useState(editStation?.name || '');
-  const [address, setAddress] = useState(editStation?.address || '');
-  const [latitude, setLatitude] = useState(editStation?.latitude?.toString() || '55.751244');
-  const [longitude, setLongitude] = useState(editStation?.longitude?.toString() || '37.618423');
-  const [connectorType, setConnectorType] = useState<ConnectorType>(
-    editStation?.connectors[0]?.type || 'Type2'
-  );
-  const [powerKw, setPowerKw] = useState(
-    editStation?.connectors[0]?.powerKw?.toString() || '22'
-  );
+  const [stationId, setStationId] = useState('');
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [latitude, setLatitude] = useState('55.751244');
+  const [longitude, setLongitude] = useState('37.618423');
+  const [portsCount, setPortsCount] = useState('2');
+  const [powerKw, setPowerKw] = useState('22');
+
+  // Синхронизируем значения при изменении editStation или открытии
+  useEffect(() => {
+    if (open) {
+      if (editStation) {
+        setStationId(editStation.id);
+        setName(editStation.name);
+        setAddress(editStation.address);
+        setLatitude(editStation.latitude.toString());
+        setLongitude(editStation.longitude.toString());
+        setPortsCount(editStation.connectors.length.toString());
+        setPowerKw(editStation.connectors[0]?.powerKw?.toString() || '22');
+      } else {
+        setStationId(generateStationId());
+        setName('');
+        setAddress('');
+        setLatitude('55.751244');
+        setLongitude('37.618423');
+        setPortsCount('2');
+        setPowerKw('22');
+      }
+    }
+  }, [open, editStation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const portsNum = parseInt(portsCount) || 1;
+    const connectors = Array.from({ length: portsNum }, (_, i) => ({
+      id: `c-${Date.now()}-${i}`,
+      stationId: editStation?.id || stationId,
+      type: 'Type2' as const,
+      powerKw: parseInt(powerKw),
+      status: 'available' as const,
+    }));
+
     onSubmit({
-      id: editStation?.id || `st-${Date.now()}`,
+      id: editStation?.id || stationId,
       name,
       address,
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
       status: editStation?.status || 'available',
-      connectors: [{
-        id: `c-${Date.now()}`,
-        stationId: editStation?.id || `st-${Date.now()}`,
-        type: connectorType,
-        powerKw: parseInt(powerKw),
-        status: 'available',
-      }],
+      connectors,
       ownerId: '1',
       createdAt: editStation?.createdAt || new Date().toISOString(),
     });
     onOpenChange(false);
-    resetForm();
-  };
-
-  const resetForm = () => {
-    setName('');
-    setAddress('');
-    setLatitude('55.751244');
-    setLongitude('37.618423');
-    setConnectorType('Type2');
-    setPowerKw('22');
   };
 
   return (
@@ -93,9 +107,20 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="ЭЗС Москва-Сити"
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stationId">ID станции</Label>
+              <Input
+                id="stationId"
+                value={stationId}
+                onChange={(e) => setStationId(e.target.value)}
+                maxLength={8}
+                required
+                disabled={!!editStation}
+              />
+              <p className="text-xs text-muted-foreground">8 символов, например: CHG-1000</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Адрес</Label>
@@ -103,7 +128,6 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
                 id="address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="ул. Примерная, 1"
                 required
               />
             </div>
@@ -133,19 +157,16 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Тип коннектора</Label>
-                <Select value={connectorType} onValueChange={(v) => setConnectorType(v as ConnectorType)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {connectorTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="ports">Кол-во портов</Label>
+                <Input
+                  id="ports"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={portsCount}
+                  onChange={(e) => setPortsCount(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="power">Мощность (кВт)</Label>

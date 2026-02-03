@@ -74,11 +74,11 @@ export function TopBar() {
             <DropdownMenuLabel>
               <div className="flex flex-col">
                 <span>{user?.name}</span>
-                <span className="text-xs font-normal text-muted-foreground">{user?.email}</span>
+                <span className="text-xs font-normal text-muted-foreground">{user?.phone || '+7 999 123-45-67'}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
+            <DropdownMenuItem onClick={() => navigate('/profile')}>
               <User className="mr-2 h-4 w-4" />
               Профиль
             </DropdownMenuItem>

@@ -103,14 +103,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Приветствие */}
-      <div>
-        <h1 className="text-2xl font-bold">Добро пожаловать</h1>
-        <p className="text-muted-foreground">
-          Управляйте зарядкой вашего электромобиля
-        </p>
-      </div>
-
       {/* Статистика */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -120,10 +112,11 @@ export default function DashboardPage() {
           trend={{ value: 12, label: 'за месяц' }}
         />
         <StatCard
-          title="Энергия"
+          title="Энергии получено"
           value={mockStatistics.totalEnergyKwh}
           unit="кВт·ч"
           icon={TrendingUp}
+          trend={{ value: 8, label: 'за месяц' }}
         />
         <StatCard
           title="Всего станций"

@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { mockStations, mockSessions, mockStatistics } from '@/lib/mock-data';
 import { StationCard } from '@/components/stations/StationCard';
+import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { 
   Zap, 
   MapPin, 
   TrendingUp, 
-  ChevronLeft,
-  ChevronRight,
   BatteryCharging
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -57,17 +55,8 @@ function StatCard({
 export default function DashboardPage() {
   const { toast } = useToast();
   const [stations, setStations] = useState<Station[]>(mockStations);
-  const [currentPage, setCurrentPage] = useState(0);
-  const stationsPerPage = 3;
   
-  const totalPages = Math.ceil(stations.length / stationsPerPage);
-  const displayedStations = stations.slice(
-    currentPage * stationsPerPage,
-    (currentPage + 1) * stationsPerPage
-  );
-
   const activeSessions = mockSessions.filter(s => s.status === 'active');
-  const activeStationsCount = stations.filter(s => s.status === 'available' || s.status === 'charging').length;
 
   const handleStartCharging = (stationId: string) => {
     setStations(prev => prev.map(station => 
@@ -91,14 +80,6 @@ export default function DashboardPage() {
       title: "Зарядка остановлена",
       description: "Сессия зарядки завершена",
     });
-  };
-
-  const goToPrevPage = () => {
-    setCurrentPage(prev => Math.max(0, prev - 1));
-  };
-
-  const goToNextPage = () => {
-    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
   };
 
   return (
@@ -130,34 +111,29 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Активные сессии */}
+      {activeSessions.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">Активные сессии</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {activeSessions.map((session) => (
+              <CompactSessionCard
+                key={session.id}
+                session={session}
+                station={stations.find(s => s.id === session.stationId)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Станции */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardHeader className="pb-2">
           <CardTitle className="text-lg">Станции</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToPrevPage}
-              disabled={currentPage === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {currentPage + 1} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages - 1}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {displayedStations.map((station) => (
+          {stations.map((station) => (
             <StationCard
               key={station.id}
               station={station}

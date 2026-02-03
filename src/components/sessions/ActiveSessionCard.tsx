@@ -1,8 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { BatteryCharging, Clock, Zap, MapPin, Square } from 'lucide-react';
+import { BatteryCharging, Clock, Zap, MapPin, Square, Gauge } from 'lucide-react';
 import type { ChargingSession, Station } from '@/types';
 
 interface ActiveSessionCardProps {
@@ -63,7 +62,14 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
               <span className="text-muted-foreground">Прогресс зарядки</span>
               <span className="font-medium">{Math.round(progress)}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
+              <div 
+                className="h-full bg-primary transition-all relative overflow-hidden"
+                style={{ width: `${progress}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 pt-2">
@@ -86,6 +92,9 @@ export function ActiveSessionCard({ session, station, onStop }: ActiveSessionCar
             <div className="text-center">
               {connector && (
                 <>
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                    <Gauge className="h-4 w-4" />
+                  </div>
                   <p className="mt-1 text-lg font-semibold">{connector.powerKw}</p>
                   <p className="text-xs text-muted-foreground">{connector.type}, кВт</p>
                 </>

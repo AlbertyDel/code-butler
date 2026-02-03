@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { BatteryCharging, Zap } from 'lucide-react';
 import type { ChargingSession, Station } from '@/types';
 
@@ -29,10 +28,7 @@ export function CompactSessionCard({ session, station }: CompactSessionCardProps
             <BatteryCharging className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm truncate">{station?.name || 'Станция'}</span>
-              <Badge className="bg-primary text-primary-foreground text-xs px-1.5 py-0">Активна</Badge>
-            </div>
+            <span className="font-medium text-sm truncate block">{station?.name || 'Станция'}</span>
             <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
               <span>{hours > 0 ? `${hours} ч ` : ''}{minutes} м</span>
               <span className="flex items-center gap-1">
@@ -43,7 +39,7 @@ export function CompactSessionCard({ session, station }: CompactSessionCardProps
             </div>
           </div>
           <div className="w-12 h-12 relative">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+            <svg className="w-full h-full -rotate-90 animate-[spin_8s_linear_infinite]" viewBox="0 0 36 36">
               <circle
                 className="text-secondary"
                 strokeWidth="3"
@@ -53,6 +49,8 @@ export function CompactSessionCard({ session, station }: CompactSessionCardProps
                 cx="18"
                 cy="18"
               />
+            </svg>
+            <svg className="w-full h-full -rotate-90 absolute inset-0" viewBox="0 0 36 36">
               <circle
                 className="text-primary transition-all"
                 strokeWidth="3"

@@ -1,7 +1,5 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import logoCharger from '@/assets/logo-charger.svg';
 
 export function TopBar() {
-  const { user, logout, userRole, switchRole } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -35,17 +33,11 @@ export function TopBar() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
-      {/* Mobile: Logo, Desktop: Search */}
+      {/* Mobile: Logo, Desktop: empty */}
       {isMobile ? (
         <img src={logoCharger} alt="Charger" className="h-6" />
       ) : (
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Поиск станций..."
-            className="pl-9"
-          />
-        </div>
+        <div />
       )}
 
       {/* Right side */}

@@ -129,7 +129,19 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 required
+                list="address-suggestions"
               />
+              <datalist id="address-suggestions">
+                <option value="Москва, Пресненская набережная, 12" />
+                <option value="Москва, пл. Киевского Вокзала, 2" />
+                <option value="Москва, ул. Крымский Вал, 9" />
+                <option value="Москва, просп. Мира, 119" />
+                <option value="Москва, ул. Лужники, 24" />
+                <option value="Москва, ул. Арбат, 10" />
+                <option value="Москва, ул. Сокольнический Вал, 1" />
+                <option value="Москва, Измайловское шоссе, 71" />
+              </datalist>
+              <p className="text-xs text-muted-foreground">Начните вводить адрес для подсказок</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

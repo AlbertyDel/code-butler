@@ -3,11 +3,10 @@ import {
   LayoutDashboard, 
   MapPin, 
   Zap,
-  History, 
-  BarChart3, 
   Settings,
   CreditCard,
-  Building2
+  Building2,
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,16 +17,12 @@ const individualNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
   { to: '/stations', icon: MapPin, label: 'Станции' },
   { to: '/sessions', icon: Zap, label: 'Сессии' },
-  { to: '/history', icon: History, label: 'История' },
-  { to: '/statistics', icon: BarChart3, label: 'Статистика' },
 ];
 
 const businessNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
   { to: '/stations', icon: MapPin, label: 'Станции' },
   { to: '/tariffs', icon: CreditCard, label: 'Тарифы' },
-  { to: '/history', icon: History, label: 'История' },
-  { to: '/statistics', icon: BarChart3, label: 'Отчёты' },
   { to: '/organization', icon: Building2, label: 'Организация' },
 ];
 
@@ -67,8 +62,20 @@ export function DesktopSidebar() {
         })}
       </nav>
 
-      {/* Settings */}
-      <div className="border-t p-4">
+      {/* Bottom nav */}
+      <div className="border-t p-4 space-y-1">
+        <NavLink
+          to="/profile"
+          className={cn(
+            "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+            location.pathname === '/profile'
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          )}
+        >
+          <User className="h-5 w-5" />
+          Профиль
+        </NavLink>
         <NavLink
           to="/settings"
           className={cn(

@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Play, Square, ExternalLink } from 'lucide-react';
+import { MapPin, Play, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Station } from '@/types';
 
@@ -41,30 +41,27 @@ export function StationCard({ station, onStart, onStop, showActions = true }: St
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-              station.status === 'available' ? 'bg-green-500/10' :
-              station.status === 'charging' ? 'bg-blue-500/10' : 'bg-gray-500/10'
-            )}>
+            <button
+              onClick={openInYandexMaps}
+              className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
+                station.status === 'available' ? 'bg-green-500/10' :
+                station.status === 'charging' ? 'bg-blue-500/10' : 'bg-gray-500/10'
+              )}
+              title="Открыть на Яндекс Картах"
+            >
               <MapPin className={cn(
                 "h-5 w-5",
                 station.status === 'available' ? 'text-green-600' :
                 station.status === 'charging' ? 'text-blue-600' : 'text-gray-500'
               )} />
-            </div>
+            </button>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold truncate">{station.name}</h3>
                 <StatusBadge status={station.status} />
               </div>
               <p className="text-sm text-muted-foreground truncate">{station.address}</p>
-              <button
-                onClick={openInYandexMaps}
-                className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                Открыть на карте
-              </button>
             </div>
           </div>
           

@@ -32,8 +32,8 @@ export function DesktopSidebar() {
   return (
     <aside className="hidden md:flex w-64 flex-col border-r bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
-        <img src={logoCharger} alt="Charger" className="h-7" />
+      <div className="flex h-16 items-center justify-center border-b px-6">
+        <img src={logoCharger} alt="Charger" className="h-8" />
       </div>
 
       {/* Navigation */}

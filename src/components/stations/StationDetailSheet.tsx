@@ -62,8 +62,8 @@ function OverviewTab({ station }: { station: Station }) {
       </SectionCard>
 
       <SectionCard title="Статистика сегодня">
-        <InfoRow label="Энергия сегодня" value={`${station.stats.energyTodayKwh} кВт·ч`} />
-        <InfoRow label="Сессии сегодня" value={station.stats.sessionsToday} />
+        <InfoRow label="Энергия" value={`${station.stats.energyTodayKwh} кВт·ч`} />
+        <InfoRow label="Сессии" value={station.stats.sessionsToday} />
       </SectionCard>
     </div>
   );

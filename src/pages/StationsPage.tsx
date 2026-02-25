@@ -90,14 +90,14 @@ const StationRow = memo(function StationRow({
             <Button
               variant="outline"
               size="icon"
-              onClick={() => onEdit(station)}
+              onClick={(e) => { e.stopPropagation(); onEdit(station); }}
             >
               <Pencil className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="icon"
-              onClick={() => onDelete(station)}
+              onClick={(e) => { e.stopPropagation(); onDelete(station); }}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>

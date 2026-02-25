@@ -1,7 +1,31 @@
 // Mock данные для демонстрации UI
 // ⚠️ Бизнес-логика: НЕ ИЗМЕНЯТЬ структуру данных
 
-import type { Station, ChargingSession, User, Tariff, Notification, Statistics } from '@/types';
+import type { Station, ChargingSession, User, Tariff, Notification, Statistics, StationElectrical, StationTemperature, StationStats } from '@/types';
+
+const defaultElectrical: StationElectrical = {
+  voltagePhase1: 228,
+  voltagePhase2: 230,
+  voltagePhase3: 229,
+  phases: 3,
+  maxCurrentA: 16,
+  relayState: 'on',
+};
+
+const defaultTemperature: StationTemperature = {
+  inputContacts: 32,
+  port0: 28,
+  port1: 27,
+  internal: 35,
+};
+
+const defaultStats: StationStats = {
+  energyTodayKwh: 38.8,
+  sessionsToday: 2,
+  totalSessions: 1159,
+  totalEnergyKwh: 11797,
+  totalHours: 10715,
+};
 
 export const mockUser: User = {
   id: '1',
@@ -35,6 +59,9 @@ export const mockStations: Station[] = [
       { id: 'c-1', stationId: 'st-1', type: 'Type2', powerKw: 22, status: 'available' },
       { id: 'c-2', stationId: 'st-1', type: 'CCS', powerKw: 50, status: 'available' },
     ],
+    electrical: { ...defaultElectrical },
+    temperature: { ...defaultTemperature },
+    stats: { ...defaultStats, energyTodayKwh: 42.1, sessionsToday: 3 },
   },
   {
     id: 'st-2',
@@ -50,6 +77,9 @@ export const mockStations: Station[] = [
       { id: 'c-3', stationId: 'st-2', type: 'Type2', powerKw: 11, status: 'charging' },
       { id: 'c-4', stationId: 'st-2', type: 'CHAdeMO', powerKw: 50, status: 'available' },
     ],
+    electrical: { ...defaultElectrical, voltagePhase1: 231 },
+    temperature: { ...defaultTemperature, port0: 41, internal: 38 },
+    stats: { ...defaultStats, energyTodayKwh: 28.5, sessionsToday: 1, totalSessions: 870 },
   },
   {
     id: 'st-3',
@@ -64,6 +94,9 @@ export const mockStations: Station[] = [
     connectors: [
       { id: 'c-5', stationId: 'st-3', type: 'GB/T', powerKw: 60, status: 'offline' },
     ],
+    electrical: { ...defaultElectrical, relayState: 'off' },
+    temperature: { ...defaultTemperature, inputContacts: 22, port0: 20, internal: 23 },
+    stats: { ...defaultStats, energyTodayKwh: 0, sessionsToday: 0, totalSessions: 540 },
   },
   {
     id: 'st-4',
@@ -78,6 +111,9 @@ export const mockStations: Station[] = [
       { id: 'c-6', stationId: 'st-4', type: 'Type2', powerKw: 22, status: 'available' },
       { id: 'c-7', stationId: 'st-4', type: 'CCS', powerKw: 150, status: 'available' },
     ],
+    electrical: { ...defaultElectrical },
+    temperature: { ...defaultTemperature },
+    stats: { ...defaultStats, totalSessions: 2100, totalEnergyKwh: 21500 },
   },
   {
     id: 'st-5',
@@ -91,6 +127,9 @@ export const mockStations: Station[] = [
     connectors: [
       { id: 'c-8', stationId: 'st-5', type: 'Type2', powerKw: 22, status: 'available' },
     ],
+    electrical: { ...defaultElectrical },
+    temperature: { ...defaultTemperature },
+    stats: { ...defaultStats, sessionsToday: 1, energyTodayKwh: 15.2 },
   },
   {
     id: 'st-6',
@@ -104,6 +143,9 @@ export const mockStations: Station[] = [
     connectors: [
       { id: 'c-9', stationId: 'st-6', type: 'CCS', powerKw: 100, status: 'charging' },
     ],
+    electrical: { ...defaultElectrical, voltagePhase2: 227 },
+    temperature: { ...defaultTemperature, port0: 39, internal: 37 },
+    stats: { ...defaultStats, energyTodayKwh: 55.0, sessionsToday: 4, totalSessions: 1580 },
   },
   {
     id: 'st-7',
@@ -118,6 +160,9 @@ export const mockStations: Station[] = [
       { id: 'c-10', stationId: 'st-7', type: 'Type2', powerKw: 11, status: 'available' },
       { id: 'c-11', stationId: 'st-7', type: 'CHAdeMO', powerKw: 50, status: 'available' },
     ],
+    electrical: { ...defaultElectrical },
+    temperature: { ...defaultTemperature },
+    stats: { ...defaultStats, totalSessions: 790 },
   },
   {
     id: 'st-8',
@@ -131,6 +176,9 @@ export const mockStations: Station[] = [
     connectors: [
       { id: 'c-12', stationId: 'st-8', type: 'GB/T', powerKw: 60, status: 'offline' },
     ],
+    electrical: { ...defaultElectrical, relayState: 'off' },
+    temperature: { ...defaultTemperature, inputContacts: 21, internal: 22 },
+    stats: { ...defaultStats, energyTodayKwh: 0, sessionsToday: 0, totalSessions: 320 },
   },
   {
     id: 'st-9',
@@ -145,6 +193,9 @@ export const mockStations: Station[] = [
       { id: 'c-13', stationId: 'st-9', type: 'Type2', powerKw: 22, status: 'available' },
       { id: 'c-14', stationId: 'st-9', type: 'CCS', powerKw: 150, status: 'available' },
     ],
+    electrical: { ...defaultElectrical },
+    temperature: { ...defaultTemperature },
+    stats: { ...defaultStats, totalSessions: 950, totalEnergyKwh: 9800 },
   },
   {
     id: 'st-10',
@@ -158,6 +209,9 @@ export const mockStations: Station[] = [
     connectors: [
       { id: 'c-15', stationId: 'st-10', type: 'Type2', powerKw: 22, status: 'available' },
     ],
+    electrical: { ...defaultElectrical },
+    temperature: { ...defaultTemperature },
+    stats: { ...defaultStats, totalSessions: 410, totalEnergyKwh: 4200 },
   },
 ];
 
@@ -301,5 +355,5 @@ export const mockStatistics: Statistics = {
   totalEnergyKwh: 1735,
   totalRevenue: 24290,
   activeStations: 3,
-  averageSessionDuration: 65, // minutes
+  averageSessionDuration: 65,
 };

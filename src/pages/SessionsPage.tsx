@@ -1,10 +1,21 @@
-import { memo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
 import { useSessions } from '@/hooks/useSessions';
 import { Clock, Zap } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 import type { ChargingSession, Station, Connector } from '@/types';
+
+const ITEMS_PER_PAGE = 10;
 
 interface CompletedSessionCardProps {
   session: ChargingSession;
@@ -102,15 +113,54 @@ const SessionGroup = memo(function SessionGroup({
 export default function SessionsPage() {
   const {
     activeSessions,
+    completedSessions,
     groupedSessions,
     stopSession,
     getStation,
     formatDuration,
   } = useSessions();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(completedSessions.length / ITEMS_PER_PAGE);
+
+  // Paginate: flatten completed sessions, slice, then re-group
+  const paginatedGroups = useMemo(() => {
+    const allCompleted = groupedSessions.flatMap(g => 
+      g.sessions.map(s => ({ ...s, _groupLabel: g.label }))
+    );
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageItems = allCompleted.slice(start, start + ITEMS_PER_PAGE);
+
+    const groups: { label: string; sessions: ChargingSession[] }[] = [];
+    pageItems.forEach(item => {
+      const last = groups[groups.length - 1];
+      if (last && last.label === item._groupLabel) {
+        last.sessions.push(item);
+      } else {
+        groups.push({ label: item._groupLabel, sessions: [item] });
+      }
+    });
+    return groups;
+  }, [groupedSessions, currentPage]);
+
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push('ellipsis');
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 2) pages.push('ellipsis');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Активные сессии */}
       {activeSessions.length > 0 && (
         <div className="space-y-3">
           {activeSessions.map((session) => {
@@ -127,11 +177,10 @@ export default function SessionsPage() {
         </div>
       )}
 
-      {/* История зарядных сессий */}
       <div className="space-y-4">
         <h1 className="text-xl font-bold">История зарядных сессий</h1>
         
-        {groupedSessions.length === 0 ? (
+        {paginatedGroups.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <Clock className="h-12 w-12 text-muted-foreground/50" />
@@ -142,15 +191,53 @@ export default function SessionsPage() {
             </CardContent>
           </Card>
         ) : (
-          groupedSessions.map((group) => (
-            <SessionGroup
-              key={group.label}
-              label={group.label}
-              sessions={group.sessions}
-              getStation={getStation}
-              formatDuration={formatDuration}
-            />
-          ))
+          <>
+            {paginatedGroups.map((group) => (
+              <SessionGroup
+                key={group.label}
+                label={group.label}
+                sessions={group.sessions}
+                getStation={getStation}
+                formatDuration={formatDuration}
+              />
+            ))}
+
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {getPageNumbers().map((page, i) =>
+                    page === 'ellipsis' ? (
+                      <PaginationItem key={`e-${i}`}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          isActive={currentPage === page}
+                          onClick={() => setCurrentPage(page)}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </>
         )}
       </div>
     </div>

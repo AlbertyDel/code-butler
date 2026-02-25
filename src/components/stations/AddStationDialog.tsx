@@ -141,55 +141,6 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
                 <option value="Москва, ул. Сокольнический Вал, 1" />
                 <option value="Москва, Измайловское шоссе, 71" />
               </datalist>
-              <p className="text-xs text-muted-foreground">Начните вводить адрес для подсказок</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Широта</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Долгота</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ports">Кол-во портов</Label>
-                <Input
-                  id="ports"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={portsCount}
-                  onChange={(e) => setPortsCount(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="power">Мощность (кВт)</Label>
-                <Input
-                  id="power"
-                  type="number"
-                  value={powerKw}
-                  onChange={(e) => setPowerKw(e.target.value)}
-                  required
-                />
-              </div>
             </div>
           </div>
           <DialogFooter>

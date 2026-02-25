@@ -25,6 +25,30 @@ export interface Organization {
   createdAt: string;
 }
 
+export interface StationElectrical {
+  voltagePhase1: number;
+  voltagePhase2: number;
+  voltagePhase3: number;
+  phases: number;
+  maxCurrentA: number;
+  relayState: 'on' | 'off';
+}
+
+export interface StationTemperature {
+  inputContacts: number;
+  port0: number;
+  port1: number;
+  internal: number;
+}
+
+export interface StationStats {
+  energyTodayKwh: number;
+  sessionsToday: number;
+  totalSessions: number;
+  totalEnergyKwh: number;
+  totalHours: number;
+}
+
 export interface Station {
   id: string;
   name: string;
@@ -36,6 +60,9 @@ export interface Station {
   ownerId: string;
   organizationId?: string;
   createdAt: string;
+  electrical: StationElectrical;
+  temperature: StationTemperature;
+  stats: StationStats;
 }
 
 export interface Connector {

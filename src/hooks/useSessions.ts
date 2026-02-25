@@ -90,6 +90,9 @@ const extendedStations: Station[] = [
     connectors: [{ id: 'c-long', stationId: 'st-long', type: 'CCS', powerKw: 150, status: 'available' }],
     ownerId: '1',
     createdAt: '2024-01-01T00:00:00Z',
+    electrical: { voltagePhase1: 230, voltagePhase2: 229, voltagePhase3: 231, phases: 3, maxCurrentA: 16, relayState: 'on' },
+    temperature: { inputContacts: 30, port0: 26, port1: 25, internal: 33 },
+    stats: { energyTodayKwh: 20, sessionsToday: 1, totalSessions: 500, totalEnergyKwh: 5000, totalHours: 4500 },
   }
 ];
 

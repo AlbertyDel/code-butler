@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { DeleteStationDialog } from '@/components/stations/DeleteStationDialog';
+import { StationDetailSheet } from '@/components/stations/StationDetailSheet';
 import type { Station, ChargerStatus } from '@/types';
 
 interface StatusBadgeProps {
@@ -40,16 +41,18 @@ interface StationRowProps {
   onEdit: (station: Station) => void;
   onDelete: (station: Station) => void;
   onOpenMaps: (e: React.MouseEvent, station: Station) => void;
+  onSelect: (station: Station) => void;
 }
 
 const StationRow = memo(function StationRow({ 
   station, 
   onEdit, 
   onDelete, 
-  onOpenMaps 
+  onOpenMaps,
+  onSelect
 }: StationRowProps) {
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className="transition-shadow hover:shadow-md cursor-pointer" onClick={() => onSelect(station)}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -119,6 +122,7 @@ export default function StationsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editStation, setEditStation] = useState<Station | null>(null);
   const [stationToDelete, setStationToDelete] = useState<Station | null>(null);
+  const [detailStation, setDetailStation] = useState<Station | null>(null);
 
   const handleEditStation = useCallback((stationData: Partial<Station>) => {
     updateStation(stationData);
@@ -143,6 +147,10 @@ export default function StationsPage() {
 
   const handleDelete = useCallback((station: Station) => {
     setStationToDelete(station);
+  }, []);
+
+  const handleSelect = useCallback((station: Station) => {
+    setDetailStation(station);
   }, []);
 
   return (
@@ -180,6 +188,7 @@ export default function StationsPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onOpenMaps={openInYandexMaps}
+              onSelect={handleSelect}
             />
           ))
         )}
@@ -206,6 +215,13 @@ export default function StationsPage() {
         onOpenChange={(open) => !open && setStationToDelete(null)}
         stationName={stationToDelete?.name || ''}
         onConfirm={handleDeleteStation}
+      />
+
+      {/* Панель деталей */}
+      <StationDetailSheet
+        station={detailStation}
+        open={!!detailStation}
+        onOpenChange={(open) => !open && setDetailStation(null)}
       />
     </div>
   );

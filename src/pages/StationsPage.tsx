@@ -96,7 +96,7 @@ const StationRow = memo(function StationRow({
           <div className="flex gap-2 shrink-0">
             {station.status === 'available' && (
               <Button
-                size="sm"
+                size="icon"
                 onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
                 className="gap-1 w-[120px] justify-center"
               >
@@ -106,7 +106,7 @@ const StationRow = memo(function StationRow({
             )}
             {station.status === 'charging' && (
               <Button
-                size="sm"
+                size="icon"
                 variant="destructive"
                 onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
                 className="gap-1 w-[120px] justify-center"

@@ -7,7 +7,8 @@ import {
   MapPin, 
   Plus,
   Pencil,
-  Trash2
+  Trash2,
+  Plug
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
@@ -167,19 +168,18 @@ export default function StationsPage() {
       {/* Список станций */}
       <div className="space-y-3">
         {stations.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <MapPin className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">Нет станций</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Добавьте первую зарядную станцию
+          <div className="flex flex-1 items-center justify-center min-h-[60vh]">
+            <div className="flex flex-col items-center text-center max-w-sm">
+              <Plug className="h-16 w-16 text-muted-foreground/40" />
+              <p className="mt-4 text-sm text-muted-foreground">
+                У вас пока нет добавленных станций. Давайте подключим первую — система сама определит её мощность и порты.
               </p>
-              <Button className="mt-4" onClick={() => setIsAddDialogOpen(true)}>
+              <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Добавить станцию
+                Добавить
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ) : (
           stations.map((station) => (
             <StationRow

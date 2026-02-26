@@ -1,7 +1,6 @@
 import { memo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { BatteryCharging, Clock, Zap, MapPin, Square, Gauge } from 'lucide-react';
 import {
   AlertDialog,
@@ -44,15 +43,14 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
               <BatteryCharging className="h-6 w-6 text-primary-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">Сессия #{session.id.slice(-4)}</span>
-                <Badge className="bg-primary text-primary-foreground">Активна</Badge>
-              </div>
               {station && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
-                  <MapPin className="h-3 w-3 shrink-0" />
+                <p className="font-semibold flex items-center gap-1 truncate">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="truncate">{station.name}</span>
                 </p>
+              )}
+              {station && (
+                <p className="text-sm text-muted-foreground truncate">{station.address}</p>
               )}
             </div>
           </div>

@@ -22,9 +22,6 @@ export const CompactSessionCard = memo(function CompactSessionCard({
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
   
-  const targetKwh = 50;
-  const progress = Math.min((session.energyKwh / targetKwh) * 100, 100);
-  
   const connector = station?.connectors[0];
 
   return (
@@ -55,35 +52,6 @@ export const CompactSessionCard = memo(function CompactSessionCard({
               <Square className="h-3 w-3" />
             </Button>
           )}
-          <div className="w-12 h-12 relative">
-            <svg className="w-full h-full -rotate-90 animate-[spin_8s_linear_infinite]" viewBox="0 0 36 36">
-              <circle
-                className="text-secondary"
-                strokeWidth="3"
-                stroke="currentColor"
-                fill="transparent"
-                r="15"
-                cx="18"
-                cy="18"
-              />
-            </svg>
-            <svg className="w-full h-full -rotate-90 absolute inset-0" viewBox="0 0 36 36">
-              <circle
-                className="text-primary transition-all"
-                strokeWidth="3"
-                strokeLinecap="round"
-                stroke="currentColor"
-                fill="transparent"
-                r="15"
-                cx="18"
-                cy="18"
-                strokeDasharray={`${progress * 0.94} 100`}
-              />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold">
-              {Math.round(progress)}%
-            </span>
-          </div>
         </div>
       </CardContent>
     </Card>

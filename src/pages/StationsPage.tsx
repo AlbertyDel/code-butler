@@ -98,7 +98,7 @@ const StationRow = memo(function StationRow({
               <Button
                 size="sm"
                 onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
-                className="gap-1"
+                className="gap-1 w-[120px] justify-center"
               >
                 <Play className="h-3 w-3" />
                 Запустить
@@ -109,7 +109,7 @@ const StationRow = memo(function StationRow({
                 size="sm"
                 variant="destructive"
                 onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
-                className="gap-1"
+                className="gap-1 w-[120px] justify-center"
               >
                 <Square className="h-3 w-3" />
                 Остановить

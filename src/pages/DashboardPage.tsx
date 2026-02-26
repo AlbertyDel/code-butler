@@ -1,14 +1,18 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { mockSessions, mockStatistics } from '@/lib/mock-data';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
+import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { useStations } from '@/hooks/useStations';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, 
   MapPin, 
   TrendingUp, 
-  BatteryCharging
+  BatteryCharging,
+  Activity,
+  Plus
 } from 'lucide-react';
 
 interface StatCardProps {
@@ -54,10 +58,35 @@ const StatCard = memo(function StatCard({
 });
 
 export default function DashboardPage() {
-  const { stations } = useStations();
+  const { stations, addStation } = useStations();
   const { toast } = useToast();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   const activeSessions = mockSessions.filter(s => s.status === 'active');
+
+  const isEmpty = stations.length === 0 && activeSessions.length === 0;
+
+  if (isEmpty) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center text-center max-w-sm">
+          <Activity className="h-16 w-16 text-muted-foreground/40" />
+          <p className="mt-4 text-sm text-muted-foreground">
+            Данные для аналитики отсутствуют. Добавьте зарядную станцию, чтобы начать сбор метрик и отслеживание активных сессий.
+          </p>
+          <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Добавить
+          </Button>
+          <AddStationDialog
+            open={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            onSubmit={addStation}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

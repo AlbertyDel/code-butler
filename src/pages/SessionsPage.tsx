@@ -1,9 +1,12 @@
 import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
+import { AddStationDialog } from '@/components/stations/AddStationDialog';
+import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
-import { Clock, Zap } from 'lucide-react';
+import { Clock, Zap, History, Plus } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
@@ -110,6 +113,31 @@ const SessionGroup = memo(function SessionGroup({
   );
 });
 
+function EmptySessionsState() {
+  const { addStation } = useStations();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  return (
+    <div className="flex flex-1 items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center text-center max-w-sm">
+        <History className="h-16 w-16 text-muted-foreground/40" />
+        <p className="mt-4 text-sm text-muted-foreground">
+          Здесь пока тихо. Как только электромобиль завершит зарядку на вашей станции, тут появится подробный отчет.
+        </p>
+        <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Добавить
+        </Button>
+        <AddStationDialog
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onSubmit={addStation}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function SessionsPage() {
   const {
     activeSessions,
@@ -180,16 +208,8 @@ export default function SessionsPage() {
       <div className="space-y-4">
         <h1 className="text-xl font-bold">История зарядных сессий</h1>
         
-        {paginatedGroups.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <Clock className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">Нет завершённых сессий</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                История зарядок появится здесь
-              </p>
-            </CardContent>
-          </Card>
+        {paginatedGroups.length === 0 && activeSessions.length === 0 ? (
+          <EmptySessionsState />
         ) : (
           <>
             {paginatedGroups.map((group) => (

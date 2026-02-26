@@ -1,16 +1,19 @@
 import { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { BatteryCharging, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BatteryCharging, Zap, Square } from 'lucide-react';
 import type { ChargingSession, Station } from '@/types';
 
 interface CompactSessionCardProps {
   session: ChargingSession;
   station?: Station;
+  onStop?: (sessionId: string) => void;
 }
 
 export const CompactSessionCard = memo(function CompactSessionCard({ 
   session, 
-  station 
+  station,
+  onStop 
 }: CompactSessionCardProps) {
   const startTime = new Date(session.startTime);
   const now = new Date();
@@ -42,6 +45,16 @@ export const CompactSessionCard = memo(function CompactSessionCard({
               {connector && <span>{connector.powerKw} кВт</span>}
             </div>
           </div>
+          {onStop && (
+            <Button
+              variant="destructive"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => onStop(session.id)}
+            >
+              <Square className="h-3 w-3" />
+            </Button>
+          )}
           <div className="w-12 h-12 relative">
             <svg className="w-full h-full -rotate-90 animate-[spin_8s_linear_infinite]" viewBox="0 0 36 36">
               <circle

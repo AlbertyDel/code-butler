@@ -1,16 +1,15 @@
 import { memo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { mockSessions, mockStatistics } from '@/lib/mock-data';
-import { StationCard } from '@/components/stations/StationCard';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { useStations } from '@/hooks/useStations';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, 
   MapPin, 
   TrendingUp, 
   BatteryCharging
 } from 'lucide-react';
-import type { Station } from '@/types';
 
 interface StatCardProps {
   title: string;
@@ -54,36 +53,9 @@ const StatCard = memo(function StatCard({
   );
 });
 
-interface StationListProps {
-  stations: Station[];
-  onStart: (stationId: string) => void;
-  onStop: (stationId: string) => void;
-}
-
-const StationList = memo(function StationList({ stations, onStart, onStop }: StationListProps) {
-  return (
-    <div className="space-y-3">
-      {stations.map((station) => (
-        <StationCard
-          key={station.id}
-          station={station}
-          onStart={onStart}
-          onStop={onStop}
-        />
-      ))}
-    </div>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison for stations array
-  if (prevProps.stations.length !== nextProps.stations.length) return false;
-  return prevProps.stations.every((station, index) => 
-    station.id === nextProps.stations[index].id &&
-    station.status === nextProps.stations[index].status
-  );
-});
-
 export default function DashboardPage() {
-  const { stations, startCharging, stopCharging } = useStations();
+  const { stations } = useStations();
+  const { toast } = useToast();
   
   const activeSessions = mockSessions.filter(s => s.status === 'active');
 
@@ -126,25 +98,17 @@ export default function DashboardPage() {
                 key={session.id}
                 session={session}
                 station={stations.find(s => s.id === session.stationId)}
+                onStop={(sessionId) => {
+                  toast({
+                    title: "Сессия остановлена",
+                    description: "Зарядка успешно завершена",
+                  });
+                }}
               />
             ))}
           </div>
         </div>
       )}
-
-      {/* Станции */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Станции</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <StationList
-            stations={stations}
-            onStart={startCharging}
-            onStop={stopCharging}
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 }

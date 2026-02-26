@@ -1,8 +1,18 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BatteryCharging, Clock, Zap, MapPin, Square, Gauge } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import type { ChargingSession, Station } from '@/types';
 
 interface ActiveSessionCardProps {
@@ -22,10 +32,6 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
   const durationMinutes = Math.floor(durationMs / 60000);
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
-  
-  // Примерный расчёт прогресса (предполагаем целевое значение 50 кВт·ч)
-  const targetKwh = 50;
-  const progress = Math.min((session.energyKwh / targetKwh) * 100, 100);
   
   const connector = station?.connectors[0];
 
@@ -50,34 +56,36 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
               )}
             </div>
           </div>
-          <Button 
-            variant="destructive" 
-            size="sm"
-            onClick={() => onStop(session.id)}
-            className="gap-1 shrink-0"
-          >
-            <Square className="h-3 w-3" />
-            Остановить
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                className="gap-1 shrink-0"
+              >
+                <Square className="h-3 w-3" />
+                Остановить
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Остановить сессию?</AlertDialogTitle>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => onStop(session.id)}
+                >
+                  Остановить
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
-        <div className="mt-4 space-y-3">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Прогресс зарядки</span>
-              <span className="font-medium">{Math.round(progress)}%</span>
-            </div>
-            <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
-              <div 
-                className="h-full bg-primary transition-all relative overflow-hidden"
-                style={{ width: `${progress}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/30 to-transparent animate-[shimmer_2s_infinite]" />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 pt-2">
+        <div className="mt-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-muted-foreground">
                 <Clock className="h-4 w-4" />

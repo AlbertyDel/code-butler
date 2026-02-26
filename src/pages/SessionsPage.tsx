@@ -3,10 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
-import { AddStationDialog } from '@/components/stations/AddStationDialog';
-import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
-import { Clock, Zap, History, Plus } from 'lucide-react';
+import { Clock, Zap, History } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
@@ -113,26 +111,14 @@ const SessionGroup = memo(function SessionGroup({
   );
 });
 
-function EmptySessionsState() {
-  const { addStation } = useStations();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-
+function EmptyHistoryState() {
   return (
-    <div className="flex flex-1 items-center justify-center min-h-[60vh]">
+    <div className="flex items-center justify-center py-16">
       <div className="flex flex-col items-center text-center max-w-sm">
         <History className="h-16 w-16 text-muted-foreground/40" />
         <p className="mt-4 text-sm text-muted-foreground">
-          Здесь пока тихо. Как только электромобиль завершит зарядку на вашей станции, тут появится подробный отчет.
+          У вас пока нет завершенных сессий. Здесь будет отображаться подробная история зарядок.
         </p>
-        <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Добавить
-        </Button>
-        <AddStationDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          onSubmit={addStation}
-        />
       </div>
     </div>
   );
@@ -208,8 +194,8 @@ export default function SessionsPage() {
       <div className="space-y-4">
         <h1 className="text-xl font-bold">История зарядных сессий</h1>
         
-        {paginatedGroups.length === 0 && activeSessions.length === 0 ? (
-          <EmptySessionsState />
+        {paginatedGroups.length === 0 ? (
+          <EmptyHistoryState />
         ) : (
           <>
             {paginatedGroups.map((group) => (

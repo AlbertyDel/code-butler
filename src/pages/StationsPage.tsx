@@ -8,7 +8,9 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Plug
+  Plug,
+  Play,
+  Square
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
@@ -43,6 +45,8 @@ interface StationRowProps {
   onDelete: (station: Station) => void;
   onOpenMaps: (e: React.MouseEvent, station: Station) => void;
   onSelect: (station: Station) => void;
+  onStart: (stationId: string) => void;
+  onStop: (stationId: string) => void;
 }
 
 const StationRow = memo(function StationRow({ 
@@ -50,7 +54,9 @@ const StationRow = memo(function StationRow({
   onEdit, 
   onDelete, 
   onOpenMaps,
-  onSelect
+  onSelect,
+  onStart,
+  onStop
 }: StationRowProps) {
   return (
     <Card className="transition-shadow hover:shadow-md cursor-pointer" onClick={() => onSelect(station)}>
@@ -88,6 +94,27 @@ const StationRow = memo(function StationRow({
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
+            {station.status === 'available' && (
+              <Button
+                size="sm"
+                onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
+                className="gap-1"
+              >
+                <Play className="h-3 w-3" />
+                Запустить
+              </Button>
+            )}
+            {station.status === 'charging' && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
+                className="gap-1"
+              >
+                <Square className="h-3 w-3" />
+                Остановить
+              </Button>
+            )}
             <Button
               variant="outline"
               size="icon"
@@ -119,7 +146,7 @@ const StationRow = memo(function StationRow({
 });
 
 export default function StationsPage() {
-  const { stations, addStation, updateStation, deleteStation } = useStations();
+  const { stations, addStation, updateStation, deleteStation, startCharging, stopCharging } = useStations();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editStation, setEditStation] = useState<Station | null>(null);
   const [stationToDelete, setStationToDelete] = useState<Station | null>(null);
@@ -189,6 +216,8 @@ export default function StationsPage() {
               onDelete={handleDelete}
               onOpenMaps={openInYandexMaps}
               onSelect={handleSelect}
+              onStart={startCharging}
+              onStop={stopCharging}
             />
           ))
         )}

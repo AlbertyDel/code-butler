@@ -61,30 +61,30 @@ const StationRow = memo(function StationRow({
   return (
     <Card className="transition-shadow hover:shadow-md cursor-pointer" onClick={() => onSelect(station)}>
       <CardContent className="p-4">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start gap-3 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
             <button
               onClick={(e) => onOpenMaps(e, station)}
               className={cn(
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl cursor-pointer transition-colors hover:opacity-80",
                 station.status === 'available' ? 'bg-primary/10' :
                 station.status === 'charging' ? 'bg-accent' : 'bg-muted'
               )}
               title="Открыть на Яндекс Картах"
             >
               <MapPin className={cn(
-                "h-6 w-6",
+                "h-5 w-5",
                 station.status === 'available' ? 'text-primary' :
                 station.status === 'charging' ? 'text-accent-foreground' : 'text-muted-foreground'
               )} />
             </button>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
                 <h3 className="font-semibold truncate">{station.name}</h3>
                 <StatusBadge status={station.status} />
               </div>
               <p className="text-sm text-muted-foreground truncate">{station.address}</p>
-              <div className="mt-2 flex flex-wrap gap-1">
+              <div className="mt-1 flex flex-wrap gap-1">
                 {station.connectors.map((connector) => (
                   <Badge key={connector.id} variant="secondary" className="text-xs">
                     {connector.type} · {connector.powerKw} кВт
@@ -93,7 +93,7 @@ const StationRow = memo(function StationRow({
               </div>
             </div>
           </div>
-          <div className="flex gap-2 justify-end flex-wrap">
+          <div className="flex gap-2 justify-end shrink-0">
             {station.status === 'available' && (
               <Button
                 size="sm"

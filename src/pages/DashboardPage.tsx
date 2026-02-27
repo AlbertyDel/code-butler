@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { mockSessions, mockStatistics } from '@/lib/mock-data';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
+import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
 import { useStations } from '@/hooks/useStations';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -58,7 +59,7 @@ const StatCard = memo(function StatCard({
 });
 
 export default function DashboardPage() {
-  const { stations, addStation } = useStations();
+  const { stations, addStation, startCharging } = useStations();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
@@ -116,6 +117,9 @@ export default function DashboardPage() {
           icon={BatteryCharging}
         />
       </div>
+
+      {/* Быстрый запуск */}
+      <QuickLaunchCard stations={stations} onStart={startCharging} />
 
       {/* Активные сессии */}
       {activeSessions.length > 0 && (

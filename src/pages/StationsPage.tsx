@@ -96,22 +96,22 @@ const StationRow = memo(function StationRow({
           <div className="flex gap-2 justify-end shrink-0">
             {station.status === 'available' && (
               <Button
-                size="sm"
+                size="icon"
                 onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
-                className="gap-1"
+                className="gap-1 w-[120px]"
               >
-                <Play className="h-3 w-3" />
+                <Play className="h-4 w-4" />
                 Запустить
               </Button>
             )}
             {station.status === 'charging' && (
               <Button
-                size="sm"
+                size="icon"
                 variant="destructive"
                 onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
-                className="gap-1"
+                className="gap-1 w-[120px]"
               >
-                <Square className="h-3 w-3" />
+                <Square className="h-4 w-4" />
                 Остановить
               </Button>
             )}

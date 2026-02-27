@@ -12,7 +12,7 @@ export function AppLayout() {
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <TopBar />
-        <main className="flex-1 overflow-auto pb-20">
+        <main className="flex-1 overflow-auto px-4 pt-4 pb-20">
           <Outlet />
         </main>
         <MobileNavigation />

@@ -61,8 +61,8 @@ const StationRow = memo(function StationRow({
   return (
     <Card className="transition-shadow hover:shadow-md cursor-pointer" onClick={() => onSelect(station)}>
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3 min-w-0">
             <button
               onClick={(e) => onOpenMaps(e, station)}
               className={cn(
@@ -93,12 +93,12 @@ const StationRow = memo(function StationRow({
               </div>
             </div>
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 justify-end flex-wrap">
             {station.status === 'available' && (
               <Button
-                size="icon"
+                size="sm"
                 onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
-                className="gap-1 w-[120px] justify-center"
+                className="gap-1"
               >
                 <Play className="h-3 w-3" />
                 Запустить
@@ -106,10 +106,10 @@ const StationRow = memo(function StationRow({
             )}
             {station.status === 'charging' && (
               <Button
-                size="icon"
+                size="sm"
                 variant="destructive"
                 onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
-                className="gap-1 w-[120px] justify-center"
+                className="gap-1"
               >
                 <Square className="h-3 w-3" />
                 Остановить

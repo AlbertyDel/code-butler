@@ -145,7 +145,7 @@
 
   /* Навигация мобильная */
   .mobile-nav-item {
-    @apply flex flex-col items-center justify-center gap-1 py-2 px-4 text-muted-foreground transition-colors;
+    @apply flex flex-col items-center justify-center gap-1 py-3 px-4 text-muted-foreground transition-colors min-h-[56px];
   }
   
   .mobile-nav-item.active {

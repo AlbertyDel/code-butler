@@ -32,11 +32,11 @@ export function MobileNavigation() {
               )}
             >
               <item.icon className={cn(
-                "h-5 w-5 transition-colors",
+                "h-6 w-6 transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground"
               )} />
               <span className={cn(
-                "text-2xs font-medium transition-colors",
+                "text-xs font-medium transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}>
                 {item.label}

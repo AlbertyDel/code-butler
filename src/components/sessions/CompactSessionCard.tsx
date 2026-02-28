@@ -46,10 +46,10 @@ export const CompactSessionCard = memo(function CompactSessionCard({
             <Button
               variant="destructive"
               size="icon"
-              className="h-8 w-8 shrink-0"
+              className="h-10 w-10 shrink-0"
               onClick={() => onStop(session.id)}
             >
-              <Square className="h-3 w-3" />
+              <Square className="h-4 w-4" />
             </Button>
           )}
         </div>

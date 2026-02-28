@@ -1,8 +1,22 @@
 import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Zap } from 'lucide-react';
 import type { Station } from '@/types';
+
+const statusConfig: Record<string, { color: string; disabled: boolean }> = {
+  available: { color: 'bg-green-500', disabled: false },
+  charging: { color: 'bg-blue-500', disabled: true },
+  offline: { color: 'bg-red-500', disabled: true },
+  maintenance: { color: 'bg-red-500', disabled: true },
+};
 
 interface QuickLaunchCardProps {
   stations: Station[];
@@ -29,6 +43,8 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
       ? selectedId
       : availableStations[0]?.id ?? '';
 
+  const selectedStation = stations.find((s) => s.id === currentSelectedId);
+
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardContent className="p-4">
@@ -42,22 +58,44 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
               <Zap className="h-5 w-5 text-primary" />
             </div>
 
-            <select
+            <Select
               value={hasAvailable ? currentSelectedId : ''}
-              onChange={(e) => setSelectedId(e.target.value)}
+              onValueChange={setSelectedId}
               disabled={!hasAvailable}
-              className="h-11 w-full min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {!hasAvailable ? (
-                <option value="">Нет доступных станций</option>
-              ) : (
-                availableStations.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} (Свободна)
-                  </option>
-                ))
-              )}
-            </select>
+              <SelectTrigger className="h-11 w-full min-w-0 flex-1">
+                <SelectValue placeholder="Нет доступных станций">
+                  {selectedStation ? (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-green-500" />
+                      {selectedStation.name}
+                    </span>
+                  ) : (
+                    'Нет доступных станций'
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {stations.map((s) => {
+                  const cfg = statusConfig[s.status] ?? statusConfig.offline;
+                  return (
+                    <SelectItem
+                      key={s.id}
+                      value={s.id}
+                      disabled={cfg.disabled}
+                      className={cfg.disabled ? 'opacity-50 pointer-events-none' : ''}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${cfg.color}`}
+                        />
+                        {s.name}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
 
           <p className="shrink-0 text-xs text-muted-foreground sm:max-w-[220px]">

@@ -1,13 +1,6 @@
 import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Zap } from 'lucide-react';
 import type { Station } from '@/types';
 
@@ -31,7 +24,6 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
     availableStations[0]?.id ?? ''
   );
 
-  // Keep selectedId in sync if stations change
   const currentSelectedId =
     hasAvailable && availableStations.find((s) => s.id === selectedId)
       ? selectedId
@@ -40,52 +32,43 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardContent className="p-4">
-        <p className="text-xs font-medium text-muted-foreground mb-3">
+        <p className="mb-3 text-xs font-medium text-muted-foreground">
           Быстрый запуск
         </p>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          {/* Icon + Select */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
               <Zap className="h-5 w-5 text-primary" />
             </div>
 
-            <Select
-              value={hasAvailable ? currentSelectedId : undefined}
-              onValueChange={setSelectedId}
+            <select
+              value={hasAvailable ? currentSelectedId : ''}
+              onChange={(e) => setSelectedId(e.target.value)}
               disabled={!hasAvailable}
+              className="h-11 w-full min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <SelectTrigger className="flex-1 min-w-0">
-                <SelectValue
-                  placeholder={
-                    hasAvailable
-                      ? 'Выберите станцию'
-                      : 'Нет доступных станций'
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {availableStations.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
+              {!hasAvailable ? (
+                <option value="">Нет доступных станций</option>
+              ) : (
+                availableStations.map((s) => (
+                  <option key={s.id} value={s.id}>
                     {s.name} (Свободна)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  </option>
+                ))
+              )}
+            </select>
           </div>
 
-          {/* Hint text */}
-          <p className="text-xs text-muted-foreground sm:max-w-[220px] shrink-0">
+          <p className="shrink-0 text-xs text-muted-foreground sm:max-w-[220px]">
             {hasAvailable
               ? 'Подключите коннектор к автомобилю и запустите станцию.'
               : 'В данный момент все станции заняты или не в сети. Вы можете управлять активными сессиями ниже.'}
           </p>
 
-          {/* Launch button */}
           <Button
             disabled={!hasAvailable}
-            className="shrink-0 sm:ml-auto"
+            className="h-11 shrink-0 sm:ml-auto"
             onClick={() => onStart(currentSelectedId)}
           >
             <Zap className="mr-2 h-4 w-4" />

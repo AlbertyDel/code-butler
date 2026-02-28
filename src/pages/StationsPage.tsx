@@ -97,7 +97,7 @@ const StationRow = memo(function StationRow({
             {station.status === 'available' && (
               <Button
                 onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
-                className="gap-1.5 w-[130px] h-10"
+                className="gap-1.5 w-[140px] h-11"
               >
                 <Play className="h-4 w-4" />
                 Запустить
@@ -107,7 +107,7 @@ const StationRow = memo(function StationRow({
               <Button
                 variant="destructive"
                 onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
-                className="gap-1.5 w-[130px] h-10"
+                className="gap-1.5 w-[140px] h-11"
               >
                 <Square className="h-4 w-4" />
                 Остановить
@@ -116,7 +116,7 @@ const StationRow = memo(function StationRow({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10"
+              className="h-11 w-11"
               onClick={(e) => { e.stopPropagation(); onEdit(station); }}
             >
               <Pencil className="h-4 w-4" />
@@ -124,7 +124,7 @@ const StationRow = memo(function StationRow({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10"
+              className="h-11 w-11"
               onClick={(e) => { e.stopPropagation(); onDelete(station); }}
             >
               <Trash2 className="h-4 w-4 text-destructive" />

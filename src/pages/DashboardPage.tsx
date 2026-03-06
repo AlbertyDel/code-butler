@@ -1,11 +1,11 @@
-import { memo, useState } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { mockSessions, mockStatistics } from '@/lib/mock-data';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
 import { useStations } from '@/hooks/useStations';
+import { useSessions } from '@/hooks/useSessions';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, 
@@ -59,12 +59,18 @@ const StatCard = memo(function StatCard({
 });
 
 export default function DashboardPage() {
-  const { stations, addStation, startCharging } = useStations();
+  const { stations, addStation, startCharging, isLoading: stationsLoading } = useStations();
+  const { activeSessions, sessions, isLoading: sessionsLoading } = useSessions();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  
-  const activeSessions = mockSessions.filter(s => s.status === 'active');
 
+  // Calculate statistics from real data
+  const statistics = useMemo(() => ({
+    totalSessions: sessions.length,
+    totalEnergyKwh: sessions.reduce((sum, s) => sum + (s.energyKwh || 0), 0).toFixed(1),
+  }), [sessions]);
+
+  const isLoading = stationsLoading || sessionsLoading;
   const isEmpty = stations.length === 0 && activeSessions.length === 0;
 
   if (isEmpty) {
@@ -95,13 +101,13 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Всего сессий"
-          value={mockStatistics.totalSessions}
+          value={statistics.totalSessions}
           icon={Zap}
           trend={{ value: 12, label: 'за месяц' }}
         />
         <StatCard
           title="Энергии получено"
-          value={mockStatistics.totalEnergyKwh}
+          value={statistics.totalEnergyKwh}
           unit="кВт·ч"
           icon={TrendingUp}
           trend={{ value: 8, label: 'за месяц' }}

@@ -1,16 +1,18 @@
 // Контекст авторизации
 // ⚠️ Бизнес-логика: НЕ ИЗМЕНЯТЬ логику авторизации, переключения ролей
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, UserRole } from '@/types';
-import { mockUser, mockBusinessUser } from '@/lib/mock-data';
+import { api } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   userRole: UserRole;
+  isLoading: boolean;
+  setAuthUser: (user: User) => void;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   switchRole: (role: UserRole) => void;
   register: (email: string, password: string, name: string) => Promise<boolean>;
 }
@@ -18,30 +20,69 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Автоматически авторизован для демо
-  const [user, setUser] = useState<User | null>({
-    id: '1',
-    email: 'demo@example.com',
-    name: 'Демо пользователь',
-    role: 'individual',
-    createdAt: new Date().toISOString(),
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<UserRole>('individual');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    // ⚠️ Mock авторизация - не менять логику проверки
-    if (email && password.length >= 6) {
-      const loggedInUser = email.includes('business') ? mockBusinessUser : mockUser;
-      setUser(loggedInUser);
-      setUserRole(loggedInUser.role);
-      return true;
-    }
-    return false;
+  // Check auth status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        console.log('[AuthContext] Checking auth...');
+        const response = await api.get('/auth/me');
+        console.log('[AuthContext] /auth/me response:', response.data);
+        
+        const user = response.data?.data?.user || response.data?.user;
+        if (user) {
+          console.log('[AuthContext] Setting user:', user);
+          setUser(user);
+          setUserRole(user.role || 'individual');
+          console.log('[AuthContext] isAuthenticated should be true now');
+        } else {
+          console.log('[AuthContext] No user in response');
+        }
+      } catch (error) {
+        console.log('[AuthContext] Not authenticated:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+        console.log('[AuthContext] isLoading set to false');
+      }
+    };
+    checkAuth();
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setUserRole('individual');
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    // Auth is handled by useLogin hook via phone/code
+    // This is for demo purposes
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      if (response.data) {
+        setUser(response.data);
+        setUserRole(response.data.role || 'individual');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await api.delete('/auth');
+    } catch (error) {
+      // Ignore logout errors
+    } finally {
+      setUser(null);
+      setUserRole('individual');
+    }
+  }, []);
+
+  const setAuthUser = useCallback((user: User) => {
+    setUser(user);
+    setUserRole(user.role || 'individual');
   }, []);
 
   const switchRole = useCallback((role: UserRole) => {
@@ -57,20 +98,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const register = useCallback(async (email: string, password: string, name: string): Promise<boolean> => {
-    // ⚠️ Mock регистрация - не менять логику
-    if (email && password.length >= 6 && name) {
-      const newUser: User = {
-        id: Date.now().toString(),
-        email,
-        name,
-        role: 'individual',
-        createdAt: new Date().toISOString(),
-      };
-      setUser(newUser);
-      setUserRole('individual');
-      return true;
+    try {
+      const response = await api.post('/auth/register', { email, password, name });
+      if (response.data) {
+        setUser(response.data);
+        setUserRole('individual');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Register error:', error);
+      return false;
     }
-    return false;
   }, []);
 
   return (
@@ -78,6 +117,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       isAuthenticated: !!user,
       userRole,
+      isLoading,
+      setAuthUser,
       login,
       logout,
       switchRole,

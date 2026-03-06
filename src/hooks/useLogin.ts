@@ -1,24 +1,41 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
-// Mock API functions (заглушки)
-const mockApi = {
-  getSecret: async (_data: { phone: string }): Promise<string | null> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return null;
+// Convert phone to E.164 format
+function formatPhoneToE164(phone: string): string {
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  // If starts with 8, replace with 7
+  const normalized = digits.startsWith('8') ? '7' + digits.slice(1) : digits;
+  // Add + if not present
+  return normalized.startsWith('+') ? normalized : '+' + normalized;
+}
+
+// Auth API functions
+const authApi = {
+  getSecret: async (data: { phone: string }) => {
+    const e164Phone = formatPhoneToE164(data.phone);
+    const response = await api.post('/auth/init', { phone: e164Phone });
+    return response.data;
   },
 
-  confirmSecret: async (_data: { phone: string; secret: string }): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
+  confirmSecret: async (data: { phone: string; secret: string }) => {
+    const e164Phone = formatPhoneToE164(data.phone);
+    const response = await api.post('/auth/secret', { phone: e164Phone, secret: data.secret });
+    return response.data;
   },
 
-  confirmCode: async (data: { phone: string; code: string }): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    if (data.code !== '123456' && data.code.length === 6) {
-      if (Math.random() > 0.5) {
-        throw new Error('Неверный код');
-      }
-    }
+  confirmCode: async (data: { phone: string; code: string }) => {
+    const e164Phone = formatPhoneToE164(data.phone);
+    const response = await api.post('/auth/code', { phone: e164Phone, code: data.code });
+    return response.data;
+  },
+
+  logout: async () => {
+    const response = await api.delete('/auth');
+    return response.data;
   }
 };
 
@@ -48,7 +65,9 @@ interface UseLoginReturn {
 
 export function useLogin(): UseLoginReturn {
   const navigate = useNavigate();
+  const { setAuthUser } = useAuth();
   const formRef = useRef<HTMLFormElement | null>(null);
+  const codeSubmitted = useRef(false);
 
   const [step, setStep] = useState<LoginStep>('phone');
   const [phone, setPhone] = useState('');
@@ -84,9 +103,11 @@ export function useLogin(): UseLoginReturn {
   const getSecret = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await mockApi.getSecret({ phone });
-      setCaptcha(result);
-      setStep(result ? 'secret' : 'code');
+      const response = await authApi.getSecret({ phone });
+      // API returns { success: true, data: { captcha, timeout } }
+      const result = response.data?.data || response.data;
+      setCaptcha(result.captcha);
+      setStep(result.captcha ? 'secret' : 'code');
       setSecret('');
       if (!result) {
         startCountdown();
@@ -101,7 +122,7 @@ export function useLogin(): UseLoginReturn {
   const confirmSecretHandler = useCallback(async () => {
     setIsLoading(true);
     try {
-      await mockApi.confirmSecret({ phone, secret });
+      await authApi.confirmSecret({ phone, secret });
       setStep('code');
       setCode('');
       startCountdown();
@@ -114,18 +135,43 @@ export function useLogin(): UseLoginReturn {
   }, [phone, secret, getSecret, startCountdown]);
 
   // Auto-verify code when 6 digits entered
-  useEffect(() => {
-    if (code.length !== 6 || isLoading) return;
+  const prevCodeRef = useRef('');
 
+  useEffect(() => {
+    console.log('[useLogin] useEffect:', { step, code, codeLength: code.length, isLoading, prevCode: prevCodeRef.current, submitted: codeSubmitted.current });
+    
+    // Only run on code step, when 6 digits entered
+    if (step !== 'code' || code.length !== 6) return;
+    
+    // Prevent duplicate calls - only run when code actually changed
+    if (code === prevCodeRef.current || codeSubmitted.current) return;
+    
+    prevCodeRef.current = code;
+    codeSubmitted.current = true;
+    
+    console.log('[useLogin] Sending API request for code:', code);
+    
     const confirmCode = async () => {
       setIsLoading(true);
       setIsCodeValid(true);
 
       try {
-        await mockApi.confirmCode({ phone, code });
+        await authApi.confirmCode({ phone, code });
+        
+        const meResponse = await api.get('/auth/me');
+        console.log('[useLogin] /auth/me response:', meResponse.data);
+        // API returns { success: true, data: { user } }
+        const user = meResponse.data?.data?.user || meResponse.data?.user;
+        if (user) {
+          console.log('[useLogin] Setting auth user:', user);
+          setAuthUser(user);
+        }
+        
+        console.log('[useLogin] Navigating to dashboard');
         navigate('/dashboard');
       } catch (error) {
         setIsCodeValid(false);
+        codeSubmitted.current = false;
         console.error('Неверный код:', error);
       } finally {
         setIsLoading(false);
@@ -133,7 +179,7 @@ export function useLogin(): UseLoginReturn {
     };
 
     confirmCode();
-  }, [code, phone, navigate, isLoading]);
+  }, [code, phone, navigate, isLoading, step]);
 
   const onSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();

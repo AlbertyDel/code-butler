@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { mockStations } from '@/lib/mock-data';
+import { api } from '@/lib/api';
 import type { ChargingSession, Station } from '@/types';
 
 interface SessionGroup {
@@ -13,100 +13,87 @@ interface UseSessionsReturn {
   activeSessions: ChargingSession[];
   completedSessions: ChargingSession[];
   groupedSessions: SessionGroup[];
+  isLoading: boolean;
+  error: string | null;
   stopSession: (sessionId: string) => void;
   getStation: (stationId: string) => Station | undefined;
   formatDuration: (startTime: string, endTime?: string) => string;
+  refetch: () => void;
 }
 
-// Генерация 100 сессий для демонстрации
-function generateMockSessions(): ChargingSession[] {
-  const sessions: ChargingSession[] = [];
-  const stationIds = ['st-1', 'st-2', 'st-3', 'st-4'];
-  const now = new Date();
-
-  // 2 активные сессии
-  sessions.push({
-    id: 'ses-active-1',
-    stationId: 'st-1',
-    connectorId: 'c-1',
-    userId: '1',
-    startTime: new Date(now.getTime() - 4 * 60 * 60 * 1000 - 34 * 60 * 1000).toISOString(),
-    energyKwh: 42.5,
-    cost: 595,
-    status: 'active',
-  });
-
-  sessions.push({
-    id: 'ses-active-2',
-    stationId: 'st-4',
-    connectorId: 'c-7',
-    userId: '1',
-    startTime: new Date(now.getTime() - 1 * 60 * 60 * 1000 - 15 * 60 * 1000).toISOString(),
-    energyKwh: 28.3,
-    cost: 396,
-    status: 'active',
-  });
-
-  // 100 завершённых сессий
-  for (let i = 0; i < 100; i++) {
-    const daysAgo = Math.floor(i / 3);
-    const hoursOffset = (i % 3) * 6 + Math.random() * 4;
-
-    const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - daysAgo);
-    startDate.setHours(8 + hoursOffset, Math.floor(Math.random() * 60), 0);
-
-    const durationMinutes = 30 + Math.floor(Math.random() * 300);
-    const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
-
-    const energyKwh = Math.round((10 + Math.random() * 50) * 10) / 10;
-
-    sessions.push({
-      id: `ses-${i + 3}`,
-      stationId: stationIds[Math.floor(Math.random() * stationIds.length)],
-      connectorId: `c-${Math.floor(Math.random() * 7) + 1}`,
-      userId: '1',
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
-      energyKwh,
-      cost: Math.round(energyKwh * 14),
-      status: 'completed',
-    });
-  }
-
-  return sessions;
-}
-
-// Extended stations for demonstration
-const extendedStations: Station[] = [
-  ...mockStations,
-  {
-    id: 'st-long',
-    name: 'Супер-мега зарядная станция у торгового центра "Авиапарк" около метро Динамо',
-    address: 'Ходынский бульвар, дом 4, строение 1, ТРЦ Авиапарк, подземный паркинг уровень -2, секция B',
-    latitude: 55.789,
-    longitude: 37.531,
-    status: 'available',
-    connectors: [{ id: 'c-long', stationId: 'st-long', type: 'CCS', powerKw: 150, status: 'available' }],
-    ownerId: '1',
-    createdAt: '2024-01-01T00:00:00Z',
-    electrical: { voltagePhase1: 230, voltagePhase2: 229, voltagePhase3: 231, phases: 3, maxCurrentA: 16, relayState: 'on' },
-    temperature: { inputContacts: 30, port0: 26, port1: 25, internal: 33 },
-    stats: { energyTodayKwh: 20, sessionsToday: 1, totalSessions: 500, totalEnergyKwh: 5000, totalHours: 4500 },
-  }
-];
+// Sessions API
+const sessionsApi = {
+  getAll: async (deviceId?: string) => {
+    const url = deviceId ? `/devices/${deviceId}/sessions` : '/devices';
+    const response = await api.get(url);
+    return response.data;
+  },
+};
 
 export function useSessions(): UseSessionsReturn {
   const { toast } = useToast();
-  const [sessions, setSessions] = useState<ChargingSession[]>(() => generateMockSessions());
+  const [sessions, setSessions] = useState<ChargingSession[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Fetch devices (as stations)
+      const devicesResponse = await api.get('/devices');
+      const devices = devicesResponse.data.data || devicesResponse.data || [];
+      
+      // Map devices to stations format
+      const mappedStations: Station[] = devices.map((d: any) => ({
+        id: d.id,
+        name: d.name || `Станция ${d.id}`,
+        address: d.address || '',
+        latitude: d.latitude,
+        longitude: d.longitude,
+        status: d.status || 'offline',
+        connectors: d.connectors || [],
+        ownerId: d.ownerId || d.userId,
+        createdAt: d.createdAt,
+      }));
+      setStations(mappedStations);
+
+      // Fetch sessions for all devices
+      const allSessions: ChargingSession[] = [];
+      for (const device of devices) {
+        try {
+          const sessionsResponse = await api.get(`/devices/${device.id}/sessions`);
+          const deviceSessions = sessionsResponse.data.data || sessionsResponse.data || [];
+          allSessions.push(...deviceSessions.map((s: any) => ({
+            ...s,
+            stationId: device.id,
+          })));
+        } catch (e) {
+          // Device might not have sessions
+        }
+      }
+      
+      setSessions(allSessions);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка загрузки сессий');
+      console.error('Error fetching sessions:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const activeSessions = useMemo(
-    () => sessions.filter(s => s.status === 'active'),
+    () => sessions.filter(s => s.status === 'IN_PROGRESS' || s.status === 'active'),
     [sessions]
   );
 
   const completedSessions = useMemo(
-    () => sessions.filter(s => s.status !== 'active'),
+    () => sessions.filter(s => s.status !== 'IN_PROGRESS' && s.status !== 'active'),
     [sessions]
   );
 
@@ -162,21 +149,30 @@ export function useSessions(): UseSessionsReturn {
     return groups;
   }, [completedSessions]);
 
-  const stopSession = useCallback((sessionId: string) => {
-    setSessions(prev => prev.map(session =>
-      session.id === sessionId
-        ? { ...session, status: 'completed' as const, endTime: new Date().toISOString() }
-        : session
-    ));
-    toast({
-      title: "Сессия остановлена",
-      description: "Зарядка успешно завершена",
-    });
+  const stopSession = useCallback(async (sessionId: string) => {
+    try {
+      await api.post(`/commands/devices/${sessionId}/stop-charge`);
+      setSessions(prev => prev.map(session =>
+        session.id === sessionId
+          ? { ...session, status: 'COMPLETED' as const, endTime: new Date().toISOString() }
+          : session
+      ));
+      toast({
+        title: "Сессия остановлена",
+        description: "Зарядка успешно завершена",
+      });
+    } catch (err) {
+      toast({
+        title: "Ошибка",
+        description: err instanceof Error ? err.message : 'Не удалось остановить сессию',
+        variant: 'destructive',
+      });
+    }
   }, [toast]);
 
   const getStation = useCallback((stationId: string): Station | undefined => {
-    return extendedStations.find(s => s.id === stationId) || mockStations.find(s => s.id === stationId);
-  }, []);
+    return stations.find(s => s.id === stationId);
+  }, [stations]);
 
   const formatDuration = useCallback((startTime: string, endTime?: string): string => {
     const start = new Date(startTime);
@@ -193,8 +189,11 @@ export function useSessions(): UseSessionsReturn {
     activeSessions,
     completedSessions,
     groupedSessions,
+    isLoading,
+    error,
     stopSession,
     getStation,
     formatDuration,
+    refetch: fetchData,
   };
 }

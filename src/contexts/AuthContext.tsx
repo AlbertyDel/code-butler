@@ -25,11 +25,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('individual');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check auth status on mount
+  // Check auth status on mount — fallback to mock if API unavailable
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('[AuthContext] Checking auth...');
+        console.log('[AuthContext] Checking auth status...');
         const response = await api.get('/auth/me');
         const user = response.data?.data?.user || response.data?.user;
         if (user) {

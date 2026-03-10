@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
+import { mockStations } from '@/lib/mock-data';
 import type { Station, ChargerStatus } from '@/types';
 
 interface UseStationsReturn {
@@ -52,6 +53,7 @@ export function useStations(): UseStationsReturn {
   const [stations, setStations] = useState<Station[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [useMock, setUseMock] = useState(false);
 
   const fetchStations = useCallback(async () => {
     setIsLoading(true);
@@ -60,9 +62,11 @@ export function useStations(): UseStationsReturn {
       const response = await stationsApi.getAll();
       const data = response.data || response;
       setStations(data);
+      setUseMock(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки станций');
-      console.error('Error fetching stations:', err);
+      console.log('[useStations] API unavailable, using mock data');
+      setStations(mockStations);
+      setUseMock(true);
     } finally {
       setIsLoading(false);
     }

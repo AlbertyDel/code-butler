@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
+import { mockSessions, mockStations } from '@/lib/mock-data';
 import type { ChargingSession, Station } from '@/types';
 
 interface SessionGroup {
@@ -36,16 +37,15 @@ export function useSessions(): UseSessionsReturn {
   const [stations, setStations] = useState<Station[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [useMock, setUseMock] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch devices (as stations)
       const devicesResponse = await api.get('/devices');
       const devices = devicesResponse.data.data || devicesResponse.data || [];
       
-      // Map devices to stations format
       const mappedStations: Station[] = devices.map((d: any) => ({
         id: d.id,
         name: d.name || `Станция ${d.id}`,
@@ -59,7 +59,6 @@ export function useSessions(): UseSessionsReturn {
       }));
       setStations(mappedStations);
 
-      // Fetch sessions for all devices
       const allSessions: ChargingSession[] = [];
       for (const device of devices) {
         try {
@@ -69,15 +68,16 @@ export function useSessions(): UseSessionsReturn {
             ...s,
             stationId: device.id,
           })));
-        } catch (e) {
-          // Device might not have sessions
-        }
+        } catch (e) {}
       }
       
       setSessions(allSessions);
+      setUseMock(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки сессий');
-      console.error('Error fetching sessions:', err);
+      console.log('[useSessions] API unavailable, using mock data');
+      setStations(mockStations);
+      setSessions(mockSessions);
+      setUseMock(true);
     } finally {
       setIsLoading(false);
     }

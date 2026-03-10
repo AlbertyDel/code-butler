@@ -150,6 +150,15 @@ export function useSessions(): UseSessionsReturn {
   }, [completedSessions]);
 
   const stopSession = useCallback(async (sessionId: string) => {
+    if (useMock) {
+      setSessions(prev => prev.map(session =>
+        session.id === sessionId
+          ? { ...session, status: 'completed' as const, endTime: new Date().toISOString() }
+          : session
+      ));
+      toast({ title: "Сессия остановлена", description: "Зарядка успешно завершена" });
+      return;
+    }
     try {
       await api.post(`/commands/devices/${sessionId}/stop-charge`);
       setSessions(prev => prev.map(session =>
@@ -157,18 +166,11 @@ export function useSessions(): UseSessionsReturn {
           ? { ...session, status: 'completed' as const, endTime: new Date().toISOString() }
           : session
       ));
-      toast({
-        title: "Сессия остановлена",
-        description: "Зарядка успешно завершена",
-      });
+      toast({ title: "Сессия остановлена", description: "Зарядка успешно завершена" });
     } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось остановить сессию',
-        variant: 'destructive',
-      });
+      toast({ title: "Ошибка", description: err instanceof Error ? err.message : 'Не удалось остановить сессию', variant: 'destructive' });
     }
-  }, [toast]);
+  }, [useMock, toast]);
 
   const getStation = useCallback((stationId: string): Station | undefined => {
     return stations.find(s => s.id === stationId);

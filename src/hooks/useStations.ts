@@ -77,21 +77,30 @@ export function useStations(): UseStationsReturn {
   }, [fetchStations]);
 
   const addStation = useCallback(async (stationData: Partial<Station>) => {
+    if (useMock) {
+      const newStation: Station = {
+        id: stationData.id || `st-${Date.now()}`,
+        name: stationData.name || 'Новая станция',
+        address: stationData.address || '',
+        latitude: stationData.latitude || 55.751244,
+        longitude: stationData.longitude || 37.618423,
+        status: 'available',
+        connectors: stationData.connectors || [],
+        ownerId: '1',
+        createdAt: new Date().toISOString(),
+      };
+      setStations(prev => [...prev, newStation]);
+      toast({ title: "Станция добавлена", description: `${newStation.name} успешно добавлена` });
+      return;
+    }
     try {
       await stationsApi.create(stationData);
       await fetchStations();
-      toast({
-        title: "Станция добавлена",
-        description: `${stationData.name} успешно добавлена`,
-      });
+      toast({ title: "Станция добавлена", description: `${stationData.name} успешно добавлена` });
     } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось добавить станцию',
-        variant: 'destructive',
-      });
+      toast({ title: "Ошибка", description: err instanceof Error ? err.message : 'Не удалось добавить станцию', variant: 'destructive' });
     }
-  }, [fetchStations, toast]);
+  }, [useMock, fetchStations, toast]);
 
   const updateStation = useCallback(async (stationData: Partial<Station>) => {
     if (!stationData.id) return;

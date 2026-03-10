@@ -104,38 +104,34 @@ export function useStations(): UseStationsReturn {
 
   const updateStation = useCallback(async (stationData: Partial<Station>) => {
     if (!stationData.id) return;
+    if (useMock) {
+      setStations(prev => prev.map(s => s.id === stationData.id ? { ...s, ...stationData } as Station : s));
+      toast({ title: "Станция обновлена", description: "Изменения сохранены" });
+      return;
+    }
     try {
       await stationsApi.update(stationData.id, stationData);
       await fetchStations();
-      toast({
-        title: "Станция обновлена",
-        description: "Изменения сохранены",
-      });
+      toast({ title: "Станция обновлена", description: "Изменения сохранены" });
     } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось обновить станцию',
-        variant: 'destructive',
-      });
+      toast({ title: "Ошибка", description: err instanceof Error ? err.message : 'Не удалось обновить станцию', variant: 'destructive' });
     }
-  }, [fetchStations, toast]);
+  }, [useMock, fetchStations, toast]);
 
   const deleteStation = useCallback(async (stationId: string) => {
+    if (useMock) {
+      setStations(prev => prev.filter(s => s.id !== stationId));
+      toast({ title: "Станция удалена", description: "Станция была удалена" });
+      return;
+    }
     try {
       await stationsApi.delete(stationId);
       await fetchStations();
-      toast({
-        title: "Станция удалена",
-        description: "Станция была удалена",
-      });
+      toast({ title: "Станция удалена", description: "Станция была удалена" });
     } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось удалить станцию',
-        variant: 'destructive',
-      });
+      toast({ title: "Ошибка", description: err instanceof Error ? err.message : 'Не удалось удалить станцию', variant: 'destructive' });
     }
-  }, [fetchStations, toast]);
+  }, [useMock, fetchStations, toast]);
 
   const startCharging = useCallback(async (stationId: string) => {
     try {

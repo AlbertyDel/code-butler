@@ -134,38 +134,34 @@ export function useStations(): UseStationsReturn {
   }, [useMock, fetchStations, toast]);
 
   const startCharging = useCallback(async (stationId: string) => {
+    if (useMock) {
+      setStations(prev => prev.map(s => s.id === stationId ? { ...s, status: 'charging' as const } : s));
+      toast({ title: "Зарядка запущена", description: "Сессия зарядки успешно начата" });
+      return;
+    }
     try {
       await stationsApi.startCharge(stationId);
       await fetchStations();
-      toast({
-        title: "Зарядка запущена",
-        description: "Сессия зарядки успешно начата",
-      });
+      toast({ title: "Зарядка запущена", description: "Сессия зарядки успешно начата" });
     } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось запустить зарядку',
-        variant: 'destructive',
-      });
+      toast({ title: "Ошибка", description: err instanceof Error ? err.message : 'Не удалось запустить зарядку', variant: 'destructive' });
     }
-  }, [fetchStations, toast]);
+  }, [useMock, fetchStations, toast]);
 
   const stopCharging = useCallback(async (stationId: string) => {
+    if (useMock) {
+      setStations(prev => prev.map(s => s.id === stationId ? { ...s, status: 'available' as const } : s));
+      toast({ title: "Зарядка остановлена", description: "Сессия зарядки завершена" });
+      return;
+    }
     try {
       await stationsApi.stopCharge(stationId);
       await fetchStations();
-      toast({
-        title: "Зарядка остановлена",
-        description: "Сессия зарядки завершена",
-      });
+      toast({ title: "Зарядка остановлена", description: "Сессия зарядки завершена" });
     } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось остановить зарядку',
-        variant: 'destructive',
-      });
+      toast({ title: "Ошибка", description: err instanceof Error ? err.message : 'Не удалось остановить зарядку', variant: 'destructive' });
     }
-  }, [fetchStations, toast]);
+  }, [useMock, fetchStations, toast]);
 
   return {
     stations,

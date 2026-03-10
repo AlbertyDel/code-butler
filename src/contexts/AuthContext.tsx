@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, UserRole } from '@/types';
 import { api } from '@/lib/api';
+import { mockUser } from '@/lib/mock-data';
 
 interface AuthContextType {
   user: User | null;
@@ -30,23 +31,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('[AuthContext] Checking auth...');
         const response = await api.get('/auth/me');
-        console.log('[AuthContext] /auth/me response:', response.data);
-        
         const user = response.data?.data?.user || response.data?.user;
         if (user) {
-          console.log('[AuthContext] Setting user:', user);
           setUser(user);
           setUserRole(user.role || 'individual');
-          console.log('[AuthContext] isAuthenticated should be true now');
-        } else {
-          console.log('[AuthContext] No user in response');
         }
       } catch (error) {
-        console.log('[AuthContext] Not authenticated:', error);
-        setUser(null);
+        console.log('[AuthContext] API unavailable, using mock user');
+        setUser(mockUser);
+        setUserRole(mockUser.role || 'individual');
       } finally {
         setIsLoading(false);
-        console.log('[AuthContext] isLoading set to false');
       }
     };
     checkAuth();

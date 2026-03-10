@@ -88,12 +88,12 @@ export function useSessions(): UseSessionsReturn {
   }, [fetchData]);
 
   const activeSessions = useMemo(
-    () => sessions.filter(s => s.status === 'IN_PROGRESS' || s.status === 'active'),
+    () => sessions.filter(s => s.status === 'active'),
     [sessions]
   );
 
   const completedSessions = useMemo(
-    () => sessions.filter(s => s.status !== 'IN_PROGRESS' && s.status !== 'active'),
+    () => sessions.filter(s => s.status !== 'active'),
     [sessions]
   );
 
@@ -154,7 +154,7 @@ export function useSessions(): UseSessionsReturn {
       await api.post(`/commands/devices/${sessionId}/stop-charge`);
       setSessions(prev => prev.map(session =>
         session.id === sessionId
-          ? { ...session, status: 'COMPLETED' as const, endTime: new Date().toISOString() }
+          ? { ...session, status: 'completed' as const, endTime: new Date().toISOString() }
           : session
       ));
       toast({

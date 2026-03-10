@@ -30,11 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuth = async () => {
       try {
         console.log('[AuthContext] Checking auth status...');
-        const response = await api.get('/auth/me');
-        const user = response.data?.data?.user || response.data?.user;
-        if (user) {
-          setUser(user);
-          setUserRole(user.role || 'individual');
+        const response = await api.get('/auth/me', { timeout: 3000 });
+        const userData = response.data?.data?.user || response.data?.user;
+        if (userData) {
+          setUser(userData);
+          setUserRole(userData.role || 'individual');
+        } else {
+          throw new Error('No user in response');
         }
       } catch (error) {
         console.log('[AuthContext] API unavailable, using mock user');

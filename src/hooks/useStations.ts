@@ -78,17 +78,18 @@ export function useStations(): UseStationsReturn {
 
   const addStation = useCallback(async (stationData: Partial<Station>) => {
     if (useMock) {
-      const newStation: Station = {
+      const newStation = {
         id: stationData.id || `st-${Date.now()}`,
         name: stationData.name || 'Новая станция',
         address: stationData.address || '',
         latitude: stationData.latitude || 55.751244,
         longitude: stationData.longitude || 37.618423,
-        status: 'available',
+        status: 'available' as const,
         connectors: stationData.connectors || [],
         ownerId: '1',
         createdAt: new Date().toISOString(),
-      };
+        ...stationData,
+      } as Station;
       setStations(prev => [...prev, newStation]);
       toast({ title: "Станция добавлена", description: `${newStation.name} успешно добавлена` });
       return;

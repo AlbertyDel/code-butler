@@ -88,7 +88,7 @@ export function useSessions(): UseSessionsReturn {
   }, [fetchData]);
 
   const activeSessions = useMemo(
-    () => sessions.filter(s => s.status === 'IN_PROGRESS' || s.status === 'active'),
+    () => sessions.filter(s => s.status === 'active'),
     [sessions]
   );
 

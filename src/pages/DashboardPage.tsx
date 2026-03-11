@@ -71,6 +71,20 @@ export default function DashboardPage() {
   }), [sessions]);
 
   const isLoading = stationsLoading || sessionsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 animate-pulse">
+            <Zap className="h-6 w-6 text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
   const isEmpty = stations.length === 0 && activeSessions.length === 0;
 
   if (isEmpty) {

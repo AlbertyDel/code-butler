@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { api } from '@/lib/api';
 
 export type LoginStep = 'email' | 'waiting';
 
@@ -38,9 +39,7 @@ export function useLogin(): UseLoginReturn {
   const sendMagicLink = useCallback(async () => {
     setIsLoading(true);
     try {
-      // TODO: заменить на реальный API-запрос
-      // Временная заглушка: email "test@test.com" переключает на экран ожидания
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await api.post('/auth/magic-link', { email });
       setStep('waiting');
       setCountdown(60);
     } catch (error) {
@@ -48,7 +47,7 @@ export function useLogin(): UseLoginReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [email]);
 
   const onSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();

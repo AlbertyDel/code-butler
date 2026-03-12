@@ -30,7 +30,7 @@ export default function ProfilePage() {
   const handleSave = () => {
     const newName = [firstName, lastName].filter(Boolean).join(' ');
     if (user) {
-      setAuthUser({ ...user, name: newName });
+      setAuthUser({ ...user, name: newName, phone: phoneNumber || undefined });
     }
     setIsEditing(false);
     toast({

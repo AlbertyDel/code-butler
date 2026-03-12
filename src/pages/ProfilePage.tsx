@@ -22,7 +22,8 @@ export default function ProfilePage() {
   useEffect(() => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
-  }, [user?.name]);
+    setPhoneNumber(user?.phone || '');
+  }, [user?.name, user?.phone]);
 
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
   

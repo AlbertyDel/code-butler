@@ -121,9 +121,6 @@ export default function ProfilePage() {
                     className="bg-muted"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Email является идентификатором для входа и не может быть изменён
-                </p>
               </div>
               
               <div className="flex gap-2 pt-4">

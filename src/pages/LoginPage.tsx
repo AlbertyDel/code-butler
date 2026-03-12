@@ -84,7 +84,7 @@ const WaitingStep = memo(function WaitingStep({
       >
         {countdown > 0
           ? `Отправить повторно через ${countdown} сек`
-          : 'Отправить письмо еще раз'}
+          : 'Отправить повторно'}
       </Button>
 
       <Button

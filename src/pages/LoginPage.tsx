@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail } from 'lucide-react';
+
 import { useLogin, type LoginStep } from '@/hooks/useLogin';
 import logoCharger from '@/assets/logo-charger.svg';
 
@@ -63,10 +63,6 @@ const WaitingStep = memo(function WaitingStep({
 }: WaitingStepProps) {
   return (
     <div className="flex flex-col items-center w-full">
-      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-        <Mail className="h-8 w-8 text-primary" />
-      </div>
-
       <h1 className="text-2xl font-bold mb-2 text-center text-foreground">
         Проверьте почту
       </h1>
@@ -76,12 +72,12 @@ const WaitingStep = memo(function WaitingStep({
       <p className="text-sm font-semibold text-foreground mb-6">{email}</p>
 
       <p className="text-xs text-muted-foreground text-center mb-6">
-        Если письмо не пришло, проверьте папку спам или запросите ссылку повторно.
+        Не нашли письмо? Проверьте папку «Спам» или отправьте повторно.
       </p>
 
       <Button
         type="button"
-        variant="outline"
+        variant={countdown > 0 ? 'outline' : 'default'}
         className="w-full h-12 mb-3"
         disabled={countdown > 0 || isLoading}
         onClick={onResend}

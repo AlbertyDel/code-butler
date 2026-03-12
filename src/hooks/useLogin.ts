@@ -40,12 +40,12 @@ export function useLogin(): UseLoginReturn {
     setIsLoading(true);
     try {
       await api.post('/auth/magic-link', { email });
-      setStep('waiting');
-      setCountdown(60);
     } catch (error) {
       console.error('Ошибка отправки ссылки:', error);
     } finally {
       setIsLoading(false);
+      setStep('waiting');
+      setCountdown(60);
     }
   }, [email]);
 

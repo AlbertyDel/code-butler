@@ -151,7 +151,7 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Телефон</p>
                 <p className="font-medium flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  {phone || <span className="text-muted-foreground italic">Не указано</span>}
+                  {phoneNumber || <span className="text-muted-foreground italic">Не указано</span>}
                 </p>
               </div>
               

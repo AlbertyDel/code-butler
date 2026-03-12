@@ -102,15 +102,11 @@ export default function ProfilePage() {
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
-                    value={phone || ''}
-                    disabled
-                    className="bg-muted"
-                    placeholder="Не указано"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Введите номер телефона"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Для изменения номера телефона обратитесь в поддержку
-                </p>
               </div>
               
               <div className="space-y-2">

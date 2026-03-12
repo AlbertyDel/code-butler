@@ -52,8 +52,8 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-56 bg-popover">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>{user?.name}</span>
-                <span className="text-xs font-normal text-muted-foreground">{user?.phone || '+7 999 123-45-67'}</span>
+                <span>{displayName}</span>
+                <span className="text-xs font-normal text-muted-foreground">{displayEmail}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

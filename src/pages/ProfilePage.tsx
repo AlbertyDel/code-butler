@@ -14,9 +14,9 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const email = user?.email || '';
-  const phone = user?.phone || '';
 
   // Sync local state with user context
   useEffect(() => {

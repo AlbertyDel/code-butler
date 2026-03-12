@@ -20,10 +20,10 @@ const EmailStep = memo(function EmailStep({
   return (
     <>
       <h1 className="text-2xl font-bold mb-2 text-center text-foreground">
-        Вход в личный кабинет
+        Личный кабинет
       </h1>
       <p className="text-sm text-muted-foreground text-center mb-6">
-        Введите ваш email, и мы отправим вам ссылку для быстрого входа.
+        Введите email, и мы пришлем ссылку для входа.
       </p>
 
       <Input

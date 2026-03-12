@@ -24,12 +24,8 @@ export function TopBar() {
     navigate('/login');
   };
 
-  const initials = user?.name
-    ?.split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'U';
+  const displayName = user?.name?.trim() || user?.email?.split('@')[0] || 'Пользователь';
+  const displayEmail = user?.email || '';
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">

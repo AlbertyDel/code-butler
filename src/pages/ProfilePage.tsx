@@ -14,22 +14,23 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const email = user?.email || '';
-  const phone = user?.phone || '';
 
   // Sync local state with user context
   useEffect(() => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
-  }, [user?.name]);
+    setPhoneNumber(user?.phone || '');
+  }, [user?.name, user?.phone]);
 
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
   
   const handleSave = () => {
     const newName = [firstName, lastName].filter(Boolean).join(' ');
     if (user) {
-      setAuthUser({ ...user, name: newName });
+      setAuthUser({ ...user, name: newName, phone: phoneNumber || undefined });
     }
     setIsEditing(false);
     toast({
@@ -41,6 +42,7 @@ export default function ProfilePage() {
   const handleCancel = () => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
+    setPhoneNumber(user?.phone || '');
     setIsEditing(false);
   };
 
@@ -100,15 +102,11 @@ export default function ProfilePage() {
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
-                    value={phone || ''}
-                    disabled
-                    className="bg-muted"
-                    placeholder="Не указано"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Введите номер телефона"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Для изменения номера телефона обратитесь в поддержку
-                </p>
               </div>
               
               <div className="space-y-2">
@@ -123,9 +121,6 @@ export default function ProfilePage() {
                     className="bg-muted"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Email является идентификатором для входа и не может быть изменён
-                </p>
               </div>
               
               <div className="flex gap-2 pt-4">
@@ -156,7 +151,7 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Телефон</p>
                 <p className="font-medium flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  {phone || <span className="text-muted-foreground italic">Не указано</span>}
+                  {phoneNumber || <span className="text-muted-foreground italic">Не указано</span>}
                 </p>
               </div>
               

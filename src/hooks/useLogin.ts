@@ -13,13 +13,10 @@ interface UseLoginReturn {
   formRef: React.RefObject<HTMLFormElement | null>;
   step: LoginStep;
   email: string;
-  email: string;
   isLoading: boolean;
   countdown: number;
   setEmail: (email: string) => void;
-  setEmail: (email: string) => void;
   setStep: (step: LoginStep) => void;
-  sendMagicLink: () => Promise<void>;
   sendMagicLink: () => Promise<void>;
   onSubmit: (e: React.FormEvent) => void;
 }

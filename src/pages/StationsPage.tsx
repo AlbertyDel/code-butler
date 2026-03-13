@@ -153,9 +153,10 @@ export default function StationsPage() {
   const [detailStation, setDetailStation] = useState<Station | null>(null);
 
   const handleEditStation = useCallback((stationData: Partial<Station>) => {
-    updateStation(stationData);
+    if (!editStation) return;
+    updateStation({ id: editStation.id, data: stationData });
     setEditStation(null);
-  }, [updateStation]);
+  }, [editStation, updateStation]);
 
   const handleDeleteStation = useCallback(() => {
     if (!stationToDelete) return;

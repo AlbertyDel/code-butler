@@ -96,13 +96,10 @@ export function useLogin(): UseLoginReturn {
     formRef,
     step,
     email,
-    email,
     isLoading,
     countdown,
     setEmail,
-    setEmail,
     setStep,
-    sendMagicLink,
     sendMagicLink,
     onSubmit,
   };

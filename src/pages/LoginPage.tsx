@@ -100,6 +100,31 @@ const WaitingStep = memo(function WaitingStep({
   );
 });
 
+interface ExpiredStepProps {
+  onBackToLogin: () => void;
+}
+
+const ExpiredStep = memo(function ExpiredStep({ onBackToLogin }: ExpiredStepProps) {
+  return (
+    <div className="flex flex-col items-center w-full">
+      <Clock className="h-12 w-12 text-muted-foreground mb-4" />
+      <h1 className="text-2xl font-bold mb-2 text-center text-foreground">
+        Ссылка устарела или недействительна
+      </h1>
+      <p className="text-sm text-muted-foreground text-center mb-6">
+        В целях безопасности ссылка для входа работает только один раз и действует 15 минут.
+      </p>
+      <Button
+        type="button"
+        className="w-full h-12 text-base"
+        onClick={onBackToLogin}
+      >
+        Вернуться ко входу
+      </Button>
+    </div>
+  );
+});
+
 export default function LoginPage() {
   const { formRef, step, email, isLoading, countdown, setEmail, setStep, sendMagicLink, onSubmit } = useLogin();
 
@@ -131,6 +156,12 @@ export default function LoginPage() {
                 isLoading={isLoading}
                 onResend={sendMagicLink}
                 onChangeEmail={() => setStep('email')}
+              />
+            )}
+
+            {step === 'expired' && (
+              <ExpiredStep
+                onBackToLogin={() => setStep('email')}
               />
             )}
           </form>

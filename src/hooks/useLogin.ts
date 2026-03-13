@@ -13,13 +13,10 @@ interface UseLoginReturn {
   formRef: React.RefObject<HTMLFormElement | null>;
   step: LoginStep;
   email: string;
-  email: string;
   isLoading: boolean;
   countdown: number;
   setEmail: (email: string) => void;
-  setEmail: (email: string) => void;
   setStep: (step: LoginStep) => void;
-  sendMagicLink: () => Promise<void>;
   sendMagicLink: () => Promise<void>;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -33,8 +30,6 @@ export function useLogin(): UseLoginReturn {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const [step, setStep] = useState<LoginStep>('email');
-  const [email, setEmail] = useState('');
   const [step, setStep] = useState<LoginStep>('email');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -101,13 +96,10 @@ export function useLogin(): UseLoginReturn {
     formRef,
     step,
     email,
-    email,
     isLoading,
     countdown,
     setEmail,
-    setEmail,
     setStep,
-    sendMagicLink,
     sendMagicLink,
     onSubmit,
   };

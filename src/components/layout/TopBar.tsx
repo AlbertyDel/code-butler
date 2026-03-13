@@ -24,12 +24,8 @@ export function TopBar() {
     navigate('/login');
   };
 
-  const initials = user?.name
-    ?.split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'U';
+  const displayName = user?.name?.trim() || user?.email?.split('@')[0] || 'Пользователь';
+  const displayEmail = user?.email || '';
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
@@ -56,8 +52,8 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-56 bg-popover">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>{user?.name}</span>
-                <span className="text-xs font-normal text-muted-foreground">{user?.phone || '+7 999 123-45-67'}</span>
+                <span>{displayName}</span>
+                <span className="text-xs font-normal text-muted-foreground">{displayEmail}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

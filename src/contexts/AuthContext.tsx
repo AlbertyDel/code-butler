@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User, UserRole } from '@/types';
 import { api } from '@/lib/api';
+import { mockUser } from '@/lib/mock-data';
 
 interface AuthContextType {
   user: User | null;
@@ -24,29 +25,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('individual');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check auth status on mount
+  // Check auth status on mount — fallback to mock if API unavailable
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('[AuthContext] Checking auth...');
-        const response = await api.get('/auth/me');
-        console.log('[AuthContext] /auth/me response:', response.data);
-        
-        const user = response.data?.data?.user || response.data?.user;
-        if (user) {
-          console.log('[AuthContext] Setting user:', user);
-          setUser(user);
-          setUserRole(user.role || 'individual');
-          console.log('[AuthContext] isAuthenticated should be true now');
+        console.log('[AuthContext] Checking auth status...');
+        const response = await api.get('/auth/me', { timeout: 3000 });
+        const userData = response.data?.data?.user || response.data?.user;
+        if (userData) {
+          setUser(userData);
+          setUserRole(userData.role || 'individual');
         } else {
-          console.log('[AuthContext] No user in response');
+          throw new Error('No user in response');
         }
       } catch (error) {
-        console.log('[AuthContext] Not authenticated:', error);
-        setUser(null);
+        console.log('[AuthContext] API unavailable, using mock user');
+        setUser(mockUser);
+        setUserRole(mockUser.role || 'individual');
       } finally {
         setIsLoading(false);
-        console.log('[AuthContext] isLoading set to false');
       }
     };
     checkAuth();

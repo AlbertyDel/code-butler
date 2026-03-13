@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,16 +8,30 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Phone, Mail, Pencil, Check, X } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, setAuthUser } = useAuth();
   const { toast } = useToast();
   
   const [isEditing, setIsEditing] = useState(false);
-  const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || 'Иван');
-  const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || 'Петров');
-  const [email, setEmail] = useState(user?.email || 'user@example.com');
-  const phone = user?.phone || '+7 999 123-45-67';
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const email = user?.email || '';
+
+  // Sync local state with user context
+  useEffect(() => {
+    setFirstName(user?.name?.split(' ')[0] || '');
+    setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
+    setPhoneNumber(user?.phone || '');
+  }, [user?.name, user?.phone]);
+
+  const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
   
   const handleSave = () => {
+    const newName = [firstName, lastName].filter(Boolean).join(' ');
+    if (user) {
+      setAuthUser({ ...user, name: newName, phone: phoneNumber || undefined });
+    }
     setIsEditing(false);
     toast({
       title: "Профиль обновлён",
@@ -26,9 +40,9 @@ export default function ProfilePage() {
   };
   
   const handleCancel = () => {
-    setFirstName(user?.name?.split(' ')[0] || 'Иван');
-    setLastName(user?.name?.split(' ')[1] || 'Петров');
-    setEmail(user?.email || 'user@example.com');
+    setFirstName(user?.name?.split(' ')[0] || '');
+    setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
+    setPhoneNumber(user?.phone || '');
     setIsEditing(false);
   };
 
@@ -43,7 +57,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <CardTitle className="text-xl">
-                  {firstName} {lastName}
+                  {displayName}
                 </CardTitle>
                 <CardDescription>
                   Управление личной информацией
@@ -68,6 +82,7 @@ export default function ProfilePage() {
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Введите имя"
                   />
                 </div>
                 <div className="space-y-2">
@@ -76,6 +91,7 @@ export default function ProfilePage() {
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Введите фамилию"
                   />
                 </div>
               </div>
@@ -86,14 +102,11 @@ export default function ProfilePage() {
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <Input
                     id="phone"
-                    value={phone}
-                    disabled
-                    className="bg-muted"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Введите номер телефона"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Для изменения номера телефона обратитесь в поддержку
-                </p>
               </div>
               
               <div className="space-y-2">
@@ -104,7 +117,8 @@ export default function ProfilePage() {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    disabled
+                    className="bg-muted"
                   />
                 </div>
               </div>
@@ -125,11 +139,11 @@ export default function ProfilePage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Имя</p>
-                  <p className="font-medium">{firstName}</p>
+                  <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Фамилия</p>
-                  <p className="font-medium">{lastName}</p>
+                  <p className="font-medium">{lastName || <span className="text-muted-foreground italic">Не указано</span>}</p>
                 </div>
               </div>
               
@@ -137,7 +151,7 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Телефон</p>
                 <p className="font-medium flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  {phone}
+                  {phoneNumber || <span className="text-muted-foreground italic">Не указано</span>}
                 </p>
               </div>
               
@@ -145,14 +159,13 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Электронная почта</p>
                 <p className="font-medium flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  {email}
+                  {email || <span className="text-muted-foreground italic">Не указано</span>}
                 </p>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
-      
     </div>
   );
 }

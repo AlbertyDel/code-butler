@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
+import { mockSessions, mockStations } from '@/lib/mock-data';
 import type { ChargingSession, Station } from '@/types';
 import { DeviceResponse, SessionResponse, mapDeviceToStation, mapSessionToChargingSession } from '@/types/api';
 

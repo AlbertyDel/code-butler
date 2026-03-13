@@ -32,8 +32,6 @@ export function useLogin(): UseLoginReturn {
 
   const [step, setStep] = useState<LoginStep>('email');
   const [email, setEmail] = useState('');
-  const [step, setStep] = useState<LoginStep>('email');
-  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 

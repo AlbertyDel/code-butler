@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 
-export type LoginStep = 'email' | 'waiting';
+export type LoginStep = 'email' | 'waiting' | 'expired';
 
 interface UseLoginReturn {
   formRef: React.RefObject<HTMLFormElement | null>;

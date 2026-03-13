@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Clock } from 'lucide-react';
 
 import { useLogin, type LoginStep } from '@/hooks/useLogin';
 import logoCharger from '@/assets/logo-charger.svg';

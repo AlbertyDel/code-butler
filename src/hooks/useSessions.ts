@@ -1,104 +1,94 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
 import type { ChargingSession, Station } from '@/types';
+import { DeviceResponse, SessionResponse, mapDeviceToStation, mapSessionToChargingSession } from '@/types/api';
 
-interface SessionGroup {
-  label: string;
-  sessions: ChargingSession[];
-}
+const SESSIONS_KEY = ['sessions'];
+const STATIONS_KEY = ['stations'];
 
-interface UseSessionsReturn {
-  sessions: ChargingSession[];
-  activeSessions: ChargingSession[];
-  completedSessions: ChargingSession[];
-  groupedSessions: SessionGroup[];
-  isLoading: boolean;
-  error: string | null;
-  stopSession: (sessionId: string) => void;
-  getStation: (stationId: string) => Station | undefined;
-  formatDuration: (startTime: string, endTime?: string) => string;
-  refetch: () => void;
-}
-
-// Sessions API
-const sessionsApi = {
-  getAll: async (deviceId?: string) => {
-    const url = deviceId ? `/devices/${deviceId}/sessions` : '/devices';
-    const response = await api.get(url);
-    return response.data;
-  },
-};
-
-export function useSessions(): UseSessionsReturn {
+export function useSessions() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [sessions, setSessions] = useState<ChargingSession[]>([]);
-  const [stations, setStations] = useState<Station[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Fetch devices (as stations)
-      const devicesResponse = await api.get('/devices');
-      const devices = devicesResponse.data.data || devicesResponse.data || [];
-      
-      // Map devices to stations format
-      const mappedStations: Station[] = devices.map((d: any) => ({
-        id: d.id,
-        name: d.name || `Станция ${d.id}`,
-        address: d.address || '',
-        latitude: d.latitude,
-        longitude: d.longitude,
-        status: d.status || 'offline',
-        connectors: d.connectors || [],
-        ownerId: d.ownerId || d.userId,
-        createdAt: d.createdAt,
-      }));
-      setStations(mappedStations);
+  const sessionsQuery = useQuery({
+    queryKey: SESSIONS_KEY,
+    queryFn: async (): Promise<{ sessions: ChargingSession[]; stations: Station[] }> => {
+      const devicesResponse = await api.get<{ data: DeviceResponse[] } | DeviceResponse[]>('/devices');
+      const responseData = devicesResponse.data as { data?: DeviceResponse[] } | DeviceResponse[];
+      const rawDevices = 'data' in responseData ? responseData.data : responseData;
+      const devices: DeviceResponse[] = Array.isArray(rawDevices) ? rawDevices : [];
 
-      // Fetch sessions for all devices
-      const allSessions: ChargingSession[] = [];
-      for (const device of devices) {
+      // Map devices to stations
+      const stations = devices.map(mapDeviceToStation);
+
+      const sessionsPromises = devices.map(async (device) => {
         try {
-          const sessionsResponse = await api.get(`/devices/${device.id}/sessions`);
-          const deviceSessions = sessionsResponse.data.data || sessionsResponse.data || [];
-          allSessions.push(...deviceSessions.map((s: any) => ({
-            ...s,
-            stationId: device.id,
-          })));
-        } catch (e) {
+          const sessionsResponse = await api.get<{ data: { sessions: SessionResponse[]; total: number } } | { sessions: SessionResponse[] }>(
+            `/devices/${device.id}/sessions`
+          );
+          const sessionsData = sessionsResponse.data as { data?: { sessions: SessionResponse[] } } | { sessions?: SessionResponse[] };
+          let rawSessions: SessionResponse[] = [];
+          
+          if ('data' in sessionsData && sessionsData.data && 'sessions' in sessionsData.data) {
+            rawSessions = sessionsData.data.sessions;
+          } else if ('sessions' in sessionsData) {
+            rawSessions = sessionsData.sessions || [];
+          }
+          
+          return rawSessions.map(s => mapSessionToChargingSession(s, device.id));
+        } catch {
           // Device might not have sessions
+          return [];
         }
-      }
-      
-      setSessions(allSessions);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки сессий');
-      console.error('Error fetching sessions:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+      const sessionsArrays = await Promise.all(sessionsPromises);
+      const allSessions = sessionsArrays.flat();
 
-  const activeSessions = useMemo(
-    () => sessions.filter(s => s.status === 'IN_PROGRESS' || s.status === 'active'),
-    [sessions]
+      return { sessions: allSessions, stations };
+    },
+    staleTime: 15000, // 15 seconds
+  });
+
+  const stopSessionMutation = useMutation({
+    mutationFn: async ({ sessionId, deviceId }: { sessionId: string; deviceId: string }) => {
+      const response = await api.post(`/commands/devices/${deviceId}/stop-charge`, {
+        portNumber: 0,
+        sessionId,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SESSIONS_KEY });
+      toast({
+        title: "Сессия остановлена",
+        description: "Зарядка успешно завершена",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || 'Не удалось остановить сессию',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const sessions = sessionsQuery.data?.sessions || [];
+  const stations = sessionsQuery.data?.stations || [];
+
+  const activeSessions = sessions.filter(
+    s => s.status === 'active'
   );
 
-  const completedSessions = useMemo(
-    () => sessions.filter(s => s.status !== 'IN_PROGRESS' && s.status !== 'active'),
-    [sessions]
+  const completedSessions = sessions.filter(
+    s => s.status !== 'active'
   );
 
-  const groupedSessions = useMemo<SessionGroup[]>(() => {
-    const groups: SessionGroup[] = [];
+  const groupedSessions = useMemo(() => {
+    const groups: { label: string; sessions: ChargingSession[] }[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -149,32 +139,11 @@ export function useSessions(): UseSessionsReturn {
     return groups;
   }, [completedSessions]);
 
-  const stopSession = useCallback(async (sessionId: string) => {
-    try {
-      await api.post(`/commands/devices/${sessionId}/stop-charge`);
-      setSessions(prev => prev.map(session =>
-        session.id === sessionId
-          ? { ...session, status: 'COMPLETED' as const, endTime: new Date().toISOString() }
-          : session
-      ));
-      toast({
-        title: "Сессия остановлена",
-        description: "Зарядка успешно завершена",
-      });
-    } catch (err) {
-      toast({
-        title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось остановить сессию',
-        variant: 'destructive',
-      });
-    }
-  }, [toast]);
-
-  const getStation = useCallback((stationId: string): Station | undefined => {
+  const getStation = (stationId: string): Station | undefined => {
     return stations.find(s => s.id === stationId);
-  }, [stations]);
+  };
 
-  const formatDuration = useCallback((startTime: string, endTime?: string): string => {
+  const formatDuration = (startTime: string, endTime?: string): string => {
     const start = new Date(startTime);
     const end = endTime ? new Date(endTime) : new Date();
     const durationMs = end.getTime() - start.getTime();
@@ -182,18 +151,21 @@ export function useSessions(): UseSessionsReturn {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours} ч ${mins} м` : `${mins} м`;
-  }, []);
+  };
 
   return {
     sessions,
+    stations,
     activeSessions,
     completedSessions,
     groupedSessions,
-    isLoading,
-    error,
-    stopSession,
+    isLoading: sessionsQuery.isLoading,
+    error: sessionsQuery.error,
+    stopSession: ({ sessionId, deviceId }: { sessionId: string; deviceId: string }) =>
+      stopSessionMutation.mutate({ sessionId, deviceId }),
+    isStopping: stopSessionMutation.isPending,
     getStation,
     formatDuration,
-    refetch: fetchData,
+    refetch: sessionsQuery.refetch,
   };
 }

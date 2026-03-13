@@ -1,4 +1,22 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
+
+export interface ApiErrorDetail {
+  message: string;
+  code?: string;
+  statusCode?: number;
+}
+
+export interface ApiErrorResponse {
+  success: boolean;
+  error?: ApiErrorDetail;
+  message?: string;
+}
+
+export interface ApiError extends Error {
+  response?: AxiosResponse;
+  data?: ApiErrorResponse;
+  status: number;
+}
 
 const api = axios.create({
   baseURL: '/api',
@@ -23,13 +41,21 @@ api.interceptors.response.use(
     console.log(`[API] Response ${response.status}:`, response.data);
     return response;
   },
-  (error: AxiosError<{ message?: string; statusCode?: number }>) => {
+  (error: AxiosError) => {
     const status = error.response?.status;
-    const data = error.response?.data;
-    const message = data?.message || error.message || 'Network error';
+    const data = error.response?.data as ApiErrorResponse | undefined;
+    
+    const errorData = data?.error || data;
+    const message = errorData?.message || error.message || 'Network error';
     
     console.error(`[API] Error ${status}:`, data, error.message);
-    return Promise.reject(new Error(message));
+    
+    const enhancedError = new Error(message) as ApiError;
+    enhancedError.response = error.response;
+    enhancedError.data = data;
+    enhancedError.status = status ?? 0;
+    
+    return Promise.reject(enhancedError);
   }
 );
 

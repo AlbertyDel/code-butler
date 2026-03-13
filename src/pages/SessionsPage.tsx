@@ -184,7 +184,12 @@ export default function SessionsPage() {
                 key={session.id}
                 session={session}
                 station={station}
-                onStop={stopSession}
+                onStop={(sessionId: string) => {
+                  console.log('[SessionsPage] Stopping session:', sessionId, 'station:', station?.id);
+                  if (station) {
+                    stopSession({ sessionId, deviceId: station.id });
+                  }
+                }}
               />
             );
           })}

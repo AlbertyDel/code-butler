@@ -67,7 +67,7 @@ export default function DashboardPage() {
   // Calculate statistics from real data
   const statistics = useMemo(() => ({
     totalSessions: sessions.length,
-    totalEnergyKwh: sessions.reduce((sum, s) => sum + (s.energyKwh || 0), 0).toFixed(1),
+    totalEnergyKwh: Number(sessions.reduce((sum, s) => sum + (Number(s.energyKwh) || 0), 0)).toFixed(1),
   }), [sessions]);
 
   const isLoading = stationsLoading || sessionsLoading;

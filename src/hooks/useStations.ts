@@ -1,172 +1,181 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/api';
-import type { Station, ChargerStatus } from '@/types';
+import { api, type ApiError } from '@/lib/api';
+import type { Station } from '@/types';
+import { DeviceResponse, mapDeviceToStation } from '@/types/api';
 
-interface UseStationsReturn {
-  stations: Station[];
-  isLoading: boolean;
-  error: string | null;
-  addStation: (stationData: Partial<Station>) => Promise<void>;
-  updateStation: (stationData: Partial<Station>) => Promise<void>;
-  deleteStation: (stationId: string) => Promise<void>;
-  startCharging: (stationId: string) => Promise<void>;
-  stopCharging: (stationId: string) => Promise<void>;
-  refetch: () => void;
-}
+const STATIONS_KEY = ['stations'];
 
-// Stations API
-const stationsApi = {
-  getAll: async () => {
-    const response = await api.get('/devices');
-    return response.data;
-  },
-  getOne: async (id: string) => {
-    const response = await api.get(`/devices/${id}`);
-    return response.data;
-  },
-  create: async (data: Partial<Station>) => {
-    const response = await api.post('/devices', data);
-    return response.data;
-  },
-  update: async (id: string, data: Partial<Station>) => {
-    const response = await api.patch(`/devices/${id}`, data);
-    return response.data;
-  },
-  delete: async (id: string) => {
-    const response = await api.delete(`/devices/${id}`);
-    return response.data;
-  },
-  startCharge: async (id: string) => {
-    const response = await api.post(`/commands/devices/${id}/start-charge`);
-    return response.data;
-  },
-  stopCharge: async (id: string) => {
-    const response = await api.post(`/commands/devices/${id}/stop-charge`);
-    return response.data;
-  },
-};
-
-export function useStations(): UseStationsReturn {
+export function useStations() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [stations, setStations] = useState<Station[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchStations = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await stationsApi.getAll();
-      const data = response.data || response;
-      setStations(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки станций');
-      console.error('Error fetching stations:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // GET all stations - using React Query
+  const stationsQuery = useQuery({
+    queryKey: STATIONS_KEY,
+    queryFn: async (): Promise<Station[]> => {
+      const response = await api.get<{ data: DeviceResponse[] } | DeviceResponse[]>('/devices');
+      const responseData = response.data as { data?: DeviceResponse[] } | DeviceResponse[];
+      const rawData = 'data' in responseData ? responseData.data : responseData;
+      const devices: DeviceResponse[] = Array.isArray(rawData) ? rawData : [];
+      return devices.map(mapDeviceToStation);
+    },
+    staleTime: 30000,
+  });
 
-  useEffect(() => {
-    fetchStations();
-  }, [fetchStations]);
+  const useStation = (id: string) => useQuery({
+    queryKey: [...STATIONS_KEY, id],
+    queryFn: async (): Promise<Station | null> => {
+      const response = await api.get<{ data: DeviceResponse } | DeviceResponse>(`/devices/${id}`);
+      const responseData = response.data as { data?: DeviceResponse } | DeviceResponse;
+      const rawData = 'data' in responseData ? responseData.data : responseData;
+      return mapDeviceToStation(rawData as DeviceResponse);
+    },
+    enabled: !!id,
+  });
 
-  const addStation = useCallback(async (stationData: Partial<Station>) => {
-    try {
-      await stationsApi.create(stationData);
-      await fetchStations();
+  const getErrorMessage = (error: ApiError, fallback: string): string => {
+    return error?.response?.data?.error?.message 
+      || error?.response?.data?.message 
+      || error?.message 
+      || fallback;
+  };
+
+  const addStationMutation = useMutation({
+    mutationFn: async (stationData: Partial<Station>) => {
+      const response = await api.post('/devices', {
+        id: stationData.id,
+        name: stationData.name,
+        address: stationData.address,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STATIONS_KEY });
       toast({
         title: "Станция добавлена",
-        description: `${stationData.name} успешно добавлена`,
+        description: "Новая станция успешно добавлена",
       });
-    } catch (err) {
+    },
+    onError: (error: ApiError) => {
       toast({
         title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось добавить станцию',
+        description: getErrorMessage(error, 'Не удалось добавить станцию'),
         variant: 'destructive',
       });
-    }
-  }, [fetchStations, toast]);
+    },
+  });
 
-  const updateStation = useCallback(async (stationData: Partial<Station>) => {
-    if (!stationData.id) return;
-    try {
-      await stationsApi.update(stationData.id, stationData);
-      await fetchStations();
+  const updateStationMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Station> }) => {
+      const response = await api.patch(`/devices/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STATIONS_KEY });
       toast({
         title: "Станция обновлена",
         description: "Изменения сохранены",
       });
-    } catch (err) {
+    },
+    onError: (error: ApiError) => {
       toast({
         title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось обновить станцию',
+        description: getErrorMessage(error, 'Не удалось обновить станцию'),
         variant: 'destructive',
       });
-    }
-  }, [fetchStations, toast]);
+    },
+  });
 
-  const deleteStation = useCallback(async (stationId: string) => {
-    try {
-      await stationsApi.delete(stationId);
-      await fetchStations();
+  const deleteStationMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete(`/devices/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STATIONS_KEY });
       toast({
         title: "Станция удалена",
         description: "Станция была удалена",
       });
-    } catch (err) {
+    },
+    onError: (error: ApiError) => {
       toast({
         title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось удалить станцию',
+        description: getErrorMessage(error, 'Не удалось удалить станцию'),
         variant: 'destructive',
       });
-    }
-  }, [fetchStations, toast]);
+    },
+  });
 
-  const startCharging = useCallback(async (stationId: string) => {
-    try {
-      await stationsApi.startCharge(stationId);
-      await fetchStations();
+  const startChargingMutation = useMutation({
+    mutationFn: async (stationId: string) => {
+      const response = await api.post(`/commands/devices/${stationId}/start-charge`, {
+        port: 0,
+        maxTime: 0,
+        maxEnergy: 0,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      // Immediately invalidate and refetch to update station status
+      queryClient.invalidateQueries({ queryKey: STATIONS_KEY });
+      queryClient.refetchQueries({ queryKey: STATIONS_KEY });
       toast({
         title: "Зарядка запущена",
         description: "Сессия зарядки успешно начата",
       });
-    } catch (err) {
+    },
+    onError: (error: ApiError) => {
       toast({
         title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось запустить зарядку',
+        description: getErrorMessage(error, 'Не удалось запустить зарядку'),
         variant: 'destructive',
       });
-    }
-  }, [fetchStations, toast]);
+    },
+  });
 
-  const stopCharging = useCallback(async (stationId: string) => {
-    try {
-      await stationsApi.stopCharge(stationId);
-      await fetchStations();
+  const stopChargingMutation = useMutation({
+    mutationFn: async (stationId: string) => {
+      const response = await api.post(`/commands/devices/${stationId}/stop-charge`, {
+        port: 0,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STATIONS_KEY });
       toast({
         title: "Зарядка остановлена",
         description: "Сессия зарядки завершена",
       });
-    } catch (err) {
+    },
+    onError: (error: ApiError) => {
       toast({
         title: "Ошибка",
-        description: err instanceof Error ? err.message : 'Не удалось остановить зарядку',
+        description: getErrorMessage(error, 'Не удалось остановить зарядку'),
         variant: 'destructive',
       });
-    }
-  }, [fetchStations, toast]);
+    },
+  });
 
   return {
-    stations,
-    isLoading,
-    error,
-    addStation,
-    updateStation,
-    deleteStation,
-    startCharging,
-    stopCharging,
-    refetch: fetchStations,
+    stations: stationsQuery.data || [],
+    isLoading: stationsQuery.isLoading,
+    error: stationsQuery.error,
+    
+    refetch: stationsQuery.refetch,
+    
+    addStation: addStationMutation.mutate,
+    updateStation: ({ id, data }: { id: string; data: Partial<Station> }) => 
+      updateStationMutation.mutate({ id, data }),
+    deleteStation: deleteStationMutation.mutate,
+    startCharging: startChargingMutation.mutate,
+    stopCharging: stopChargingMutation.mutate,
+    
+    isAdding: addStationMutation.isPending,
+    isUpdating: updateStationMutation.isPending,
+    isDeleting: deleteStationMutation.isPending,
+    isStarting: startChargingMutation.isPending,
+    isStopping: stopChargingMutation.isPending,
   };
 }

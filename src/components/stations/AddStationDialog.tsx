@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { Station } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AddStationDialogProps {
   open: boolean;
@@ -19,16 +20,10 @@ interface AddStationDialogProps {
   editStation?: Station | null;
 }
 
-function generateStationId(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = 'CHG-';
-  for (let i = 0; i < 4; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
+
 
 export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: AddStationDialogProps) {
+  const { user } = useAuth();
   const [stationId, setStationId] = useState('');
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -49,7 +44,7 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
         setPortsCount(editStation.connectors.length.toString());
         setPowerKw(editStation.connectors[0]?.powerKw?.toString() || '22');
       } else {
-        setStationId(generateStationId());
+        setStationId('');
         setName('');
         setAddress('');
         setLatitude('55.751244');
@@ -80,7 +75,7 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
       longitude: parseFloat(longitude),
       status: editStation?.status || 'available',
       connectors,
-      ownerId: '1',
+      ownerId: user?.id,
       createdAt: editStation?.createdAt || new Date().toISOString(),
     });
     onOpenChange(false);

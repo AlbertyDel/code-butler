@@ -15,6 +15,7 @@ const StationsPage = lazy(() => import("./pages/StationsPage"));
 const SessionsPage = lazy(() => import("./pages/SessionsPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const VerifyPage = lazy(() => import("./pages/VerifyPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ const App = () => (
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/login" element={<LoginPageWrapper />} />
+                <Route path="/verify/:token" element={<VerifyPage />} />
                 <Route path="/" element={
                   <ProtectedRoute>
                     <AppLayout />

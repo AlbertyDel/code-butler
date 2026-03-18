@@ -13,6 +13,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const StationsPage = lazy(() => import("./pages/StationsPage"));
 const SessionsPage = lazy(() => import("./pages/SessionsPage"));
+const BusinessProfilePage = lazy(() => import("./pages/BusinessProfilePage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const VerifyPage = lazy(() => import("./pages/VerifyPage"));
@@ -83,6 +84,7 @@ const App = () => (
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="stations" element={<StationsPage />} />
                   <Route path="sessions" element={<SessionsPage />} />
+                  <Route path="business-profile" element={<BusinessProfilePage />} />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

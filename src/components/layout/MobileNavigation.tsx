@@ -2,7 +2,8 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   MapPin,
-  Zap
+  Zap,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +11,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
   { to: '/stations', icon: MapPin, label: 'Станции' },
   { to: '/sessions', icon: Zap, label: 'Сессии' },
+  { to: '/business-profile', icon: Briefcase, label: 'Бизнес' },
 ];
 
 export function MobileNavigation() {

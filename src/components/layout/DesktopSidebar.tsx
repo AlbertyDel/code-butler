@@ -4,7 +4,8 @@ import {
   MapPin, 
   Zap,
   CreditCard,
-  Building2
+  Building2,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +16,7 @@ const individualNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
   { to: '/stations', icon: MapPin, label: 'Станции' },
   { to: '/sessions', icon: Zap, label: 'Сессии' },
+  { to: '/business-profile', icon: Briefcase, label: 'Бизнес-профиль' },
 ];
 
 const businessNavItems = [

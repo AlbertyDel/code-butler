@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Building2, User, Briefcase } from 'lucide-react';
+import { Loader2, Building2, User, Briefcase, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,18 +12,21 @@ import { AddressCombobox } from './AddressCombobox';
 import { registrationSchema, type RegistrationFormData, type LegalType } from './schemas';
 import { cn } from '@/lib/utils';
 
-const MOCK_COMPANY = { name: 'ООО «Электродрайв»', kpp: '770401001', ogrn: '1157746123456' };
+const MOCK_COMPANY_OOO = { name: 'ООО «ВЕКТОР»', kpp: '773601001', ogrn: '1234567890123' };
+const MOCK_COMPANY_IP = { name: 'Иванов Иван Иванович', ogrnip: '312774600000012' };
 const ALL_ZEROS_10 = '0000000000';
 const ALL_ZEROS_12 = '000000000000';
 
-const LEGAL_TYPES: { value: LegalType; label: string; description: string; icon: typeof Building2 }[] = [
-  { value: 'ooo', label: 'Юр. лицо (ООО)', description: 'Общество с ограниченной ответственностью', icon: Building2 },
-  { value: 'ip', label: 'ИП', description: 'Индивидуальный предприниматель', icon: Briefcase },
-  { value: 'selfemployed', label: 'Самозанятый', description: 'Налог на профессиональный доход', icon: User },
+const LEGAL_TYPES: { value: LegalType; label: string; icon: typeof Building2 }[] = [
+  { value: 'ooo', label: 'Юр. лицо (ООО)', icon: Building2 },
+  { value: 'ip', label: 'ИП', icon: Briefcase },
+  { value: 'selfemployed', label: 'Самозанятый', icon: User },
 ];
 
+type CompanyResult = { name: string; kpp?: string; ogrn?: string; ogrnip?: string };
+
 function useInnLookup(requiredLength: number) {
-  const [companyData, setCompanyData] = useState<{ name: string; kpp: string; ogrn: string } | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -42,7 +45,8 @@ function useInnLookup(requiredLength: number) {
     }
     if (value.length === requiredLength) {
       setLoading(true); setNotFound(false);
-      timerRef.current = setTimeout(() => { setCompanyData(MOCK_COMPANY); setLoading(false); }, 1000);
+      const mock = requiredLength === 10 ? MOCK_COMPANY_OOO : MOCK_COMPANY_IP;
+      timerRef.current = setTimeout(() => { setCompanyData(mock); setLoading(false); }, 1000);
     }
   }, [requiredLength]);
 
@@ -56,6 +60,23 @@ function useInnLookup(requiredLength: number) {
   return { companyData, loading, notFound, onInnChange, reset };
 }
 
+/* ───── Summary Card ───── */
+function CompanySummaryCard({ data, type }: { data: CompanyResult; type: 'ooo' | 'ip' }) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+      <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0 text-emerald-500" />
+      <div className="min-w-0">
+        <p className="font-medium text-foreground truncate">{data.name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {type === 'ooo'
+            ? `КПП: ${data.kpp} • ОГРН: ${data.ogrn}`
+            : `ОГРНИП: ${data.ogrnip}`}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ───── Dynamic Fields ───── */
 function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   const { setValue, watch, formState: { errors } } = form;
@@ -63,33 +84,14 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   const { companyData, loading, notFound, onInnChange } = useInnLookup(10);
 
   useEffect(() => { onInnChange(inn); }, [inn, onInnChange]);
-  useEffect(() => {
-    setValue('companyName', companyData?.name ?? '');
-    setValue('kpp', companyData?.kpp ?? '');
-    setValue('ogrn', companyData?.ogrn ?? '');
-  }, [companyData, setValue]);
 
   return (
     <>
       <div className="space-y-2">
         <Label>ИНН</Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="10 цифр" maxLength={10} showSpinner={loading} error={notFound ? 'Компания с таким ИНН не найдена' : (errors.inn?.message as string)} />
-        <p className="text-xs text-muted-foreground">Название, КПП и ОГРН заполнятся автоматически</p>
       </div>
-      <div className="space-y-2">
-        <Label>Название компании</Label>
-        <Input disabled value={watch('companyName') || ''} placeholder="Заполнится автоматически" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>КПП</Label>
-          <Input disabled value={watch('kpp') || ''} placeholder="Автоматически" />
-        </div>
-        <div className="space-y-2">
-          <Label>ОГРН</Label>
-          <Input disabled value={watch('ogrn') || ''} placeholder="Автоматически" />
-        </div>
-      </div>
+      {companyData && <CompanySummaryCard data={companyData} type="ooo" />}
     </>
   );
 }
@@ -97,7 +99,7 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
 function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   const { register, setValue, watch, formState: { errors } } = form;
   const inn = watch('inn') || '';
-  const { loading, notFound, onInnChange } = useInnLookup(12);
+  const { companyData, loading, notFound, onInnChange } = useInnLookup(12);
 
   useEffect(() => { onInnChange(inn); }, [inn, onInnChange]);
 
@@ -107,6 +109,7 @@ function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
         <Label>ИНН</Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="12 цифр" maxLength={12} showSpinner={loading} error={notFound ? 'ИП с таким ИНН не найден' : (errors.inn?.message as string)} />
       </div>
+      {companyData && <CompanySummaryCard data={companyData} type="ip" />}
       <div className="space-y-2">
         <Label>ФИО</Label>
         <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />
@@ -223,7 +226,7 @@ export function RegistrationForm() {
           <div className="space-y-3">
             <Label className="text-base font-semibold">Форма собственности</Label>
             <RadioGroup value={legalType} onValueChange={handleTypeChange} className="grid grid-cols-3 gap-3">
-              {LEGAL_TYPES.map(({ value, label, description, icon: Icon }) => (
+              {LEGAL_TYPES.map(({ value, label, icon: Icon }) => (
                 <label
                   key={value}
                   className={cn(
@@ -243,7 +246,6 @@ export function RegistrationForm() {
                     'text-sm font-medium text-center transition-colors',
                     legalType === value ? 'text-foreground' : 'text-muted-foreground'
                   )}>{label}</span>
-                  <span className="text-[11px] text-muted-foreground text-center leading-tight hidden sm:block">{description}</span>
                 </label>
               ))}
             </RadioGroup>

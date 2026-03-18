@@ -84,33 +84,14 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   const { companyData, loading, notFound, onInnChange } = useInnLookup(10);
 
   useEffect(() => { onInnChange(inn); }, [inn, onInnChange]);
-  useEffect(() => {
-    setValue('companyName', companyData?.name ?? '');
-    setValue('kpp', companyData?.kpp ?? '');
-    setValue('ogrn', companyData?.ogrn ?? '');
-  }, [companyData, setValue]);
 
   return (
     <>
       <div className="space-y-2">
         <Label>ИНН</Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="10 цифр" maxLength={10} showSpinner={loading} error={notFound ? 'Компания с таким ИНН не найдена' : (errors.inn?.message as string)} />
-        <p className="text-xs text-muted-foreground">Название, КПП и ОГРН заполнятся автоматически</p>
       </div>
-      <div className="space-y-2">
-        <Label>Название компании</Label>
-        <Input disabled value={watch('companyName') || ''} placeholder="Заполнится автоматически" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>КПП</Label>
-          <Input disabled value={watch('kpp') || ''} placeholder="Автоматически" />
-        </div>
-        <div className="space-y-2">
-          <Label>ОГРН</Label>
-          <Input disabled value={watch('ogrn') || ''} placeholder="Автоматически" />
-        </div>
-      </div>
+      {companyData && <CompanySummaryCard data={companyData} type="ooo" />}
     </>
   );
 }

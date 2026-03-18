@@ -99,7 +99,7 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
 function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   const { register, setValue, watch, formState: { errors } } = form;
   const inn = watch('inn') || '';
-  const { loading, notFound, onInnChange } = useInnLookup(12);
+  const { companyData, loading, notFound, onInnChange } = useInnLookup(12);
 
   useEffect(() => { onInnChange(inn); }, [inn, onInnChange]);
 
@@ -109,6 +109,7 @@ function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
         <Label>ИНН</Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="12 цифр" maxLength={12} showSpinner={loading} error={notFound ? 'ИП с таким ИНН не найден' : (errors.inn?.message as string)} />
       </div>
+      {companyData && <CompanySummaryCard data={companyData} type="ip" />}
       <div className="space-y-2">
         <Label>ФИО</Label>
         <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />

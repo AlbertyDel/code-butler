@@ -4,7 +4,8 @@ import {
   MapPin, 
   Zap,
   CreditCard,
-  Building2
+  Building2,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';

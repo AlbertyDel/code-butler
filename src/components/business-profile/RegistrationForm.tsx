@@ -23,8 +23,10 @@ const LEGAL_TYPES: { value: LegalType; label: string; icon: typeof Building2 }[]
   { value: 'selfemployed', label: 'Самозанятый', icon: User },
 ];
 
+type CompanyResult = { name: string; kpp?: string; ogrn?: string; ogrnip?: string };
+
 function useInnLookup(requiredLength: number) {
-  const [companyData, setCompanyData] = useState<{ name: string; kpp: string; ogrn: string } | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -43,7 +45,8 @@ function useInnLookup(requiredLength: number) {
     }
     if (value.length === requiredLength) {
       setLoading(true); setNotFound(false);
-      timerRef.current = setTimeout(() => { setCompanyData(MOCK_COMPANY); setLoading(false); }, 1000);
+      const mock = requiredLength === 10 ? MOCK_COMPANY_OOO : MOCK_COMPANY_IP;
+      timerRef.current = setTimeout(() => { setCompanyData(mock); setLoading(false); }, 1000);
     }
   }, [requiredLength]);
 
@@ -55,6 +58,23 @@ function useInnLookup(requiredLength: number) {
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   return { companyData, loading, notFound, onInnChange, reset };
+}
+
+/* ───── Summary Card ───── */
+function CompanySummaryCard({ data, type }: { data: CompanyResult; type: 'ooo' | 'ip' }) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+      <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0 text-emerald-500" />
+      <div className="min-w-0">
+        <p className="font-medium text-foreground truncate">{data.name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {type === 'ooo'
+            ? `КПП: ${data.kpp} • ОГРН: ${data.ogrn}`
+            : `ОГРНИП: ${data.ogrnip}`}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 /* ───── Dynamic Fields ───── */

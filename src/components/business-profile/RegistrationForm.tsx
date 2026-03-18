@@ -12,7 +12,7 @@ import { AddressCombobox } from './AddressCombobox';
 import { registrationSchema, type RegistrationFormData, type LegalType } from './schemas';
 import { cn } from '@/lib/utils';
 
-const MOCK_COMPANY_OOO = { name: 'ООО «ВЕКТОР»', kpp: '773601001', ogrn: '1234567890123' };
+const MOCK_COMPANY_OOO = { name: 'ООО "АЛЬФА ИНТЕГРАЦИЯ"', kpp: '770501001', ogrn: '1207700123456' };
 const MOCK_COMPANY_IP = { name: 'Иванов Иван Иванович', ogrnip: '312774600000012' };
 const ALL_ZEROS_10 = '0000000000';
 const ALL_ZEROS_12 = '000000000000';

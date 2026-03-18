@@ -200,7 +200,7 @@ export const mockStations: Station[] = [
   {
     id: 'st-10',
     name: 'ЭЗС Останкино',
-    address: 'ул. Академика Королёва, 15',
+    address: 'ул. Академика Королева, 15',
     latitude: 55.820,
     longitude: 37.612,
     status: 'available',

@@ -200,7 +200,7 @@ export default function StationsPage() {
             <div className="flex flex-col items-center text-center max-w-sm">
               <Plug className="h-16 w-16 text-muted-foreground/40" />
               <p className="mt-4 text-sm text-muted-foreground">
-                У вас пока нет добавленных станций. Давайте подключим первую — система сама определит её мощность и порты.
+                У вас пока нет добавленных станций. Давайте подключим первую — система сама определит ее мощность и порты.
               </p>
               <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />

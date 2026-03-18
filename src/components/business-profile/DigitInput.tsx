@@ -29,7 +29,9 @@ export const DigitInput = forwardRef<HTMLInputElement, DigitInputProps>(
             {...props}
           />
           {showSpinner && (
-            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" style={{ animation: 'spin 1s linear infinite', transition: 'none' }} />
+            <div className="absolute right-3 top-0 bottom-0 flex items-center justify-center pointer-events-none">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            </div>
           )}
         </div>
         {error && <p className="text-sm text-destructive mt-1">{error}</p>}

@@ -223,7 +223,7 @@ export function RegistrationForm() {
           <div className="space-y-3">
             <Label className="text-base font-semibold">Форма собственности</Label>
             <RadioGroup value={legalType} onValueChange={handleTypeChange} className="grid grid-cols-3 gap-3">
-              {LEGAL_TYPES.map(({ value, label, description, icon: Icon }) => (
+              {LEGAL_TYPES.map(({ value, label, icon: Icon }) => (
                 <label
                   key={value}
                   className={cn(
@@ -243,7 +243,6 @@ export function RegistrationForm() {
                     'text-sm font-medium text-center transition-colors',
                     legalType === value ? 'text-foreground' : 'text-muted-foreground'
                   )}>{label}</span>
-                  <span className="text-[11px] text-muted-foreground text-center leading-tight hidden sm:block">{description}</span>
                 </label>
               ))}
             </RadioGroup>

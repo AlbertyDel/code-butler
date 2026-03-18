@@ -16,10 +16,10 @@ const MOCK_COMPANY = { name: 'ООО «Электродрайв»', kpp: '770401
 const ALL_ZEROS_10 = '0000000000';
 const ALL_ZEROS_12 = '000000000000';
 
-const LEGAL_TYPES: { value: LegalType; label: string; description: string; icon: typeof Building2 }[] = [
-  { value: 'ooo', label: 'Юр. лицо (ООО)', description: 'Общество с ограниченной ответственностью', icon: Building2 },
-  { value: 'ip', label: 'ИП', description: 'Индивидуальный предприниматель', icon: Briefcase },
-  { value: 'selfemployed', label: 'Самозанятый', description: 'Налог на профессиональный доход', icon: User },
+const LEGAL_TYPES: { value: LegalType; label: string; icon: typeof Building2 }[] = [
+  { value: 'ooo', label: 'Юр. лицо (ООО)', icon: Building2 },
+  { value: 'ip', label: 'ИП', icon: Briefcase },
+  { value: 'selfemployed', label: 'Самозанятый', icon: User },
 ];
 
 function useInnLookup(requiredLength: number) {

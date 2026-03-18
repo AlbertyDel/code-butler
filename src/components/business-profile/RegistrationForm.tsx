@@ -12,7 +12,7 @@ import { AddressCombobox } from './AddressCombobox';
 import { registrationSchema, type RegistrationFormData, type LegalType } from './schemas';
 import { cn } from '@/lib/utils';
 
-const MOCK_COMPANY_OOO = { name: 'ООО «ВЕКТОР»', kpp: '773601001', ogrn: '1234567890123' };
+const MOCK_COMPANY_OOO = { name: 'ООО "АЛЬФА ИНТЕГРАЦИЯ"', kpp: '770501001', ogrn: '1207700123456' };
 const MOCK_COMPANY_IP = { name: 'Иванов Иван Иванович', ogrnip: '312774600000012' };
 const ALL_ZEROS_10 = '0000000000';
 const ALL_ZEROS_12 = '000000000000';
@@ -175,7 +175,7 @@ function BankFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   return (
     <>
       <div className="space-y-2">
-        <Label>Расчётный счёт</Label>
+        <Label>Расчетный счет</Label>
         <DigitInput value={watch('account') || ''} onChange={(v) => setValue('account', v)} placeholder="20 цифр" maxLength={20} error={errors.account?.message as string} />
       </div>
       <div className="space-y-2">

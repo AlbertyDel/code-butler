@@ -34,7 +34,7 @@ export default function ProfilePage() {
     }
     setIsEditing(false);
     toast({
-      title: "Профиль обновлён",
+      title: "Профиль обновлен",
       description: "Ваши данные успешно сохранены",
     });
   };

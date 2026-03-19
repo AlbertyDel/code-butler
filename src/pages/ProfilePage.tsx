@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
+import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck, LogOut } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, setAuthUser, logout } = useAuth();
@@ -50,26 +50,32 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl mx-auto">
       {/* Personal data */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <User className="h-8 w-8 text-primary" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <User className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-xl">{displayName}</CardTitle>
+                <CardTitle className="text-lg">{displayName}</CardTitle>
                 <CardDescription>Управление личной информацией</CardDescription>
               </div>
             </div>
-            {!isEditing && (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Редактировать
+            <div className="flex items-center gap-2">
+              {!isEditing && (
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                  <Pencil className="mr-2 h-3.5 w-3.5" />
+                  Редактировать
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                <LogOut className="mr-2 h-3.5 w-3.5" />
+                Выйти
               </Button>
-            )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -132,20 +138,13 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Logout button */}
-          <div className="pt-4 border-t">
-            <Button variant="destructive" size="lg" className="w-full" onClick={handleLogout}>
-              Выйти
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Business requisites */}
+      {/* Business info */}
       <Card>
         <CardHeader>
-          <CardTitle>Реквизиты бизнеса</CardTitle>
+          <CardTitle>Коммерческий статус</CardTitle>
         </CardHeader>
         <CardContent>
           {businessState === 'promo' && (
@@ -156,7 +155,7 @@ export default function ProfilePage() {
             <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 p-4">
               <Clock className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
               <div>
-                <p className="font-medium text-foreground">ООО &quot;ПРИОРИТИ АРК&quot;</p>
+                <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Заявка в работе. Ожидаем ответ от банка.
                 </p>
@@ -165,19 +164,16 @@ export default function ProfilePage() {
           )}
 
           {businessState === 'active' && (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 rounded-xl border border-border p-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">ООО &quot;ПРИОРИТИ АРК&quot;</p>
-                    <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    КПП: 770501001 &middot; ОГРН: 1207700123456
-                  </p>
+            <div className="flex items-start gap-3 rounded-xl border border-border p-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
+                  <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
                 </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  КПП: 770501001 &middot; ОГРН: 1207700123456
+                </p>
               </div>
-              <Button variant="outline" className="w-full">Изменить реквизиты</Button>
             </div>
           )}
         </CardContent>

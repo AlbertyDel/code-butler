@@ -8,13 +8,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
+import { BenefitsSection } from '@/components/business-profile/BenefitsSection';
 
 type LegalTab = 'ooo' | 'ip' | 'sz';
 
 const INN_MAX: Record<LegalTab, number> = { ooo: 10, ip: 12, sz: 12 };
 
 const MOCK_RESULT: Record<string, { type: 'success' | 'error'; text: string }> = {
-  '1234567890': { type: 'success', text: 'ООО "ПРИОРИТИ АРК"' },
+  '1234567890': { type: 'success', text: 'ООО "Заряд Плюс"' },
   '0000000000': { type: 'error', text: 'Компания не найдена' },
 };
 
@@ -82,8 +83,10 @@ export default function BusinessProfilePage() {
   const needsAddress = tab === 'ip' || tab === 'sz';
 
   return (
-    <Card className="max-w-2xl mx-auto animate-in fade-in duration-300">
-      <CardHeader>
+    <div className="max-w-2xl mx-auto space-y-8">
+      <BenefitsSection />
+      <Card className="animate-in fade-in duration-300">
+        <CardHeader>
         <CardTitle>Бизнес-профиль</CardTitle>
         <p className="text-sm text-muted-foreground">
           Для приема платежей и вывода средств мы бесплатно откроем для вас виртуальный счет в банке Точка.
@@ -175,5 +178,6 @@ export default function BusinessProfilePage() {
         </Button>
       </CardContent>
     </Card>
+    </div>
   );
 }

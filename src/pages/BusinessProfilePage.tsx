@@ -184,5 +184,6 @@ export default function BusinessProfilePage() {
       </CardContent>
     </Card>
     </div>
+    </div>
   );
 }

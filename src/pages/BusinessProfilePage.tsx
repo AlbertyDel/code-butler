@@ -15,7 +15,7 @@ type LegalTab = 'ooo' | 'ip' | 'sz';
 const INN_MAX: Record<LegalTab, number> = { ooo: 10, ip: 12, sz: 12 };
 
 const MOCK_RESULT: Record<string, { type: 'success' | 'error'; text: string }> = {
-  '1234567890': { type: 'success', text: 'ООО "ПРИОРИТИ АРК"' },
+  '1234567890': { type: 'success', text: 'ООО "Заряд Плюс"' },
   '0000000000': { type: 'error', text: 'Компания не найдена' },
 };
 

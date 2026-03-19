@@ -9,6 +9,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { BenefitsSection } from '@/components/business-profile/BenefitsSection';
+import { HeroSection } from '@/components/business-profile/HeroSection';
+import { HowItWorksSection } from '@/components/business-profile/HowItWorksSection';
 
 type LegalTab = 'ooo' | 'ip' | 'sz';
 

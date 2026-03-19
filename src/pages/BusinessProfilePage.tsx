@@ -92,7 +92,8 @@ export default function BusinessProfilePage() {
       <HowItWorksSection />
       <div ref={formRef}>
       <Card className="animate-in fade-in duration-300">
-        <p className="text-sm text-muted-foreground">
+        <CardHeader>
+        <CardTitle>Бизнес-профиль</CardTitle>
           Для приема платежей и вывода средств мы бесплатно откроем для вас виртуальный счет в банке Точка.
         </p>
       </CardHeader>

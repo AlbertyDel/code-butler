@@ -90,12 +90,12 @@ export default function BusinessProfilePage() {
   const needsAddress = tab === 'ip' || tab === 'sz';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 animate-in fade-in duration-300">
       <HeroSection onActivate={scrollToForm} />
       <HowItWorksSection />
       <BenefitsSection />
 
-      <div ref={formRef}>
+      <div ref={formRef} className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Бизнес-профиль</CardTitle>

@@ -10,9 +10,9 @@ export function AppLayout() {
 
   if (isMobile) {
     return (
-      <div className="flex min-h-screen flex-col bg-background">
+      <div className="min-h-screen bg-background">
         <TopBar />
-        <main className="flex-1 overflow-auto px-4 pt-4 pb-20">
+        <main className="pt-16 px-4 pb-20 overflow-auto">
           <Outlet />
         </main>
         <MobileNavigation />
@@ -21,14 +21,12 @@ export function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
+      <TopBar />
       <DesktopSidebar />
-      <div className="flex flex-1 flex-col">
-        <TopBar />
-        <main className="flex-1 overflow-auto p-6">
-          <Outlet />
-        </main>
-      </div>
+      <main className="pt-16 md:ml-64 min-h-screen overflow-auto p-6">
+        <Outlet />
+      </main>
     </div>
   );
 }

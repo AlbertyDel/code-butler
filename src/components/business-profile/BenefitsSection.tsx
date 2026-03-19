@@ -1,4 +1,4 @@
-import { Users, ShoppingBag, Cpu, BarChart3 } from 'lucide-react';
+import { Users, ShoppingBag, Cpu, BarChart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const benefits = [
@@ -18,7 +18,7 @@ const benefits = [
     description: 'Биллинг, формирование чеков и выплаты мы берем на себя.',
   },
   {
-    icon: BarChart3,
+    icon: BarChart,
     title: 'Прозрачная аналитика',
     description: 'Отслеживайте доход и статистику сессий в реальном времени.',
   },
@@ -28,9 +28,9 @@ export function BenefitsSection() {
   return (
     <section className="space-y-6">
       <h2 className="text-xl font-semibold text-foreground text-center">Преимущества</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {benefits.map((b, i) => (
-          <Card key={i} className="border-none shadow-sm bg-card">
+          <Card key={i} className="rounded-2xl shadow-sm bg-card">
             <CardContent className="pt-6 flex gap-4 items-start">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                 <b.icon className="h-5 w-5 text-primary" />

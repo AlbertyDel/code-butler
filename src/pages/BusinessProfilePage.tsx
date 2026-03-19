@@ -46,6 +46,7 @@ export default function BusinessProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [shaking, setShaking] = useState(false);
   const innRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   if (businessState !== 'promo') return null;
   if (submitted) return <PendingCard />;

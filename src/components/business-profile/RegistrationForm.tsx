@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Building2, User, Briefcase, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { DigitInput } from './DigitInput';
 import { AddressCombobox } from './AddressCombobox';
@@ -97,7 +97,7 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
 }
 
 function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
-  const { setValue, watch, formState: { errors } } = form;
+  const { register, setValue, watch, formState: { errors } } = form;
   const inn = watch('inn') || '';
   const { companyData, loading, notFound, onInnChange } = useInnLookup(12);
 
@@ -111,15 +111,16 @@ function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
       </div>
       {companyData && <CompanySummaryCard data={companyData} type="ip" />}
       <div className="space-y-2">
-        <Label>Адрес регистрации</Label>
-        <AddressCombobox value={watch('address') || ''} onChange={(v) => setValue('address', v, { shouldValidate: true })} error={errors.address?.message as string} />
+        <Label>ФИО</Label>
+        <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />
+        {errors.fullName && <p className="text-sm text-destructive">{(errors.fullName.message as string)}</p>}
       </div>
     </>
   );
 }
 
 function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
-  const { setValue, watch, formState: { errors } } = form;
+  const { register, setValue, watch, formState: { errors } } = form;
 
   return (
     <>
@@ -128,8 +129,58 @@ function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> })
         <DigitInput value={watch('inn') || ''} onChange={(v) => setValue('inn', v)} placeholder="12 цифр" maxLength={12} error={errors.inn?.message as string} />
       </div>
       <div className="space-y-2">
+        <Label>ФИО</Label>
+        <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />
+        {errors.fullName && <p className="text-sm text-destructive">{(errors.fullName.message as string)}</p>}
+      </div>
+      <div className="space-y-4">
+        <Label className="text-base font-semibold">Паспортные данные</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Серия</Label>
+            <DigitInput value={watch('passportSeries') || ''} onChange={(v) => setValue('passportSeries', v)} placeholder="4 цифры" maxLength={4} error={errors.passportSeries?.message as string} />
+          </div>
+          <div className="space-y-2">
+            <Label>Номер</Label>
+            <DigitInput value={watch('passportNumber') || ''} onChange={(v) => setValue('passportNumber', v)} placeholder="6 цифр" maxLength={6} error={errors.passportNumber?.message as string} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Дата выдачи</Label>
+          <Input {...register('passportDate')} placeholder="ДД.ММ.ГГГГ" className={errors.passportDate ? 'border-destructive' : ''} />
+          {errors.passportDate && <p className="text-sm text-destructive">{(errors.passportDate.message as string)}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label>Кем выдан</Label>
+          <Input {...register('passportIssuedBy')} placeholder="Отделение УФМС..." className={errors.passportIssuedBy ? 'border-destructive' : ''} />
+          {errors.passportIssuedBy && <p className="text-sm text-destructive">{(errors.passportIssuedBy.message as string)}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label>Код подразделения</Label>
+          <Input {...register('passportCode')} placeholder="XXX-XXX" className={errors.passportCode ? 'border-destructive' : ''} />
+          {errors.passportCode && <p className="text-sm text-destructive">{(errors.passportCode.message as string)}</p>}
+        </div>
+      </div>
+      <div className="space-y-2">
         <Label>Адрес регистрации</Label>
         <AddressCombobox value={watch('address') || ''} onChange={(v) => setValue('address', v, { shouldValidate: true })} error={errors.address?.message as string} />
+      </div>
+    </>
+  );
+}
+
+/* ───── Shared bank fields ───── */
+function BankFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
+  const { setValue, watch, formState: { errors } } = form;
+  return (
+    <>
+      <div className="space-y-2">
+        <Label>Расчетный счет</Label>
+        <DigitInput value={watch('account') || ''} onChange={(v) => setValue('account', v)} placeholder="20 цифр" maxLength={20} error={errors.account?.message as string} />
+      </div>
+      <div className="space-y-2">
+        <Label>БИК банка</Label>
+        <DigitInput value={watch('bik') || ''} onChange={(v) => setValue('bik', v)} placeholder="9 цифр" maxLength={9} error={errors.bik?.message as string} />
       </div>
     </>
   );
@@ -144,16 +195,16 @@ export function RegistrationForm() {
     defaultValues: {
       legalType: 'ooo',
       inn: '',
-      agreed: false as any,
-    },
+      account: '',
+      bik: '',
+    } as any,
   });
-
-  const agreed = form.watch('agreed');
 
   const handleTypeChange = (value: string) => {
     const newType = value as LegalType;
     setLegalType(newType);
-    form.reset({ legalType: newType, inn: '', agreed: false as any } as any);
+    // Reset form with new legalType, keeping only legalType field
+    form.reset({ legalType: newType, inn: '', account: '', bik: '' } as any);
   };
 
   const onSubmit = async (data: RegistrationFormData) => {
@@ -165,9 +216,9 @@ export function RegistrationForm() {
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Регистрация бизнеса</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Для приема платежей и вывода средств мы бесплатно откроем для вас виртуальный субсчет в банке Точка.
-        </p>
+        <CardDescription>
+          Заполните данные для проверки юридического лица и подключения к платформе.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -200,29 +251,15 @@ export function RegistrationForm() {
             </RadioGroup>
           </div>
 
-          {/* Dynamic fields */}
+          {/* Dynamic fields with animation */}
           <div key={legalType} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {legalType === 'ooo' && <OooFields form={form} />}
             {legalType === 'ip' && <IpFields form={form} />}
             {legalType === 'selfemployed' && <SelfEmployedFields form={form} />}
+            <BankFields form={form} />
           </div>
 
-          {/* Consent checkbox */}
-          <label className="flex items-start gap-3 cursor-pointer">
-            <Checkbox
-              checked={agreed === true}
-              onCheckedChange={(v) => form.setValue('agreed', (v === true) as any, { shouldValidate: true })}
-              className="mt-0.5"
-            />
-            <span className="text-sm text-muted-foreground leading-snug">
-              Я согласен на обработку персональных данных и передачу информации в ПАО Банк Точка
-            </span>
-          </label>
-          {form.formState.errors.agreed && (
-            <p className="text-sm text-destructive -mt-4">{form.formState.errors.agreed.message as string}</p>
-          )}
-
-          {/* Submit */}
+          {/* Single submit button */}
           <Button type="submit" className="w-full rounded-xl" size="lg" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <>

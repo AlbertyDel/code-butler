@@ -83,8 +83,10 @@ export default function BusinessProfilePage() {
   const needsAddress = tab === 'ip' || tab === 'sz';
 
   return (
-    <Card className="max-w-2xl mx-auto animate-in fade-in duration-300">
-      <CardHeader>
+    <div className="max-w-2xl mx-auto space-y-8">
+      <BenefitsSection />
+      <Card className="animate-in fade-in duration-300">
+        <CardHeader>
         <CardTitle>Бизнес-профиль</CardTitle>
         <p className="text-sm text-muted-foreground">
           Для приема платежей и вывода средств мы бесплатно откроем для вас виртуальный счет в банке Точка.

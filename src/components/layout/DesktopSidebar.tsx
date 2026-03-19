@@ -3,7 +3,7 @@ import {
   LayoutDashboard, 
   MapPin, 
   Zap,
-  CreditCard,
+  Wallet,
   Building2,
   Briefcase
 } from 'lucide-react';
@@ -22,7 +22,7 @@ const individualNavItems = [
 const businessNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Главная' },
   { to: '/stations', icon: MapPin, label: 'Станции' },
-  { to: '/tariffs', icon: CreditCard, label: 'Тарифы' },
+  { to: '/tariffs', icon: Wallet, label: 'Тарифы' },
   { to: '/organization', icon: Building2, label: 'Организация' },
 ];
 

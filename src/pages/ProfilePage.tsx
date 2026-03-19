@@ -3,15 +3,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBusinessState } from '@/contexts/BusinessStateContext';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { User, Phone, Mail, Pencil, Check, X, Building2, Clock } from 'lucide-react';
+import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, setAuthUser } = useAuth();
+  const { user, setAuthUser, logout } = useAuth();
+  const { businessState } = useBusinessState();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -26,19 +29,14 @@ export default function ProfilePage() {
   }, [user?.name, user?.phone]);
 
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
-  
+
   const handleSave = () => {
     const newName = [firstName, lastName].filter(Boolean).join(' ');
-    if (user) {
-      setAuthUser({ ...user, name: newName, phone: phoneNumber || undefined });
-    }
+    if (user) setAuthUser({ ...user, name: newName, phone: phoneNumber || undefined });
     setIsEditing(false);
-    toast({
-      title: "Профиль обновлен",
-      description: "Ваши данные успешно сохранены",
-    });
+    toast({ title: 'Профиль обновлен', description: 'Ваши данные успешно сохранены' });
   };
-  
+
   const handleCancel = () => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
@@ -46,30 +44,35 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      {/* Personal info card */}
+    <div className="space-y-6">
+      {/* Personal data */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <User className="h-7 w-7 text-primary" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <User className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg">{displayName}</CardTitle>
-                <CardDescription>Личная информация</CardDescription>
+                <CardTitle className="text-xl">{displayName}</CardTitle>
+                <CardDescription>Управление личной информацией</CardDescription>
               </div>
             </div>
             {!isEditing && (
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Редактировать
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {isEditing ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -96,26 +99,22 @@ export default function ProfilePage() {
                   <Input id="email" type="email" value={email} disabled className="bg-muted" />
                 </div>
               </div>
-              <div className="flex gap-2 pt-2">
-                <Button size="sm" onClick={handleSave}>
-                  <Check className="mr-2 h-4 w-4" />
-                  Сохранить
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleCancel}>
-                  <X className="mr-2 h-4 w-4" />
-                  Отмена
-                </Button>
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleSave}><Check className="mr-2 h-4 w-4" />Сохранить</Button>
+                <Button variant="outline" onClick={handleCancel}><X className="mr-2 h-4 w-4" />Отмена</Button>
               </div>
             </>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Имя</p>
-                <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Фамилия</p>
-                <p className="font-medium">{lastName || <span className="text-muted-foreground italic">Не указано</span>}</p>
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Имя</p>
+                  <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Фамилия</p>
+                  <p className="font-medium">{lastName || <span className="text-muted-foreground italic">Не указано</span>}</p>
+                </div>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Телефон</p>
@@ -133,34 +132,54 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+
+          {/* Logout button */}
+          <div className="pt-4 border-t">
+            <Button variant="destructive" size="lg" className="w-full" onClick={handleLogout}>
+              Выйти
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Payment details card */}
+      {/* Business requisites */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">Платежные реквизиты</CardTitle>
-            </div>
-            <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
-              <Clock className="mr-1 h-3 w-3" />
-              Проверка
-            </Badge>
-          </div>
+          <CardTitle>Реквизиты бизнеса</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Организация</p>
-              <p className="font-medium">ООО Заряд Плюс</p>
+          {businessState === 'promo' && (
+            <p className="text-sm text-muted-foreground">Коммерческий режим не активирован</p>
+          )}
+
+          {businessState === 'pending' && (
+            <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 p-4">
+              <Clock className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-medium text-foreground">ООО &quot;ПРИОРИТИ АРК&quot;</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Заявка в работе. Ожидаем ответ от банка.
+                </p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">ИНН</p>
-              <p className="font-medium">1234567890</p>
+          )}
+
+          {businessState === 'active' && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 rounded-xl border border-border p-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-foreground">ООО &quot;ПРИОРИТИ АРК&quot;</p>
+                    <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    КПП: 770501001 &middot; ОГРН: 1207700123456
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full">Изменить реквизиты</Button>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

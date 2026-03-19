@@ -95,7 +95,7 @@ export default function BusinessProfilePage() {
       <HowItWorksSection />
       <BenefitsSection />
 
-      <div ref={formRef}>
+      <div ref={formRef} className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Бизнес-профиль</CardTitle>

@@ -4,7 +4,7 @@ import {
   Zap,
   List,
   Briefcase,
-  Banknote,
+  ReceiptText,
   Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

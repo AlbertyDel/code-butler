@@ -19,7 +19,7 @@ export function MobileNavigation() {
     { to: '/stations', icon: Zap, label: 'Станции', show: true },
     { to: '/sessions', icon: List, label: 'Сессии', show: true },
     { to: '/business-profile', icon: Briefcase, label: 'Бизнес', show: businessState === 'promo' },
-    { to: '/tariffs', icon: Banknote, label: 'Тарифы', show: businessState === 'active' },
+    { to: '/tariffs', icon: ReceiptText, label: 'Тарифы', show: businessState === 'active' },
     { to: '/finance', icon: Wallet, label: 'Финансы', show: businessState === 'active' },
   ];
 

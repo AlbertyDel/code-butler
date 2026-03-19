@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
+import { BenefitsSection } from '@/components/business-profile/BenefitsSection';
 
 type LegalTab = 'ooo' | 'ip' | 'sz';
 

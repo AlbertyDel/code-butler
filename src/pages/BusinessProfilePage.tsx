@@ -47,9 +47,14 @@ export default function BusinessProfilePage() {
   const [shaking, setShaking] = useState(false);
   const innRef = useRef<HTMLInputElement>(null);
 
+  const formRef = useRef<HTMLDivElement>(null);
+
+  const scrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   if (businessState !== 'promo') return null;
   if (submitted) return <PendingCard />;
-
   const maxLen = INN_MAX[tab];
   const feedback = MOCK_RESULT[inn] || null;
   const canSubmit = inn.length === maxLen && agreed && !submitting && feedback?.type !== 'error';

@@ -39,7 +39,7 @@ export const mockUser: User = {
 export const mockBusinessUser: User = {
   id: '2',
   email: 'business@company.ru',
-  name: 'ООО "ЭлектроЗаряд"',
+  name: 'ООО Заряд Плюс',
   role: 'business',
   organizationId: 'org-1',
   createdAt: '2024-01-01T10:00:00Z',

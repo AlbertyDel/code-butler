@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { User, Phone, Mail, Pencil, Check, X } from 'lucide-react';
+import { User, Phone, Mail, Pencil, Check, X, Building2, Clock } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, setAuthUser } = useAuth();
@@ -18,7 +19,6 @@ export default function ProfilePage() {
 
   const email = user?.email || '';
 
-  // Sync local state with user context
   useEffect(() => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
@@ -47,106 +47,76 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4">
+      {/* Personal info card */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <User className="h-8 w-8 text-primary" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <User className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-xl">
-                  {displayName}
-                </CardTitle>
-                <CardDescription>
-                  Управление личной информацией
-                </CardDescription>
+                <CardTitle className="text-lg">{displayName}</CardTitle>
+                <CardDescription>Личная информация</CardDescription>
               </div>
             </div>
             {!isEditing && (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Редактировать
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {isEditing ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Имя</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Введите имя"
-                  />
+                  <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Введите имя" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Фамилия</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Введите фамилию"
-                  />
+                  <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Введите фамилию" />
                 </div>
               </div>
-              
               <div className="space-y-2">
                 <Label htmlFor="phone">Телефон</Label>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="phone"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="Введите номер телефона"
-                  />
+                  <Input id="phone" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Введите номер телефона" />
                 </div>
               </div>
-              
               <div className="space-y-2">
                 <Label htmlFor="email">Электронная почта</Label>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    disabled
-                    className="bg-muted"
-                  />
+                  <Input id="email" type="email" value={email} disabled className="bg-muted" />
                 </div>
               </div>
-              
-              <div className="flex gap-2 pt-4">
-                <Button onClick={handleSave}>
+              <div className="flex gap-2 pt-2">
+                <Button size="sm" onClick={handleSave}>
                   <Check className="mr-2 h-4 w-4" />
                   Сохранить
                 </Button>
-                <Button variant="outline" onClick={handleCancel}>
+                <Button variant="outline" size="sm" onClick={handleCancel}>
                   <X className="mr-2 h-4 w-4" />
                   Отмена
                 </Button>
               </div>
             </>
           ) : (
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Имя</p>
-                  <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Фамилия</p>
-                  <p className="font-medium">{lastName || <span className="text-muted-foreground italic">Не указано</span>}</p>
-                </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Имя</p>
+                <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
               </div>
-              
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Фамилия</p>
+                <p className="font-medium">{lastName || <span className="text-muted-foreground italic">Не указано</span>}</p>
+              </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Телефон</p>
                 <p className="font-medium flex items-center gap-2">
@@ -154,7 +124,6 @@ export default function ProfilePage() {
                   {phoneNumber || <span className="text-muted-foreground italic">Не указано</span>}
                 </p>
               </div>
-              
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Электронная почта</p>
                 <p className="font-medium flex items-center gap-2">
@@ -164,6 +133,34 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Payment details card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Building2 className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg">Платежные реквизиты</CardTitle>
+            </div>
+            <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">
+              <Clock className="mr-1 h-3 w-3" />
+              Проверка
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Организация</p>
+              <p className="font-medium">ООО Заряд Плюс</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">ИНН</p>
+              <p className="font-medium">1234567890</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

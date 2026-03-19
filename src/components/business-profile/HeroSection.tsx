@@ -6,7 +6,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onActivate }: HeroSectionProps) {
   return (
-    <section className="rounded-2xl bg-gradient-to-br from-primary/10 via-accent to-background p-8 md:p-12 text-center space-y-5">
+    <section className="rounded-2xl bg-accent p-10 text-center space-y-5">
       <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
         Активируйте Бизнес-профиль и&nbsp;получайте доход
       </h1>

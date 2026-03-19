@@ -183,5 +183,7 @@ export default function BusinessProfilePage() {
         </Button>
       </CardContent>
     </Card>
+      </div>
+    </div>
   );
 }

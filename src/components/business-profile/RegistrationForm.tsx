@@ -211,7 +211,7 @@ export function RegistrationForm() {
           <label className="flex items-start gap-3 cursor-pointer">
             <Checkbox
               checked={agreed === true}
-              onCheckedChange={(v) => form.setValue('agreed', v === true as any, { shouldValidate: true })}
+              onCheckedChange={(v) => form.setValue('agreed', (v === true) as any, { shouldValidate: true })}
               className="mt-0.5"
             />
             <span className="text-sm text-muted-foreground leading-snug">

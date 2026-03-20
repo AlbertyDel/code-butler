@@ -43,8 +43,8 @@ export function TopBar() {
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 text-muted-foreground cursor-pointer">
-              <CircleUserRound className="h-7 w-7" />
+            <Button variant="ghost" size="lg" className="gap-2 text-muted-foreground cursor-pointer px-3">
+              <CircleUserRound className="!h-8 !w-8" />
               <span className="hidden sm:inline text-sm font-medium">Профиль</span>
             </Button>
           </DropdownMenuTrigger>

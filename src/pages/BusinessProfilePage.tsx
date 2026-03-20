@@ -295,7 +295,7 @@ export default function BusinessProfilePage() {
               <Checkbox
                 checked={agreed}
                 onCheckedChange={(v) => setAgreed(v === true)}
-                className="mt-0.5"
+                className="mt-0.5 h-5 w-5 rounded-[4px] border-2"
               />
               <span className="text-sm text-muted-foreground leading-snug">
                 Я согласен на обработку персональных данных и передачу информации в ПАО Банк Точка

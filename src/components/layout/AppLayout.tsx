@@ -12,7 +12,7 @@ export function AppLayout() {
     return (
       <div className="min-h-screen bg-background">
         <TopBar />
-        <main className="pt-16 px-4 pb-20 overflow-auto mt-8">
+        <main className="pt-16 px-4 pb-20 overflow-auto">
           <Outlet />
         </main>
         <MobileNavigation />
@@ -21,10 +21,10 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopBar />
+    <div className="min-h-screen bg-slate-50">
       <DesktopSidebar />
-      <main className="pt-16 md:ml-64 min-h-screen overflow-auto p-6 mt-8">
+      <TopBar />
+      <main className="ml-64 pt-16 min-h-[calc(100vh-4rem)] overflow-auto p-6">
         <Outlet />
       </main>
     </div>

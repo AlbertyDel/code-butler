@@ -165,7 +165,7 @@ export default function ProfilePage() {
                     ИНН: 7705123456 &middot; КПП: 770501001 &middot; ОГРН: 1207700123456
                   </p>
                 </div>
-                <Button variant="outline" className="w-full">Изменить реквизиты</Button>
+                
               </div>
             )}
           </CardContent>

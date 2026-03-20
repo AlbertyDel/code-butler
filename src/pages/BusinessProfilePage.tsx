@@ -167,6 +167,7 @@ export default function BusinessProfilePage() {
     setSubmitting(false);
     setSubmitted(true);
     setBusinessState('pending');
+    navigate('/profile');
   };
 
   return (

@@ -23,7 +23,7 @@ export function BenefitsSection() {
   return (
     <section className="space-y-6">
       <h2 className="text-xl font-semibold text-foreground text-center">Преимущества</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {benefits.map((b, i) => (
           <Card key={i} className="rounded-2xl shadow-sm bg-card">
             <CardContent className="pt-6 flex gap-4 items-start">

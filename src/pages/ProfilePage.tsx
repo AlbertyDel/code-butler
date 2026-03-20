@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
@@ -51,6 +52,16 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
+      {/* Pending badge */}
+      {businessState === 'pending' && (
+        <div className="flex justify-end">
+          <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Проверка реквизитов
+          </Badge>
+        </div>
+      )}
+
       {/* Personal data */}
       <Card>
         <CardHeader>
@@ -61,7 +72,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <CardTitle className="text-xl">{displayName}</CardTitle>
-                <CardDescription>Управление личной информацией</CardDescription>
+                <p className="text-sm text-muted-foreground">Управление личной информацией</p>
               </div>
             </div>
             {!isEditing && (
@@ -132,56 +143,50 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Logout button */}
-          <div className="pt-4 border-t">
-            <Button variant="destructive" size="lg" className="w-full" onClick={handleLogout}>
-              Выйти
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Business requisites */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Реквизиты бизнеса</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {businessState === 'promo' && (
-            <p className="text-sm text-muted-foreground">Коммерческий режим не активирован</p>
-          )}
-
-          {businessState === 'pending' && (
-            <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 p-4">
-              <Clock className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-medium text-foreground">ООО &quot;ПРИОРИТИ АРК&quot;</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Заявка в работе. Ожидаем ответ от банка.
-                </p>
+      {/* Payment requisites — hidden for promo state */}
+      {businessState !== 'promo' && (
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle>Платежные реквизиты</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {businessState === 'pending' && (
+              <div className="space-y-2">
+                <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
+                <div className="flex items-center gap-2 text-sm text-amber-600">
+                  <Clock className="h-4 w-4 shrink-0" />
+                  <span>Заявка в работе. Ожидаем ответ от банка.</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {businessState === 'active' && (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 rounded-xl border border-border p-4">
-                <div className="flex-1">
+            {businessState === 'active' && (
+              <div className="space-y-4">
+                <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">ООО &quot;ПРИОРИТИ АРК&quot;</p>
+                    <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
                     <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    КПП: 770501001 &middot; ОГРН: 1207700123456
+                    ИНН: 7705123456 &middot; КПП: 770501001 &middot; ОГРН: 1207700123456
                   </p>
                 </div>
+                <Button variant="outline" className="w-full">Изменить реквизиты</Button>
               </div>
-              <Button variant="outline" className="w-full">Изменить реквизиты</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Logout — small, right-aligned at the bottom */}
+      <div className="flex justify-end">
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={handleLogout}>
+          Выйти
+        </Button>
+      </div>
     </div>
   );
 }

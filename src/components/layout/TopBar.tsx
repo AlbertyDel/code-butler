@@ -24,7 +24,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
+    <header className="fixed top-0 left-0 w-full md:left-64 md:w-[calc(100%-16rem)] z-50 flex h-16 items-center justify-between border-b bg-white px-4 md:px-6">
       {/* Left: logo on mobile */}
       {isMobile ? (
         <img src={logoCharger} alt="Charger" className="h-6" />

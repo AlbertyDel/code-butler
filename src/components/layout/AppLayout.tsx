@@ -21,10 +21,10 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50">
       <TopBar />
       <DesktopSidebar />
-      <main className="pt-16 md:ml-64 min-h-screen overflow-auto p-6 mt-8">
+      <main className="pt-16 md:ml-64 min-h-screen overflow-auto p-6 mt-4">
         <Outlet />
       </main>
     </div>

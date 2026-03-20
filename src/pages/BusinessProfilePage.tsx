@@ -16,6 +16,8 @@ type LegalTab = 'ooo' | 'ip' | 'sz';
 
 const INN_MAX: Record<LegalTab, number> = { ooo: 10, ip: 12, sz: 12 };
 
+const UNIFIED_ERROR = 'ИНН не найден. Проверьте данные.';
+
 type MockResult = {
   type: 'success' | 'error';
   title?: string;
@@ -32,10 +34,6 @@ const MOCK_DATA: Record<LegalTab, Record<string, MockResult>> = {
       subtitle: 'ИНН: 1234567890 \u2022 КПП: 770501001 \u2022 ОГРН: 1127746543210',
       text: '',
     },
-    '0000000000': {
-      type: 'error',
-      text: 'Компания не найдена. Проверьте ИНН',
-    },
   },
   ip: {
     '123456789012': {
@@ -45,22 +43,14 @@ const MOCK_DATA: Record<LegalTab, Record<string, MockResult>> = {
       text: '',
       autoAddress: 'г. Москва, ул. Примерная, д. 1',
     },
-    '000000000000': {
-      type: 'error',
-      text: 'Предприниматель не найден. Проверьте ИНН',
-    },
   },
   sz: {
     '987654321098': {
       type: 'success',
       title: 'Петров Иван Сергеевич (НПД)',
-      subtitle: 'ИНН: 987654321098 \u2022 Статус: Действующий',
+      subtitle: 'ИНН: 987654321098',
       text: '',
       autoAddress: 'г. Москва, ул. Примерная, д. 1',
-    },
-    '000000000000': {
-      type: 'error',
-      text: 'Статус самозанятого не подтвержден в ФНС',
     },
   },
 };
@@ -69,7 +59,7 @@ function getFeedback(tab: LegalTab, inn: string, maxLen: number): MockResult | n
   if (inn.length !== maxLen) return null;
   const tabData = MOCK_DATA[tab];
   if (tabData[inn]) return tabData[inn];
-  return { type: 'error', text: 'Неверный ИНН' };
+  return { type: 'error', text: UNIFIED_ERROR };
 }
 
 function PendingCard() {
@@ -95,13 +85,15 @@ export default function BusinessProfilePage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shaking, setShaking] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [visibleFeedback, setVisibleFeedback] = useState<MockResult | null>(null);
   const innRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const maxLen = INN_MAX[tab];
-  const feedback = getFeedback(tab, inn, maxLen);
-  const isDefaultError = feedback?.type === 'error' && feedback.text === 'Неверный ИНН';
-  const canSubmit = inn.length === maxLen && agreed && !submitting && feedback?.type !== 'error';
+  const hasError = visibleFeedback?.type === 'error';
+  const canSubmit = inn.length === maxLen && agreed && !submitting && !searching && visibleFeedback?.type === 'success';
   const needsAddress = tab === 'ip' || tab === 'sz';
 
   const triggerShake = () => {
@@ -110,20 +102,37 @@ export default function BusinessProfilePage() {
     setTimeout(() => setShaking(false), 400);
   };
 
-  // Auto-fill address when feedback has autoAddress
+  // Simulate search when INN reaches full length
   useEffect(() => {
-    if (feedback?.type === 'success' && feedback.autoAddress) {
-      setAddress(feedback.autoAddress);
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
     }
-  }, [feedback?.type, feedback?.autoAddress]);
 
-  // Shake on default error
-  useEffect(() => {
-    if (isDefaultError) {
-      triggerShake();
+    setVisibleFeedback(null);
+
+    if (inn.length === maxLen) {
+      setSearching(true);
+      searchTimerRef.current = setTimeout(() => {
+        const result = getFeedback(tab, inn, maxLen);
+        setVisibleFeedback(result);
+        setSearching(false);
+        if (result?.type === 'error') {
+          triggerShake();
+        }
+        if (result?.type === 'success' && result.autoAddress) {
+          setAddress(result.autoAddress);
+        }
+      }, 1000);
+    } else {
+      setSearching(false);
     }
+
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDefaultError, inn]);
+  }, [inn, tab, maxLen]);
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -146,6 +155,8 @@ export default function BusinessProfilePage() {
     setInn('');
     setAddress('');
     setAgreed(false);
+    setVisibleFeedback(null);
+    setSearching(false);
   };
 
   const handleSubmit = async () => {
@@ -214,45 +225,47 @@ export default function BusinessProfilePage() {
                   maxLength={maxLen + 1}
                   inputMode="numeric"
                   className={cn(
-                    'pr-16',
+                    'pr-10',
                     shaking && 'animate-shake',
-                    feedback?.type === 'error' && 'border-destructive'
+                    hasError && 'border-red-500 focus-visible:ring-red-500'
                   )}
                 />
-                <span className="absolute right-3 top-0 bottom-0 flex items-center text-xs text-muted-foreground pointer-events-none tabular-nums">
-                  {inn.length}/{maxLen}
-                </span>
+                {searching && (
+                  <span className="absolute right-3 top-0 bottom-0 flex items-center pointer-events-none">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </span>
+                )}
               </div>
 
               {/* Feedback card */}
-              {feedback && (
+              {visibleFeedback && (
                 <div
                   className={cn(
                     'rounded-xl px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-200',
-                    feedback.type === 'success'
+                    visibleFeedback.type === 'success'
                       ? 'bg-emerald-50 border border-emerald-200'
                       : 'bg-destructive/5 border border-destructive/20'
                   )}
                 >
                   <div className="flex items-start gap-3">
-                    {feedback.type === 'success' ? (
+                    {visibleFeedback.type === 'success' ? (
                       <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                     ) : (
                       <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                     )}
                     <div className="min-w-0">
-                      {feedback.title && (
-                        <p className="font-semibold text-foreground">{feedback.title}</p>
+                      {visibleFeedback.title && (
+                        <p className="font-semibold text-foreground">{visibleFeedback.title}</p>
                       )}
-                      {feedback.subtitle && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{feedback.subtitle}</p>
+                      {visibleFeedback.subtitle && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{visibleFeedback.subtitle}</p>
                       )}
-                      {feedback.text && (
+                      {visibleFeedback.text && (
                         <p className={cn(
                           'text-sm',
-                          feedback.type === 'error' ? 'text-destructive' : 'text-foreground'
+                          visibleFeedback.type === 'error' ? 'text-destructive' : 'text-foreground'
                         )}>
-                          {feedback.text}
+                          {visibleFeedback.text}
                         </p>
                       )}
                     </div>
@@ -285,10 +298,7 @@ export default function BusinessProfilePage() {
                 className="mt-0.5"
               />
               <span className="text-sm text-muted-foreground leading-snug">
-                Я согласен на обработку персональных данных и передачу информации в{' '}
-                <span className="underline underline-offset-2 decoration-muted-foreground/40">
-                  ПАО Банк Точка
-                </span>
+                Я согласен на обработку персональных данных и передачу информации в ПАО Банк Точка
               </span>
             </label>
 

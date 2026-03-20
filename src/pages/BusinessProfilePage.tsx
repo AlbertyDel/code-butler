@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,14 @@ function PendingCard() {
 
 export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
+  const navigate = useNavigate();
+
+  // Guard: redirect if not in promo state
+  useEffect(() => {
+    if (businessState !== 'promo') {
+      navigate('/profile', { replace: true });
+    }
+  }, [businessState, navigate]);
   const [tab, setTab] = useState<LegalTab>('ooo');
   const [inn, setInn] = useState('');
   const [address, setAddress] = useState('');
@@ -166,6 +175,7 @@ export default function BusinessProfilePage() {
     setSubmitting(false);
     setSubmitted(true);
     setBusinessState('pending');
+    navigate('/profile');
   };
 
   return (

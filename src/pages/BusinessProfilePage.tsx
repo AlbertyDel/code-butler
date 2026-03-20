@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -66,14 +66,12 @@ const MOCK_DATA: Record<LegalTab, Record<string, MockResult>> = {
 };
 
 function getFeedback(tab: LegalTab, inn: string, maxLen: number): MockResult | null {
-  if (inn.length < maxLen) return null;
   if (inn.length !== maxLen) return null;
   const tabData = MOCK_DATA[tab];
   if (tabData[inn]) return tabData[inn];
   return { type: 'error', text: 'Неверный ИНН' };
 }
 
-/* Pending state */
 function PendingCard() {
   return (
     <Card className="max-w-2xl mx-auto animate-in fade-in duration-500">
@@ -97,35 +95,19 @@ export default function BusinessProfilePage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shaking, setShaking] = useState(false);
-  const [shakeTrigger, setShakeTrigger] = useState(false);
   const innRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
-
-  const scrollToForm = () => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  if (businessState !== 'promo') return null;
-  if (submitted) return <PendingCard />;
 
   const maxLen = INN_MAX[tab];
   const feedback = getFeedback(tab, inn, maxLen);
   const isDefaultError = feedback?.type === 'error' && feedback.text === 'Неверный ИНН';
   const canSubmit = inn.length === maxLen && agreed && !submitting && feedback?.type !== 'error';
+  const needsAddress = tab === 'ip' || tab === 'sz';
 
   const triggerShake = () => {
     setShaking(true);
     if (window.navigator?.vibrate) window.navigator.vibrate(50);
     setTimeout(() => setShaking(false), 400);
-  };
-
-  const handleInnChange = (raw: string) => {
-    const digits = raw.replace(/\D/g, '');
-    if (digits.length > maxLen) {
-      triggerShake();
-      return;
-    }
-    setInn(digits);
   };
 
   // Auto-fill address when feedback has autoAddress
@@ -140,7 +122,24 @@ export default function BusinessProfilePage() {
     if (isDefaultError) {
       triggerShake();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDefaultError, inn]);
+
+  const scrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  if (businessState !== 'promo') return null;
+  if (submitted) return <PendingCard />;
+
+  const handleInnChange = (raw: string) => {
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length > maxLen) {
+      triggerShake();
+      return;
+    }
+    setInn(digits);
+  };
 
   const handleTabChange = (v: string) => {
     setTab(v as LegalTab);
@@ -158,8 +157,6 @@ export default function BusinessProfilePage() {
     setBusinessState('pending');
   };
 
-  const needsAddress = tab === 'ip' || tab === 'sz';
-
   return (
     <div className="mt-8 space-y-8 animate-in fade-in duration-300">
       <HeroSection onActivate={scrollToForm} />
@@ -174,7 +171,7 @@ export default function BusinessProfilePage() {
 
           <CardContent className="space-y-6">
             {/* Security info banner */}
-            <div className="flex items-start gap-3 rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
+            <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <ShieldCheck className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
               <p className="text-sm text-blue-700">
                 Для приема платежей и вывода средств мы бесплатно откроем для вас виртуальный счет в ПАО Банк Точка.

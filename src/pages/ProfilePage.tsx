@@ -7,11 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');
-  // Normalize: if starts with 8, replace with 7
   let d = digits;
   if (d.startsWith('8') && d.length > 1) d = '7' + d.slice(1);
   if (!d.startsWith('7') && d.length > 0) d = '7' + d;
@@ -84,8 +84,6 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-
-      {/* Personal data */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -123,7 +121,7 @@ export default function ProfilePage() {
                 <Label htmlFor="phone">Телефон</Label>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-1">
                     <Input
                       id="phone"
                       value={phoneNumber}
@@ -133,7 +131,7 @@ export default function ProfilePage() {
                       maxLength={18}
                       className={cn(phoneError && 'border-destructive')}
                     />
-                    {phoneError && <p className="text-sm text-destructive mt-1">{phoneError}</p>}
+                    {phoneError && <p className="text-sm text-destructive">{phoneError}</p>}
                   </div>
                 </div>
               </div>
@@ -180,7 +178,6 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Payment requisites — hidden for promo state */}
       {businessState !== 'promo' && (
         <Card>
           <CardHeader className="pb-4">
@@ -196,7 +193,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-
             {businessState === 'active' && (
               <div className="space-y-4">
                 <div>
@@ -214,7 +210,6 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      {/* Logout */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={handleLogout}>
           Выйти
@@ -222,8 +217,4 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }

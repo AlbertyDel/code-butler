@@ -1,4 +1,4 @@
-import { Users, ShoppingBag, Cpu, BarChart } from 'lucide-react';
+import { Users, ShoppingBag, Cpu } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const benefits = [

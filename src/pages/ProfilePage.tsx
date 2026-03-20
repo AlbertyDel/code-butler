@@ -52,15 +52,6 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Pending badge */}
-      {businessState === 'pending' && (
-        <div className="flex justify-end">
-          <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-            Проверка реквизитов
-          </Badge>
-        </div>
-      )}
 
       {/* Personal data */}
       <Card>
@@ -150,7 +141,7 @@ export default function ProfilePage() {
       {businessState !== 'promo' && (
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Платежные реквизиты</CardTitle>
+            <CardTitle>Коммерческие данные</CardTitle>
           </CardHeader>
           <CardContent>
             {businessState === 'pending' && (

@@ -141,7 +141,7 @@ export default function ProfilePage() {
       {businessState !== 'promo' && (
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Платежные реквизиты</CardTitle>
+            <CardTitle>Коммерческие данные</CardTitle>
           </CardHeader>
           <CardContent>
             {businessState === 'pending' && (

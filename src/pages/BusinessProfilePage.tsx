@@ -79,6 +79,14 @@ function PendingCard() {
 
 export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
+  const navigate = useNavigate();
+
+  // Guard: redirect if not in promo state
+  useEffect(() => {
+    if (businessState !== 'promo') {
+      navigate('/profile', { replace: true });
+    }
+  }, [businessState, navigate]);
   const [tab, setTab] = useState<LegalTab>('ooo');
   const [inn, setInn] = useState('');
   const [address, setAddress] = useState('');

@@ -3,12 +3,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  // Normalize: if starts with 8, replace with 7
+  let d = digits;
+  if (d.startsWith('8') && d.length > 1) d = '7' + d.slice(1);
+  if (!d.startsWith('7') && d.length > 0) d = '7' + d;
+
+  if (d.length === 0) return '';
+  if (d.length <= 1) return '+7';
+  if (d.length <= 4) return `+7 (${d.slice(1)}`;
+  if (d.length <= 7) return `+7 (${d.slice(1, 4)}) ${d.slice(4)}`;
+  if (d.length <= 9) return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`;
+  return `+7 (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7, 9)}-${d.slice(9, 11)}`;
+}
+
+function isValidPhone(value: string): boolean {
+  const digits = value.replace(/\D/g, '');
+  return digits.length === 11;
+}
 
 export default function ProfilePage() {
   const { user, setAuthUser, logout } = useAuth();
@@ -20,6 +39,7 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const email = user?.email || '';
 
@@ -31,10 +51,21 @@ export default function ProfilePage() {
 
   const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
 
+  const handlePhoneChange = (raw: string) => {
+    const formatted = formatPhone(raw);
+    setPhoneNumber(formatted);
+    setPhoneError('');
+  };
+
   const handleSave = () => {
+    if (phoneNumber && !isValidPhone(phoneNumber)) {
+      setPhoneError('Введите корректный номер телефона');
+      return;
+    }
     const newName = [firstName, lastName].filter(Boolean).join(' ');
     if (user) setAuthUser({ ...user, name: newName, phone: phoneNumber || undefined });
     setIsEditing(false);
+    setPhoneError('');
     toast({ title: 'Профиль обновлен', description: 'Ваши данные успешно сохранены' });
   };
 
@@ -42,6 +73,7 @@ export default function ProfilePage() {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
     setPhoneNumber(user?.phone || '');
+    setPhoneError('');
     setIsEditing(false);
   };
 
@@ -90,8 +122,19 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="phone">Телефон</Label>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <Input id="phone" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Введите номер телефона" />
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1">
+                    <Input
+                      id="phone"
+                      value={phoneNumber}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      placeholder="+7 (___) ___-__-__"
+                      inputMode="tel"
+                      maxLength={18}
+                      className={cn(phoneError && 'border-destructive')}
+                    />
+                    {phoneError && <p className="text-sm text-destructive mt-1">{phoneError}</p>}
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -165,14 +208,13 @@ export default function ProfilePage() {
                     ИНН: 7705123456 &middot; КПП: 770501001 &middot; ОГРН: 1207700123456
                   </p>
                 </div>
-                
               </div>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Logout — small, right-aligned at the bottom */}
+      {/* Logout */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={handleLogout}>
           Выйти
@@ -180,4 +222,8 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }

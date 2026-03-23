@@ -31,6 +31,7 @@ function isValidPhone(value: string): boolean {
 }
 
 export default function ProfilePage() {
+  const { user, setAuthUser, logout } = useAuth();
   const [isPageLoading, setIsPageLoading] = useState(true);
   const { businessState } = useBusinessState();
   const navigate = useNavigate();

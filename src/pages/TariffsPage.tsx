@@ -136,7 +136,7 @@ export default function TariffsPage() {
         <h1 className="text-2xl font-bold tracking-tight">Тарифы</h1>
         <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" />
-          Создать тариф
+          Создать
         </Button>
       </div>
 

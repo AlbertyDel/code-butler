@@ -373,7 +373,17 @@ export default function TariffsPage() {
 
             {/* Special conditions */}
             <div className="space-y-3">
-              <Label>Специальные условия</Label>
+              <div className="flex items-center justify-between">
+                <Label>Специальные условия</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-primary hover:bg-accent"
+                  onClick={addCondition}
+                >
+                  Добавить
+                </Button>
+              </div>
               {formConditions.map((cond) => (
                 <div
                   key={cond.id}
@@ -429,14 +439,6 @@ export default function TariffsPage() {
               {errors.conditions && (
                 <p className="text-xs text-destructive">{errors.conditions}</p>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-4 text-primary px-4 py-2 hover:bg-accent"
-                onClick={addCondition}
-              >
-                Добавить
-              </Button>
             </div>
 
             {/* Session limits */}

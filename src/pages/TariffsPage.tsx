@@ -181,8 +181,8 @@ export default function TariffsPage() {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
-                  <span className="text-sm text-muted-foreground">руб / кВт·ч</span>
+                    <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
+                    <span className="text-sm text-muted-foreground">₽ / кВт·ч</span>
                 </div>
 
                 {/* Conditions */}

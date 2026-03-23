@@ -356,7 +356,7 @@ export default function TariffsPage() {
               </Label>
               <Input
                 type="number"
-                placeholder="0"
+                placeholder="Например, 20"
                 min={0}
                 value={formPrice}
                 onChange={(e) => {

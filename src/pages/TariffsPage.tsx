@@ -380,12 +380,12 @@ export default function TariffsPage() {
                   className="flex flex-wrap items-center gap-2 rounded-md bg-secondary p-3"
                 >
                   <span className="text-sm text-muted-foreground shrink-0">Каждый день</span>
-                  <Select
-                    value={cond.timeFrom}
+                   <Select
+                    value={cond.timeFrom || undefined}
                     onValueChange={(v) => updateCondition(cond.id, 'timeFrom', v)}
                   >
                     <SelectTrigger className="w-[90px] h-8 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="С" />
                     </SelectTrigger>
                     <SelectContent>
                       {TIME_OPTIONS.map((t) => (

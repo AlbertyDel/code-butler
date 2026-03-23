@@ -59,9 +59,6 @@ const TARIFF_NAMES = [
   'Базовый',
   'Дневной',
   'Ночной',
-  'Пиковый',
-  'Экономный',
-  'Универсальный',
   'Корпоративный',
 ];
 
@@ -139,7 +136,7 @@ export default function TariffsPage() {
         <h1 className="text-2xl font-bold tracking-tight">Тарифы</h1>
         <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" />
-          Создать тариф
+          Создать
         </Button>
       </div>
 
@@ -184,8 +181,8 @@ export default function TariffsPage() {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
-                  <span className="text-sm text-muted-foreground">руб / кВт·ч</span>
+                    <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
+                    <span className="text-sm text-muted-foreground">₽ / кВт·ч</span>
                 </div>
 
                 {/* Conditions */}
@@ -194,7 +191,7 @@ export default function TariffsPage() {
                     tariff.conditions.map((c) => (
                       <p key={c.id} className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        Спец. цена: {c.price} руб ({c.timeFrom} – {c.timeTo})
+                        {c.price} ₽ с {c.timeFrom} до {c.timeTo}
                       </p>
                     ))
                   ) : (
@@ -208,13 +205,13 @@ export default function TariffsPage() {
                     {tariff.maxTimeMin && (
                       <p className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        Макс. время: {tariff.maxTimeMin} мин
+                        Лимит времени: {tariff.maxTimeMin} минут
                       </p>
                     )}
                     {tariff.maxEnergyKwh && (
                       <p className="flex items-center gap-1.5">
                         <Zap className="h-3.5 w-3.5 shrink-0" />
-                        Макс. энергия: {tariff.maxEnergyKwh} кВт·ч
+                        Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
                       </p>
                     )}
                   </div>
@@ -251,7 +248,7 @@ export default function TariffsPage() {
 
             {/* Base price */}
             <div className="space-y-2">
-              <Label>Базовая стоимость (руб / кВт·ч)</Label>
+              <Label>Базовая стоимость (₽ / кВт·ч)</Label>
               <Input
                 type="number"
                 placeholder="0"
@@ -308,7 +305,7 @@ export default function TariffsPage() {
                     value={cond.price}
                     onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
                   />
-                  <span className="text-xs text-muted-foreground">руб</span>
+                  <span className="text-xs text-muted-foreground">₽</span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -319,9 +316,8 @@ export default function TariffsPage() {
                   </Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addCondition}>
-                <Plus className="h-3.5 w-3.5" />
-                Добавить условие
+              <Button variant="ghost" size="sm" className="mt-4 text-muted-foreground" onClick={addCondition}>
+                Добавить
               </Button>
             </div>
 
@@ -330,7 +326,7 @@ export default function TariffsPage() {
               <Label>Ограничения сессии</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Макс. время (мин)</Label>
+                  <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                   <Input
                     type="number"
                     placeholder="Без ограничений"
@@ -340,7 +336,7 @@ export default function TariffsPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Макс. энергия (кВт·ч)</Label>
+                  <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
                   <Input
                     type="number"
                     placeholder="Без ограничений"
@@ -362,7 +358,7 @@ export default function TariffsPage() {
               disabled={!formName || !formPrice}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Сохранить тариф
+              Создать
             </Button>
           </DialogFooter>
         </DialogContent>

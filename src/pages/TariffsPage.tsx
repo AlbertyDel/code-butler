@@ -13,6 +13,16 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -55,13 +65,6 @@ const MOCK_TARIFFS: Tariff[] = [
   },
 ];
 
-const TARIFF_NAMES = [
-  'Базовый',
-  'Дневной',
-  'Ночной',
-  'Корпоративный',
-];
-
 const TIME_OPTIONS = [
   '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
   '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
@@ -69,10 +72,41 @@ const TIME_OPTIONS = [
   '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
 ];
 
+/** Parse "HH:00" to number 0-23 */
+function timeToNum(t: string): number {
+  return parseInt(t.split(':')[0], 10);
+}
+
+/** Check if two time ranges overlap (handles overnight ranges like 23:00-07:00) */
+function rangesOverlap(a: SpecialCondition, b: SpecialCondition): boolean {
+  const expand = (from: string, to: string): Set<number> => {
+    const f = timeToNum(from);
+    const t = timeToNum(to);
+    const hours = new Set<number>();
+    if (f < t) {
+      for (let i = f; i < t; i++) hours.add(i);
+    } else {
+      for (let i = f; i < 24; i++) hours.add(i);
+      for (let i = 0; i < t; i++) hours.add(i);
+    }
+    return hours;
+  };
+  const setA = expand(a.timeFrom, a.timeTo);
+  const setB = expand(b.timeFrom, b.timeTo);
+  for (const h of setA) {
+    if (setB.has(h)) return true;
+  }
+  return false;
+}
+
 export default function TariffsPage() {
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [showMock, setShowMock] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTariff, setEditingTariff] = useState<Tariff | null>(null);
+
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<Tariff | null>(null);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -80,6 +114,9 @@ export default function TariffsPage() {
   const [formConditions, setFormConditions] = useState<SpecialCondition[]>([]);
   const [formMaxTime, setFormMaxTime] = useState('');
   const [formMaxEnergy, setFormMaxEnergy] = useState('');
+
+  // Validation errors
+  const [errors, setErrors] = useState<{ name?: string; price?: string; conditions?: string }>({});
 
   const displayTariffs = showMock ? MOCK_TARIFFS : tariffs;
 
@@ -89,11 +126,24 @@ export default function TariffsPage() {
   };
 
   const openCreateDialog = () => {
+    setEditingTariff(null);
     setFormName('');
     setFormPrice('');
     setFormConditions([]);
     setFormMaxTime('');
     setFormMaxEnergy('');
+    setErrors({});
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (tariff: Tariff) => {
+    setEditingTariff(tariff);
+    setFormName(tariff.name);
+    setFormPrice(String(tariff.pricePerKwh));
+    setFormConditions(tariff.conditions.map((c) => ({ ...c })));
+    setFormMaxTime(tariff.maxTimeMin ? String(tariff.maxTimeMin) : '');
+    setFormMaxEnergy(tariff.maxEnergyKwh ? String(tariff.maxEnergyKwh) : '');
+    setErrors({});
     setDialogOpen(true);
   };
 
@@ -106,6 +156,7 @@ export default function TariffsPage() {
 
   const removeCondition = (id: string) => {
     setFormConditions((prev) => prev.filter((c) => c.id !== id));
+    setErrors((prev) => ({ ...prev, conditions: undefined }));
   };
 
   const updateCondition = (id: string, field: keyof SpecialCondition, value: string | number) => {
@@ -114,30 +165,66 @@ export default function TariffsPage() {
     );
   };
 
+  const validateOverlap = (conditions: SpecialCondition[]): boolean => {
+    for (let i = 0; i < conditions.length; i++) {
+      for (let j = i + 1; j < conditions.length; j++) {
+        if (rangesOverlap(conditions[i], conditions[j])) return true;
+      }
+    }
+    return false;
+  };
+
   const handleSave = () => {
-    if (!formName || !formPrice) return;
-    const newTariff: Tariff = {
-      id: crypto.randomUUID(),
-      name: formName,
+    const newErrors: typeof errors = {};
+    if (!formName.trim()) newErrors.name = 'Укажите название тарифа';
+    if (!formPrice) newErrors.price = 'Укажите стоимость';
+    if (formConditions.length >= 2 && validateOverlap(formConditions)) {
+      newErrors.conditions = 'Временные интервалы условий не должны пересекаться.';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    const tariffData = {
+      name: formName.trim(),
       pricePerKwh: Number(formPrice),
       conditions: formConditions,
       maxTimeMin: formMaxTime ? Number(formMaxTime) : undefined,
       maxEnergyKwh: formMaxEnergy ? Number(formMaxEnergy) : undefined,
     };
-    setTariffs((prev) => [...prev, newTariff]);
+
+    if (editingTariff) {
+      setTariffs((prev) =>
+        prev.map((t) => (t.id === editingTariff.id ? { ...t, ...tariffData } : t))
+      );
+    } else {
+      setTariffs((prev) => [...prev, { id: crypto.randomUUID(), ...tariffData }]);
+    }
     setShowMock(false);
     setDialogOpen(false);
   };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    setTariffs((prev) => prev.filter((t) => t.id !== deleteTarget.id));
+    setShowMock(false);
+    setDeleteTarget(null);
+  };
+
+  const isEditing = !!editingTariff;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Тарифы</h1>
-        <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
-          <Plus className="h-4 w-4" />
-          Создать
-        </Button>
+        {displayTariffs.length > 0 && (
+          <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Plus className="h-4 w-4" />
+            Создать
+          </Button>
+        )}
       </div>
 
       {/* Dev toggle */}
@@ -170,10 +257,20 @@ export default function TariffsPage() {
                 <div className="flex items-start justify-between">
                   <h3 className="text-base font-semibold">{tariff.name}</h3>
                   <div className="flex items-center gap-1 -mt-0.5">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => openEditDialog(tariff)}
+                    >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => setDeleteTarget(tariff)}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -181,8 +278,8 @@ export default function TariffsPage() {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
-                    <span className="text-sm text-muted-foreground">₽ / кВт·ч</span>
+                  <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
+                  <span className="text-sm text-muted-foreground">₽ / кВт·ч</span>
                 </div>
 
                 {/* Conditions */}
@@ -222,40 +319,53 @@ export default function TariffsPage() {
         </div>
       )}
 
-      {/* Create tariff dialog */}
+      {/* Create / Edit tariff dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Создать новый тариф</DialogTitle>
-            <DialogDescription>Заполните параметры тарифа для зарядных станций.</DialogDescription>
+            <DialogTitle>{isEditing ? 'Редактировать тариф' : 'Создать новый тариф'}</DialogTitle>
+            <DialogDescription>
+              {isEditing
+                ? 'Измените параметры тарифа и сохраните.'
+                : 'Заполните параметры тарифа для зарядных станций.'}
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-5 py-2">
-            {/* Name select */}
+            {/* Name input */}
             <div className="space-y-2">
-              <Label>Название тарифа</Label>
-              <Select value={formName} onValueChange={setFormName}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите название" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TARIFF_NAMES.map((n) => (
-                    <SelectItem key={n} value={n}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>
+                Название тарифа <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                placeholder="Например: Базовый (ТЦ Плаза) или Быстрая зарядка"
+                value={formName}
+                onChange={(e) => {
+                  setFormName(e.target.value);
+                  if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                }}
+                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+              />
+              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
 
             {/* Base price */}
             <div className="space-y-2">
-              <Label>Базовая стоимость (₽ / кВт·ч)</Label>
+              <Label>
+                Базовая стоимость (₽ / кВт·ч) <span className="text-destructive">*</span>
+              </Label>
               <Input
                 type="number"
                 placeholder="0"
                 min={0}
                 value={formPrice}
-                onChange={(e) => setFormPrice(e.target.value)}
+                onChange={(e) => {
+                  setFormPrice(e.target.value);
+                  if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
+                }}
+                className={errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}
               />
+              {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
               <p className="text-xs text-muted-foreground">
                 Действует всегда, если не заданы особые условия времени
               </p>
@@ -316,7 +426,15 @@ export default function TariffsPage() {
                   </Button>
                 </div>
               ))}
-              <Button variant="ghost" size="sm" className="mt-4 text-muted-foreground" onClick={addCondition}>
+              {errors.conditions && (
+                <p className="text-xs text-destructive">{errors.conditions}</p>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-4 text-primary px-4 py-2 hover:bg-accent"
+                onClick={addCondition}
+              >
                 Добавить
               </Button>
             </div>
@@ -355,14 +473,34 @@ export default function TariffsPage() {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!formName || !formPrice}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Создать
+              {isEditing ? 'Сохранить' : 'Создать'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить тариф?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие нельзя отменить. Тариф будет отвязан от всех станций.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

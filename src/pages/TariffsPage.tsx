@@ -358,7 +358,7 @@ export default function TariffsPage() {
                 <div className="relative">
                   <Input
                     type="number"
-                    placeholder="Например, 20"
+                    placeholder=""
                     min={0}
                     value={formPrice}
                     onChange={(e) => {

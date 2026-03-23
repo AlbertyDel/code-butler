@@ -358,7 +358,7 @@ export default function TariffsPage() {
               disabled={!formName || !formPrice}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Сохранить тариф
+              Создать
             </Button>
           </DialogFooter>
         </DialogContent>

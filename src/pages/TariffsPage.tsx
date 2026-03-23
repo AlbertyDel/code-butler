@@ -251,7 +251,7 @@ export default function TariffsPage() {
       {displayTariffs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayTariffs.map((tariff) => (
-            <Card key={tariff.id} className="relative overflow-hidden">
+            <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
               <CardContent className="p-5 space-y-4">
                 {/* Top row */}
                 <div className="flex items-start justify-between">
@@ -352,19 +352,22 @@ export default function TariffsPage() {
             {/* Base price */}
             <div className="space-y-2">
               <Label>
-                Базовая стоимость (₽ / кВт·ч) <span className="text-destructive">*</span>
+                Базовая стоимость (кВт·ч) <span className="text-destructive">*</span>
               </Label>
-              <Input
-                type="number"
-                placeholder="Например, 20"
-                min={0}
-                value={formPrice}
-                onChange={(e) => {
-                  setFormPrice(e.target.value);
-                  if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
-                }}
-                className={errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}
-              />
+              <div className="relative">
+                <Input
+                  type="number"
+                  placeholder="Например, 20"
+                  min={0}
+                  value={formPrice}
+                  onChange={(e) => {
+                    setFormPrice(e.target.value);
+                    if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
+                  }}
+                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">₽</span>
+              </div>
               {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
               <p className="text-xs text-muted-foreground">
                 Действует всегда, если не заданы особые условия времени
@@ -430,12 +433,12 @@ export default function TariffsPage() {
                 <p className="text-xs text-destructive">{errors.conditions}</p>
               )}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="text-primary hover:bg-accent"
+                className="text-primary px-4 py-2 hover:bg-accent"
                 onClick={addCondition}
               >
-                Добавить период
+                Добавить
               </Button>
             </div>
 
@@ -485,9 +488,9 @@ export default function TariffsPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить тариф?</AlertDialogTitle>
+            <AlertDialogTitle>Вы собираетесь удалить тариф: {deleteTarget?.name}</AlertDialogTitle>
             <AlertDialogDescription>
-              Тариф будет отвязан от всех станций.
+              Действие отменить нельзя. Тариф будет безвозвратно удален и отвязан от всех станций.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

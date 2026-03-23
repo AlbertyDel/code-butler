@@ -251,7 +251,7 @@ export default function TariffsPage() {
       {displayTariffs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {displayTariffs.map((tariff) => (
-            <Card key={tariff.id} className="relative overflow-hidden">
+            <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
               <CardContent className="p-5 space-y-4">
                 {/* Top row */}
                 <div className="flex items-start justify-between">

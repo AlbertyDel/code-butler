@@ -336,7 +336,7 @@ export default function TariffsPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Макс. энергия (кВт·ч)</Label>
+                  <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
                   <Input
                     type="number"
                     placeholder="Без ограничений"

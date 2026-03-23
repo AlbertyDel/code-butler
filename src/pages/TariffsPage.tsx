@@ -321,7 +321,7 @@ export default function TariffsPage() {
 
       {/* Create / Edit tariff dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-scroll [scrollbar-gutter:stable]">
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Редактировать тариф' : 'Создать новый тариф'}</DialogTitle>
             <DialogDescription>

@@ -352,19 +352,22 @@ export default function TariffsPage() {
             {/* Base price */}
             <div className="space-y-2">
               <Label>
-                Базовая стоимость (₽ / кВт·ч) <span className="text-destructive">*</span>
+                Базовая стоимость (кВт·ч) <span className="text-destructive">*</span>
               </Label>
-              <Input
-                type="number"
-                placeholder="Например, 20"
-                min={0}
-                value={formPrice}
-                onChange={(e) => {
-                  setFormPrice(e.target.value);
-                  if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
-                }}
-                className={errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}
-              />
+              <div className="relative">
+                <Input
+                  type="number"
+                  placeholder="Например, 20"
+                  min={0}
+                  value={formPrice}
+                  onChange={(e) => {
+                    setFormPrice(e.target.value);
+                    if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
+                  }}
+                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">₽</span>
+              </div>
               {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
               <p className="text-xs text-muted-foreground">
                 Действует всегда, если не заданы особые условия времени

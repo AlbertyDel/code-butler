@@ -111,7 +111,14 @@ const statusMap: Record<TransactionStatus, { label: string; variant: 'default' |
 
 export default function FinancePage() {
   const { businessState } = useBusinessState();
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   // For demo, toggle between empty and populated

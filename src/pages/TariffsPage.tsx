@@ -462,7 +462,7 @@ export default function TariffsPage() {
                     <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
                     <Input
                       type="number"
-                      placeholder="Без ограничений"
+                      placeholder="Без лимита"
                       min={0}
                       value={formMaxEnergy}
                       onChange={(e) => setFormMaxEnergy(e.target.value)}

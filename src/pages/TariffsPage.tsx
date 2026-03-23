@@ -344,7 +344,7 @@ export default function TariffsPage() {
                   setFormName(e.target.value);
                   if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                 }}
-                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
               />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>

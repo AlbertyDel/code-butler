@@ -46,6 +46,11 @@ export default function ProfilePage() {
   const email = user?.email || '';
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     setFirstName(user?.name?.split(' ')[0] || '');
     setLastName(user?.name?.split(' ').slice(1).join(' ') || '');
     setPhoneNumber(user?.phone || '');

@@ -489,7 +489,7 @@ export default function TariffsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Удалить тариф?</AlertDialogTitle>
             <AlertDialogDescription>
-              Это действие нельзя отменить. Тариф будет отвязан от всех станций.
+              Тариф будет отвязан от всех станций.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

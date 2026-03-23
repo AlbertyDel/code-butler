@@ -221,6 +221,8 @@ export default function TariffsPage() {
 
   const isEditing = !!editingTariff;
 
+  if (isPageLoading) return <PageSkeleton cards={4} />;
+
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

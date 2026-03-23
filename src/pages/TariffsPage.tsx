@@ -326,7 +326,7 @@ export default function TariffsPage() {
               <Label>Ограничения сессии</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Макс. время (мин)</Label>
+                  <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                   <Input
                     type="number"
                     placeholder="Без ограничений"

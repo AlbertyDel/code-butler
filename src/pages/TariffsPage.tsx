@@ -352,7 +352,7 @@ export default function TariffsPage() {
             {/* Base price */}
             <div className="space-y-2">
               <Label>
-                Базовая стоимость (кВт·ч) <span className="text-destructive">*</span>
+                Базовая цена (кВт·ч) <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -436,11 +436,10 @@ export default function TariffsPage() {
               )}
             </div>
             <Button
-              variant="ghost"
-              className="mt-2 text-primary px-4 py-2 hover:bg-accent"
+              variant="outline"
+              className="w-full border-dashed border-2 text-muted-foreground hover:text-primary hover:border-primary hover:bg-accent/50 mt-4"
               onClick={addCondition}
             >
-              <Plus className="h-4 w-4" />
               Добавить
             </Button>
 

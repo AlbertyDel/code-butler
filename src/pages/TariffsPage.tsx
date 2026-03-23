@@ -330,8 +330,11 @@ export default function TariffsPage() {
 
       {/* Create / Edit tariff dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="flex flex-col max-h-[90dvh] w-[calc(100vw-2rem)] sm:max-w-lg mx-auto rounded-xl p-4 sm:p-6">
-          <DialogHeader>
+        <DialogContent
+          className="w-[94vw] max-w-[450px] p-0 overflow-hidden flex flex-col max-h-[85dvh] rounded-2xl border-none fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-[100]"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader className="px-5 pt-5 pb-3">
             <DialogTitle>{isEditing ? 'Редактировать тариф' : 'Создать новый тариф'}</DialogTitle>
             <DialogDescription>
               {isEditing
@@ -340,15 +343,14 @@ export default function TariffsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto px-1 -mx-1 pr-2 -mr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
-            <div className="space-y-5 py-2">
+          <div className="flex-1 overflow-y-auto px-5 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="space-y-5">
               {/* Name input */}
               <div className="space-y-2">
                 <Label>
                   Название тарифа <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  placeholder=""
                   value={formName}
                   onChange={(e) => {
                     setFormName(e.target.value);
@@ -367,7 +369,6 @@ export default function TariffsPage() {
                 <div className="relative">
                   <Input
                     type="number"
-                    placeholder=""
                     min={0}
                     value={formPrice}
                     onChange={(e) => {
@@ -461,7 +462,7 @@ export default function TariffsPage() {
                     <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                     <Input
                       type="number"
-                      placeholder="Без лимита"
+                      placeholder="Нет"
                       min={0}
                       value={formMaxTime}
                       onChange={(e) => setFormMaxTime(e.target.value)}
@@ -471,7 +472,7 @@ export default function TariffsPage() {
                     <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
                     <Input
                       type="number"
-                      placeholder="Без лимита"
+                      placeholder="Нет"
                       min={0}
                       value={formMaxEnergy}
                       onChange={(e) => setFormMaxEnergy(e.target.value)}
@@ -482,19 +483,17 @@ export default function TariffsPage() {
             </div>
           </div>
 
-          <DialogFooter>
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 w-full mt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Отмена
-              </Button>
-              <Button
-                onClick={handleSave}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {isEditing ? 'Сохранить' : 'Создать'}
-              </Button>
-            </div>
-          </DialogFooter>
+          <div className="flex flex-col gap-2 w-full p-5 border-t bg-white">
+            <Button
+              onClick={handleSave}
+              className="h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isEditing ? 'Сохранить' : 'Создать'}
+            </Button>
+            <Button variant="outline" className="h-12" onClick={() => setDialogOpen(false)}>
+              Отмена
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

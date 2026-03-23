@@ -21,7 +21,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="h-screen overflow-hidden bg-slate-50">
       <TopBar />
       <DesktopSidebar />
       <main className="pt-16 md:ml-64 min-h-screen overflow-auto p-6 mt-4">

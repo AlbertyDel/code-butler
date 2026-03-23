@@ -394,12 +394,12 @@ export default function TariffsPage() {
                     </SelectContent>
                   </Select>
                   <span className="text-sm text-muted-foreground">–</span>
-                  <Select
-                    value={cond.timeTo}
+                   <Select
+                    value={cond.timeTo || undefined}
                     onValueChange={(v) => updateCondition(cond.id, 'timeTo', v)}
                   >
                     <SelectTrigger className="w-[90px] h-8 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="До" />
                     </SelectTrigger>
                     <SelectContent>
                       {TIME_OPTIONS.map((t) => (

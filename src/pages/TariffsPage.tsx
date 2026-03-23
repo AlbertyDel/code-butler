@@ -150,7 +150,7 @@ export default function TariffsPage() {
   const addCondition = () => {
     setFormConditions((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), timeFrom: '23:00', timeTo: '07:00', price: 15 },
+      { id: crypto.randomUUID(), timeFrom: '', timeTo: '', price: 0 },
     ]);
   };
 

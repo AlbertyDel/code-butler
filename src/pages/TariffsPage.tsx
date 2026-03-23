@@ -338,7 +338,7 @@ export default function TariffsPage() {
                 Название тарифа <span className="text-destructive">*</span>
               </Label>
               <Input
-                placeholder="Например: Базовый (ТЦ Плаза) или Быстрая зарядка"
+                placeholder="Например: Подземный паркинг или Гостевой"
                 value={formName}
                 onChange={(e) => {
                   setFormName(e.target.value);

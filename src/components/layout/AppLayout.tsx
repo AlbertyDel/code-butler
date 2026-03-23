@@ -17,9 +17,9 @@ export function AppLayout() {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
         <TopBar isLoading={isInitialLoading} />
-        <main className="pt-16 px-4 pb-20 overflow-auto mt-8">
+        <main className="flex-1 overflow-y-auto pt-16 pb-24 mt-0 px-4">
           {isInitialLoading ? <PageSkeleton cards={4} /> : <Outlet />}
         </main>
         <MobileNavigation />

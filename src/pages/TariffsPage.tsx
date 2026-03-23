@@ -410,15 +410,17 @@ export default function TariffsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                   <Input
-                    type="number"
-                    className="w-20 h-8 text-xs"
-                    placeholder="₽"
-                    min={0}
-                    value={cond.price || ''}
-                    onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
-                  />
-                  <span className="text-xs text-muted-foreground">₽</span>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      className="w-24 h-8 text-xs pr-6 focus-visible:ring-primary"
+                      placeholder="Цена"
+                      min={0}
+                      value={cond.price || ''}
+                      onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">₽</span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"

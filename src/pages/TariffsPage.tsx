@@ -191,7 +191,7 @@ export default function TariffsPage() {
                     tariff.conditions.map((c) => (
                       <p key={c.id} className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        Спец. цена: {c.price} руб ({c.timeFrom} – {c.timeTo})
+                        {c.price} ₽ с {c.timeFrom} до {c.timeTo}
                       </p>
                     ))
                   ) : (

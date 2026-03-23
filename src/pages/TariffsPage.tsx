@@ -430,12 +430,12 @@ export default function TariffsPage() {
                 <p className="text-xs text-destructive">{errors.conditions}</p>
               )}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="text-primary hover:bg-accent"
+                className="text-primary px-4 py-2 hover:bg-accent"
                 onClick={addCondition}
               >
-                Добавить период
+                Добавить
               </Button>
             </div>
 

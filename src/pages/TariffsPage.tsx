@@ -352,7 +352,7 @@ export default function TariffsPage() {
             {/* Base price */}
             <div className="space-y-2">
               <Label>
-                Базовая стоимость (кВт·ч) <span className="text-destructive">*</span>
+                Базовая цена (кВт·ч) <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input

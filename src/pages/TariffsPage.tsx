@@ -101,8 +101,14 @@ function rangesOverlap(a: SpecialCondition, b: SpecialCondition): boolean {
 }
 
 export default function TariffsPage() {
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [showMock, setShowMock] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTariff, setEditingTariff] = useState<Tariff | null>(null);
 

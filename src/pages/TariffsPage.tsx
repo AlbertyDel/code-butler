@@ -344,7 +344,7 @@ export default function TariffsPage() {
                   setFormName(e.target.value);
                   if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                 }}
-                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
               />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
@@ -364,7 +364,7 @@ export default function TariffsPage() {
                     setFormPrice(e.target.value);
                     if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
                   }}
-                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}`}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">₽</span>
               </div>
@@ -410,15 +410,17 @@ export default function TariffsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                   <Input
-                    type="number"
-                    className="w-20 h-8 text-xs"
-                    placeholder="₽"
-                    min={0}
-                    value={cond.price || ''}
-                    onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
-                  />
-                  <span className="text-xs text-muted-foreground">₽</span>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      className="w-24 h-8 text-xs pr-6 focus-visible:ring-primary"
+                      placeholder="Цена"
+                      min={0}
+                      value={cond.price || ''}
+                      onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">₽</span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -432,15 +434,15 @@ export default function TariffsPage() {
               {errors.conditions && (
                 <p className="text-xs text-destructive">{errors.conditions}</p>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-primary px-4 py-2 hover:bg-accent"
-                onClick={addCondition}
-              >
-                Добавить
-              </Button>
             </div>
+            <Button
+              variant="ghost"
+              className="mt-2 text-primary px-4 py-2 hover:bg-accent"
+              onClick={addCondition}
+            >
+              <Plus className="h-4 w-4" />
+              Добавить
+            </Button>
 
             {/* Session limits */}
             <div className="space-y-2">

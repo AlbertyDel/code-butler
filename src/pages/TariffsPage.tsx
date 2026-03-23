@@ -364,7 +364,7 @@ export default function TariffsPage() {
                     setFormPrice(e.target.value);
                     if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
                   }}
-                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}`}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">₽</span>
               </div>

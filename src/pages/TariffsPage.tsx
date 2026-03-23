@@ -432,15 +432,15 @@ export default function TariffsPage() {
               {errors.conditions && (
                 <p className="text-xs text-destructive">{errors.conditions}</p>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-primary px-4 py-2 hover:bg-accent"
-                onClick={addCondition}
-              >
-                Добавить
-              </Button>
             </div>
+            <Button
+              variant="ghost"
+              className="mt-2 text-primary px-4 py-2 hover:bg-accent"
+              onClick={addCondition}
+            >
+              <Plus className="h-4 w-4" />
+              Добавить
+            </Button>
 
             {/* Session limits */}
             <div className="space-y-2">

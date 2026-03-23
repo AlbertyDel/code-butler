@@ -150,7 +150,7 @@ export default function TariffsPage() {
   const addCondition = () => {
     setFormConditions((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), timeFrom: '23:00', timeTo: '07:00', price: 15 },
+      { id: crypto.randomUUID(), timeFrom: '', timeTo: '', price: 0 },
     ]);
   };
 
@@ -338,7 +338,7 @@ export default function TariffsPage() {
                 Название тарифа <span className="text-destructive">*</span>
               </Label>
               <Input
-                placeholder="Например: Базовый (ТЦ Плаза) или Быстрая зарядка"
+                placeholder="Например: Подземный паркинг или Гостевой"
                 value={formName}
                 onChange={(e) => {
                   setFormName(e.target.value);
@@ -356,7 +356,7 @@ export default function TariffsPage() {
               </Label>
               <Input
                 type="number"
-                placeholder="0"
+                placeholder="Например, 20"
                 min={0}
                 value={formPrice}
                 onChange={(e) => {
@@ -373,29 +373,19 @@ export default function TariffsPage() {
 
             {/* Special conditions */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Специальные условия</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-primary hover:bg-accent"
-                  onClick={addCondition}
-                >
-                  Добавить
-                </Button>
-              </div>
+              <Label>Специальные условия</Label>
               {formConditions.map((cond) => (
                 <div
                   key={cond.id}
                   className="flex flex-wrap items-center gap-2 rounded-md bg-secondary p-3"
                 >
                   <span className="text-sm text-muted-foreground shrink-0">Каждый день</span>
-                  <Select
-                    value={cond.timeFrom}
+                   <Select
+                    value={cond.timeFrom || undefined}
                     onValueChange={(v) => updateCondition(cond.id, 'timeFrom', v)}
                   >
                     <SelectTrigger className="w-[90px] h-8 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="С" />
                     </SelectTrigger>
                     <SelectContent>
                       {TIME_OPTIONS.map((t) => (
@@ -404,12 +394,12 @@ export default function TariffsPage() {
                     </SelectContent>
                   </Select>
                   <span className="text-sm text-muted-foreground">–</span>
-                  <Select
-                    value={cond.timeTo}
+                   <Select
+                    value={cond.timeTo || undefined}
                     onValueChange={(v) => updateCondition(cond.id, 'timeTo', v)}
                   >
                     <SelectTrigger className="w-[90px] h-8 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="До" />
                     </SelectTrigger>
                     <SelectContent>
                       {TIME_OPTIONS.map((t) => (
@@ -417,12 +407,12 @@ export default function TariffsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input
+                   <Input
                     type="number"
                     className="w-20 h-8 text-xs"
-                    placeholder="Цена"
+                    placeholder="₽"
                     min={0}
-                    value={cond.price}
+                    value={cond.price || ''}
                     onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
                   />
                   <span className="text-xs text-muted-foreground">₽</span>
@@ -439,6 +429,15 @@ export default function TariffsPage() {
               {errors.conditions && (
                 <p className="text-xs text-destructive">{errors.conditions}</p>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:bg-accent mt-2"
+                onClick={addCondition}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Добавить период
+              </Button>
             </div>
 
             {/* Session limits */}

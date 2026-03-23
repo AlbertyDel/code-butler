@@ -89,6 +89,8 @@ export default function ProfilePage() {
     navigate('/login');
   };
 
+  if (isPageLoading) return <PageSkeleton cards={3} />;
+
   return (
     <div className="space-y-6">
       <Card>

@@ -316,9 +316,8 @@ export default function TariffsPage() {
                   </Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addCondition}>
-                <Plus className="h-3.5 w-3.5" />
-                Добавить условие
+              <Button variant="ghost" size="sm" className="mt-4 text-muted-foreground" onClick={addCondition}>
+                Добавить
               </Button>
             </div>
 

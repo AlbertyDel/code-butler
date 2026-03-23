@@ -321,7 +321,7 @@ export default function TariffsPage() {
 
       {/* Create / Edit tariff dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="flex flex-col max-h-[90dvh] w-[calc(100vw-2rem)] sm:max-w-lg mx-auto rounded-xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Редактировать тариф' : 'Создать новый тариф'}</DialogTitle>
             <DialogDescription>

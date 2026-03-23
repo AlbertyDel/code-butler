@@ -25,28 +25,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<UserRole>('individual');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check auth status on mount — fallback to mock if API unavailable
+  // Immediately activate mock user — no API dependency
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('[AuthContext] Checking auth status...');
-        const response = await api.get('/auth/me', { timeout: 3000 });
-        const userData = response.data?.data?.user || response.data?.user;
-        if (userData) {
-          setUser(userData);
-          setUserRole(userData.role || 'individual');
-        } else {
-          throw new Error('No user in response');
-        }
-      } catch (error) {
-        console.log('[AuthContext] API unavailable, using mock user');
-        setUser(mockUser);
-        setUserRole(mockUser.role || 'individual');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkAuth();
+    console.log('[AuthContext] Using mock user (demo mode)');
+    setUser(mockUser);
+    setUserRole(mockUser.role || 'individual');
+    setIsLoading(false);
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {

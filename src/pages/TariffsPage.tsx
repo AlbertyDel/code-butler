@@ -373,17 +373,7 @@ export default function TariffsPage() {
 
             {/* Special conditions */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Специальные условия</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-primary hover:bg-accent"
-                  onClick={addCondition}
-                >
-                  Добавить
-                </Button>
-              </div>
+              <Label>Специальные условия</Label>
               {formConditions.map((cond) => (
                 <div
                   key={cond.id}

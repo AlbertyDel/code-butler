@@ -321,7 +321,7 @@ export default function TariffsPage() {
 
       {/* Create / Edit tariff dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="flex flex-col max-h-[90dvh] w-[calc(100vw-2rem)] sm:max-w-lg mx-auto rounded-xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Редактировать тариф' : 'Создать новый тариф'}</DialogTitle>
             <DialogDescription>
@@ -331,7 +331,7 @@ export default function TariffsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="max-h-[60vh] overflow-y-auto px-1 -mx-1 pr-4 -mr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <div className="flex-1 overflow-y-auto px-1 -mx-1 pr-2 -mr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
             <div className="space-y-5 py-2">
               {/* Name input */}
               <div className="space-y-2">
@@ -339,7 +339,7 @@ export default function TariffsPage() {
                   Название тарифа <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  placeholder="Например: Подземный паркинг или Гостевой"
+                  placeholder=""
                   value={formName}
                   onChange={(e) => {
                     setFormName(e.target.value);
@@ -358,7 +358,7 @@ export default function TariffsPage() {
                 <div className="relative">
                   <Input
                     type="number"
-                    placeholder="Например, 20"
+                    placeholder=""
                     min={0}
                     value={formPrice}
                     onChange={(e) => {
@@ -447,12 +447,12 @@ export default function TariffsPage() {
               {/* Session limits */}
               <div className="space-y-2">
                 <Label>Ограничения сессии</Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                     <Input
                       type="number"
-                      placeholder="Без ограничений"
+                      placeholder="Без лимита"
                       min={0}
                       value={formMaxTime}
                       onChange={(e) => setFormMaxTime(e.target.value)}
@@ -462,7 +462,7 @@ export default function TariffsPage() {
                     <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
                     <Input
                       type="number"
-                      placeholder="Без ограничений"
+                      placeholder="Без лимита"
                       min={0}
                       value={formMaxEnergy}
                       onChange={(e) => setFormMaxEnergy(e.target.value)}
@@ -474,15 +474,17 @@ export default function TariffsPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Отмена
-            </Button>
-            <Button
-              onClick={handleSave}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {isEditing ? 'Сохранить' : 'Создать'}
-            </Button>
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 w-full mt-4">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {isEditing ? 'Сохранить' : 'Создать'}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

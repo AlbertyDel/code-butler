@@ -321,7 +321,7 @@ export default function TariffsPage() {
 
       {/* Create / Edit tariff dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-scroll [scrollbar-gutter:stable]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Редактировать тариф' : 'Создать новый тариф'}</DialogTitle>
             <DialogDescription>
@@ -331,141 +331,143 @@ export default function TariffsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 py-2">
-            {/* Name input */}
-            <div className="space-y-2">
-              <Label>
-                Название тарифа <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                placeholder="Например: Подземный паркинг или Гостевой"
-                value={formName}
-                onChange={(e) => {
-                  setFormName(e.target.value);
-                  if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
-                }}
-                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
-              />
-              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
-            </div>
-
-            {/* Base price */}
-            <div className="space-y-2">
-              <Label>
-                Базовая цена (кВт·ч) <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
+          <div className="max-h-[60vh] overflow-y-auto pr-4 -mr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="space-y-5 py-2">
+              {/* Name input */}
+              <div className="space-y-2">
+                <Label>
+                  Название тарифа <span className="text-destructive">*</span>
+                </Label>
                 <Input
-                  type="number"
-                  placeholder="Например, 20"
-                  min={0}
-                  value={formPrice}
+                  placeholder="Например: Подземный паркинг или Гостевой"
+                  value={formName}
                   onChange={(e) => {
-                    setFormPrice(e.target.value);
-                    if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
+                    setFormName(e.target.value);
+                    if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                   }}
-                  className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}`}
+                  className={errors.name ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">₽</span>
+                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
               </div>
-              {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
-              <p className="text-xs text-muted-foreground">
-                Действует всегда, если не заданы особые условия времени
-              </p>
-            </div>
 
-            {/* Special conditions */}
-            <div className="space-y-3">
-              <Label>Специальные условия</Label>
-              {formConditions.map((cond) => (
-                <div
-                  key={cond.id}
-                  className="flex flex-wrap items-center gap-2 rounded-md bg-secondary p-3"
-                >
-                  <span className="text-sm text-muted-foreground shrink-0">Каждый день</span>
-                   <Select
-                    value={cond.timeFrom || undefined}
-                    onValueChange={(v) => updateCondition(cond.id, 'timeFrom', v)}
+              {/* Base price */}
+              <div className="space-y-2">
+                <Label>
+                  Базовая цена (кВт·ч) <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    placeholder="Например, 20"
+                    min={0}
+                    value={formPrice}
+                    onChange={(e) => {
+                      setFormPrice(e.target.value);
+                      if (errors.price) setErrors((prev) => ({ ...prev, price: undefined }));
+                    }}
+                    className={`pr-8 ${errors.price ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}`}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">₽</span>
+                </div>
+                {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
+                <p className="text-xs text-muted-foreground">
+                  Действует всегда, если не заданы особые условия времени
+                </p>
+              </div>
+
+              {/* Special conditions */}
+              <div className="space-y-3">
+                <Label>Специальные условия</Label>
+                {formConditions.map((cond) => (
+                  <div
+                    key={cond.id}
+                    className="flex flex-wrap items-center gap-2 rounded-md bg-secondary p-3"
                   >
-                    <SelectTrigger className="w-[90px] h-8 text-xs">
-                      <SelectValue placeholder="С" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIME_OPTIONS.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span className="text-sm text-muted-foreground">–</span>
-                   <Select
-                    value={cond.timeTo || undefined}
-                    onValueChange={(v) => updateCondition(cond.id, 'timeTo', v)}
-                  >
-                    <SelectTrigger className="w-[90px] h-8 text-xs">
-                      <SelectValue placeholder="До" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIME_OPTIONS.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="relative">
+                    <span className="text-sm text-muted-foreground shrink-0">Каждый день</span>
+                     <Select
+                      value={cond.timeFrom || undefined}
+                      onValueChange={(v) => updateCondition(cond.id, 'timeFrom', v)}
+                    >
+                      <SelectTrigger className="w-[90px] h-8 text-xs">
+                        <SelectValue placeholder="С" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIME_OPTIONS.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <span className="text-sm text-muted-foreground">–</span>
+                     <Select
+                      value={cond.timeTo || undefined}
+                      onValueChange={(v) => updateCondition(cond.id, 'timeTo', v)}
+                    >
+                      <SelectTrigger className="w-[90px] h-8 text-xs">
+                        <SelectValue placeholder="До" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIME_OPTIONS.map((t) => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        className="w-24 h-8 text-xs pr-6 focus-visible:ring-primary"
+                        placeholder="Цена"
+                        min={0}
+                        value={cond.price || ''}
+                        onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">₽</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 ml-auto text-muted-foreground hover:text-destructive"
+                      onClick={() => removeCondition(cond.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {errors.conditions && (
+                  <p className="text-xs text-destructive">{errors.conditions}</p>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full border-dashed border-2 text-muted-foreground hover:text-primary hover:border-primary hover:bg-accent/50 mt-4"
+                onClick={addCondition}
+              >
+                Добавить
+              </Button>
+
+              {/* Session limits */}
+              <div className="space-y-2">
+                <Label>Ограничения сессии</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                     <Input
                       type="number"
-                      className="w-24 h-8 text-xs pr-6 focus-visible:ring-primary"
-                      placeholder="Цена"
+                      placeholder="Без ограничений"
                       min={0}
-                      value={cond.price || ''}
-                      onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
+                      value={formMaxTime}
+                      onChange={(e) => setFormMaxTime(e.target.value)}
                     />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">₽</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 ml-auto text-muted-foreground hover:text-destructive"
-                    onClick={() => removeCondition(cond.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
-              {errors.conditions && (
-                <p className="text-xs text-destructive">{errors.conditions}</p>
-              )}
-            </div>
-            <Button
-              variant="outline"
-              className="w-full border-dashed border-2 text-muted-foreground hover:text-primary hover:border-primary hover:bg-accent/50 mt-4"
-              onClick={addCondition}
-            >
-              Добавить
-            </Button>
-
-            {/* Session limits */}
-            <div className="space-y-2">
-              <Label>Ограничения сессии</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
-                  <Input
-                    type="number"
-                    placeholder="Без ограничений"
-                    min={0}
-                    value={formMaxTime}
-                    onChange={(e) => setFormMaxTime(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
-                  <Input
-                    type="number"
-                    placeholder="Без ограничений"
-                    min={0}
-                    value={formMaxEnergy}
-                    onChange={(e) => setFormMaxEnergy(e.target.value)}
-                  />
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
+                    <Input
+                      type="number"
+                      placeholder="Без ограничений"
+                      min={0}
+                      value={formMaxEnergy}
+                      onChange={(e) => setFormMaxEnergy(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

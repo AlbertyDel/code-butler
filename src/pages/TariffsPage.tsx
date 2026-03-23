@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -100,8 +101,14 @@ function rangesOverlap(a: SpecialCondition, b: SpecialCondition): boolean {
 }
 
 export default function TariffsPage() {
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [showMock, setShowMock] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTariff, setEditingTariff] = useState<Tariff | null>(null);
 
@@ -213,6 +220,8 @@ export default function TariffsPage() {
   };
 
   const isEditing = !!editingTariff;
+
+  if (isPageLoading) return <PageSkeleton cards={4} />;
 
   return (
     <div className="space-y-6">

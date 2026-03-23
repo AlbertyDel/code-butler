@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -110,8 +111,14 @@ const statusMap: Record<TransactionStatus, { label: string; variant: 'default' |
 
 export default function FinancePage() {
   const { businessState } = useBusinessState();
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>('all');
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   // For demo, toggle between empty and populated
   const showData = businessState === 'active';
@@ -137,6 +144,8 @@ export default function FinancePage() {
     a.click();
     URL.revokeObjectURL(url);
   }, [filtered]);
+
+  if (isPageLoading) return <PageSkeleton cards={4} />;
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,7 @@
 import { CircleUserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +27,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import logoCharger from '@/assets/logo-charger.svg';
 import { useState } from 'react';
 
-export function TopBar() {
+interface TopBarProps {
+  isLoading?: boolean;
+}
+
+export function TopBar({ isLoading = false }: TopBarProps) {
   const { logout } = useAuth();
   const { businessState } = useBusinessState();
   const navigate = useNavigate();
@@ -48,36 +53,48 @@ export function TopBar() {
         )}
 
         <div className="flex items-center gap-3">
-          {businessState === 'pending' && (
-            <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-              Проверка реквизитов
-            </Badge>
+          {isLoading ? (
+            <>
+              <Skeleton className="h-6 w-28 rounded-full" />
+              <div className="flex items-center gap-2 px-3">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="hidden sm:block h-4 w-20" />
+              </div>
+            </>
+          ) : (
+            <>
+              {businessState === 'pending' && (
+                <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  Проверка реквизитов
+                </Badge>
+              )}
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="lg" className="gap-2 text-muted-foreground cursor-pointer px-3">
+                    <CircleUserRound className="!h-8 !w-8" />
+                    <span className="hidden sm:inline text-sm font-medium">Профиль</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-popover">
+                  <DropdownMenuLabel className="text-sm font-normal text-muted-foreground">
+                    test@example.com
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                    Профиль
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setLogoutDialogOpen(true)}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    Выйти
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="lg" className="gap-2 text-muted-foreground cursor-pointer px-3">
-                <CircleUserRound className="!h-8 !w-8" />
-                <span className="hidden sm:inline text-sm font-medium">Профиль</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-popover">
-              <DropdownMenuLabel className="text-sm font-normal text-muted-foreground">
-                test@example.com
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
-                Профиль
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setLogoutDialogOpen(true)}
-                className="text-destructive focus:text-destructive cursor-pointer"
-              >
-                Выйти
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </header>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ function isValidPhone(value: string): boolean {
 
 export default function ProfilePage() {
   const { user, setAuthUser, logout } = useAuth();
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const { businessState } = useBusinessState();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -42,6 +44,11 @@ export default function ProfilePage() {
   const [phoneError, setPhoneError] = useState('');
 
   const email = user?.email || '';
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsPageLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     setFirstName(user?.name?.split(' ')[0] || '');
@@ -81,6 +88,8 @@ export default function ProfilePage() {
     logout();
     navigate('/login');
   };
+
+  if (isPageLoading) return <PageSkeleton cards={3} />;
 
   return (
     <div className="space-y-6">

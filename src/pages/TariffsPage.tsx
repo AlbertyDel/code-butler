@@ -205,13 +205,13 @@ export default function TariffsPage() {
                     {tariff.maxTimeMin && (
                       <p className="flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        Макс. время: {tariff.maxTimeMin} мин
+                        Лимит времени: {tariff.maxTimeMin} минут
                       </p>
                     )}
                     {tariff.maxEnergyKwh && (
                       <p className="flex items-center gap-1.5">
                         <Zap className="h-3.5 w-3.5 shrink-0" />
-                        Макс. энергия: {tariff.maxEnergyKwh} кВт·ч
+                        Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
                       </p>
                     )}
                   </div>

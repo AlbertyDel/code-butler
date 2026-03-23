@@ -145,6 +145,8 @@ export default function FinancePage() {
     URL.revokeObjectURL(url);
   }, [filtered]);
 
+  if (isPageLoading) return <PageSkeleton cards={4} />;
+
   return (
     <div className="space-y-6">
       {/* BLOCK 1: Dashboard cards */}

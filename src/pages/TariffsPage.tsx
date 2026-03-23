@@ -485,9 +485,9 @@ export default function TariffsPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить тариф?</AlertDialogTitle>
+            <AlertDialogTitle>Вы собираетесь удалить тариф: {deleteTarget?.name}</AlertDialogTitle>
             <AlertDialogDescription>
-              Тариф будет отвязан от всех станций.
+              Действие отменить нельзя. Тариф будет безвозвратно удален и отвязан от всех станций.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

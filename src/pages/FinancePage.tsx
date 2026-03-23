@@ -119,7 +119,6 @@ export default function FinancePage() {
     const timer = setTimeout(() => setIsPageLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   // For demo, toggle between empty and populated
   const showData = businessState === 'active';

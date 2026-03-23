@@ -452,7 +452,7 @@ export default function TariffsPage() {
                     <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                     <Input
                       type="number"
-                      placeholder="Без ограничений"
+                      placeholder="Без лимита"
                       min={0}
                       value={formMaxTime}
                       onChange={(e) => setFormMaxTime(e.target.value)}

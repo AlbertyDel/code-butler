@@ -305,7 +305,7 @@ export default function TariffsPage() {
                     value={cond.price}
                     onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
                   />
-                  <span className="text-xs text-muted-foreground">руб</span>
+                  <span className="text-xs text-muted-foreground">₽</span>
                   <Button
                     variant="ghost"
                     size="icon"

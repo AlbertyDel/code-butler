@@ -159,6 +159,7 @@ export default function BusinessProfilePage() {
       return;
     }
     setInn(digits);
+    setFieldErrors((prev) => { const { inn, ...rest } = prev; return rest; });
   };
 
   const handleTabChange = (v: string) => {

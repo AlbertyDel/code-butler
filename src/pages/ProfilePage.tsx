@@ -103,11 +103,6 @@ export default function ProfilePage() {
     <div className="space-y-6 sm:space-y-8">
       <Card>
         <CardContent className="pt-5 space-y-5">
-          <div className="flex items-center justify-end">
-            <Button variant="outline" size="icon" onClick={() => setIsEditing(!isEditing)} className="h-9 w-9 shrink-0">
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </div>
           {isEditing ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -154,7 +149,12 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Имя</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">Имя</p>
+                    <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)} className="h-8 w-8 -mr-2 -mt-1 text-muted-foreground hover:text-foreground">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                   <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
                 </div>
                 <div className="space-y-1">

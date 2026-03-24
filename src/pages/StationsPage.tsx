@@ -185,9 +185,7 @@ export default function StationsPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Заголовок */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
-      </div>
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
 
       {/* Список станций */}
       <div className="space-y-3">

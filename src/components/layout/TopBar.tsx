@@ -63,12 +63,6 @@ export function TopBar({ isLoading = false }: TopBarProps) {
             </>
           ) : (
             <>
-              {businessState === 'pending' && (
-                <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  Проверка реквизитов
-                </Badge>
-              )}
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="lg" className="gap-2 text-muted-foreground cursor-pointer px-3">

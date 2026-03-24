@@ -179,7 +179,7 @@ export default function BusinessProfilePage() {
   };
 
   return (
-    <div className="mt-8 space-y-8 animate-in fade-in duration-300">
+    <div className="mt-4 sm:mt-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       <HeroSection onActivate={scrollToForm} />
       <HowItWorksSection />
       <BenefitsSection />
@@ -194,29 +194,29 @@ export default function BusinessProfilePage() {
             {/* Security info banner */}
             <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <ShieldCheck className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-700">
+              <p className="text-xs sm:text-sm text-blue-700">
                 Для приема платежей и вывода средств мы бесплатно откроем для вас виртуальный счет в ПАО Банк Точка.
               </p>
             </div>
 
             {/* Segmented control */}
             <Tabs value={tab} onValueChange={handleTabChange}>
-              <TabsList className="w-full bg-muted/60 p-1">
+              <TabsList className="w-full h-auto flex flex-col sm:flex-row bg-muted/60 p-1 gap-1">
                 <TabsTrigger
                   value="ooo"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Юр. лицо (ООО)
                 </TabsTrigger>
                 <TabsTrigger
                   value="ip"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   ИП
                 </TabsTrigger>
                 <TabsTrigger
                   value="sz"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Самозанятый
                 </TabsTrigger>

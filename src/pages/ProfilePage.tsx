@@ -92,7 +92,7 @@ export default function ProfilePage() {
   if (isPageLoading) return <PageSkeleton cards={3} />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">

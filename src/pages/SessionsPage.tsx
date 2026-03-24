@@ -197,7 +197,7 @@ export default function SessionsPage() {
       )}
 
       <div className="space-y-4">
-        <h1 className="text-xl font-bold">История зарядных сессий</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">История зарядных сессий</h1>
         
         {paginatedGroups.length === 0 ? (
           <EmptyHistoryState />

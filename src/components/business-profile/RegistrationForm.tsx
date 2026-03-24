@@ -134,7 +134,7 @@ function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> })
         {errors.fullName && <p className="text-sm text-destructive">{(errors.fullName.message as string)}</p>}
       </div>
       <div className="space-y-4">
-        <Label className="text-base font-semibold">Паспортные данные</Label>
+        <Label className="text-base font-semibold">Паспортные данные <span className="text-destructive ml-1">*</span></Label>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Серия</Label>

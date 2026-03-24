@@ -31,7 +31,7 @@ export function AppLayout() {
     <div className="h-screen overflow-hidden bg-slate-50">
       <TopBar isLoading={isInitialLoading} />
       <DesktopSidebar />
-      <main className="pt-16 md:ml-64 min-h-screen overflow-auto p-6 mt-4">
+      <main className="h-screen overflow-y-auto pt-24 px-6 pb-6 md:ml-64">
         {isInitialLoading ? <PageSkeleton cards={6} /> : <Outlet />}
       </main>
     </div>

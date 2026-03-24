@@ -340,7 +340,7 @@ export default function BusinessProfilePage() {
             <Button
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
               size="lg"
-              disabled={!canSubmit}
+              disabled={submitting}
               onClick={handleSubmit}
             >
               {submitting ? (

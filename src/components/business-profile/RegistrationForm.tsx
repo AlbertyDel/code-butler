@@ -260,7 +260,7 @@ export function RegistrationForm() {
           </div>
 
           {/* Single submit button */}
-          <Button type="submit" className="w-full rounded-xl" size="lg" disabled={form.formState.isSubmitting}>
+          <Button type="submit" className="w-full rounded-xl" size="lg">
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />

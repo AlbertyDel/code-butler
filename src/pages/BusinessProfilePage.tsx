@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -96,6 +97,7 @@ export default function BusinessProfilePage() {
   const [shaking, setShaking] = useState(false);
   const [searching, setSearching] = useState(false);
   const [visibleFeedback, setVisibleFeedback] = useState<MockResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const innRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -157,6 +159,7 @@ export default function BusinessProfilePage() {
       return;
     }
     setInn(digits);
+    setFieldErrors((prev) => { const { inn, ...rest } = prev; return rest; });
   };
 
   const handleTabChange = (v: string) => {
@@ -169,7 +172,29 @@ export default function BusinessProfilePage() {
   };
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    const errors: Record<string, string> = {};
+
+    if (inn.length !== maxLen) {
+      errors.inn = `Введите ${maxLen} цифр`;
+    } else if (visibleFeedback?.type === 'error' || (!visibleFeedback && !searching)) {
+      errors.inn = 'ИНН не найден';
+    }
+
+    if (needsAddress && !address.trim()) {
+      errors.address = 'Укажите адрес регистрации';
+    }
+
+    if (!agreed) {
+      errors.agreed = 'Необходимо согласие';
+    }
+
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      toast({ title: 'Заполните все обязательные поля', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 1500));
     setSubmitting(false);
@@ -237,7 +262,7 @@ export default function BusinessProfilePage() {
                   className={cn(
                     'pr-10',
                     shaking && 'animate-shake',
-                    hasError && 'border-red-500 focus-visible:ring-red-500'
+                    (hasError || fieldErrors.inn) && 'border-destructive focus-visible:ring-destructive'
                   )}
                 />
                 {searching && (
@@ -282,6 +307,9 @@ export default function BusinessProfilePage() {
                   </div>
                 </div>
               )}
+              {fieldErrors.inn && !visibleFeedback && (
+                <p className="text-destructive text-xs mt-1">{fieldErrors.inn}</p>
+              )}
             </div>
 
             {/* Address for IP / SZ */}
@@ -294,9 +322,12 @@ export default function BusinessProfilePage() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="г. Москва, ул. Примерная, д. 1"
-                    className="pl-9"
+                    className={cn("pl-9", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
                   />
                 </div>
+                {fieldErrors.address && (
+                  <p className="text-destructive text-xs mt-1">{fieldErrors.address}</p>
+                )}
               </div>
             )}
 
@@ -305,18 +336,21 @@ export default function BusinessProfilePage() {
               <Checkbox
                 checked={agreed}
                 onCheckedChange={(v) => setAgreed(v === true)}
-                className="mt-0.5 h-5 w-5 rounded-[4px] border-2"
+                className={cn("mt-0.5 h-5 w-5 rounded-[4px] border-2", fieldErrors.agreed && "border-destructive")}
               />
               <span className="text-sm text-muted-foreground leading-snug">
                 Я согласен на обработку персональных данных и передачу информации в ПАО Банк Точка
               </span>
             </label>
+            {fieldErrors.agreed && (
+              <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>
+            )}
 
             {/* Submit */}
             <Button
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
               size="lg"
-              disabled={!canSubmit}
+              disabled={submitting}
               onClick={handleSubmit}
             >
               {submitting ? (

@@ -140,9 +140,9 @@ export default function ProfilePage() {
                   <Input id="email" type="email" value={email} disabled className="bg-muted" />
                 </div>
               </div>
-              <div className="flex gap-2 pt-4">
-                <Button onClick={handleSave}><Check className="mr-2 h-4 w-4" />Сохранить</Button>
-                <Button variant="outline" onClick={handleCancel}><X className="mr-2 h-4 w-4" />Отмена</Button>
+              <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full mt-6">
+                <Button onClick={handleSave} className="w-full sm:w-auto h-11 sm:h-10"><Check className="mr-2 h-4 w-4" />Сохранить</Button>
+                <Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto h-11 sm:h-10"><X className="mr-2 h-4 w-4" />Отмена</Button>
               </div>
             </>
           ) : (

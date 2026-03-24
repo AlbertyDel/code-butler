@@ -171,7 +171,29 @@ export default function BusinessProfilePage() {
   };
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    const errors: Record<string, string> = {};
+
+    if (inn.length !== maxLen) {
+      errors.inn = `Введите ${maxLen} цифр`;
+    } else if (visibleFeedback?.type === 'error' || (!visibleFeedback && !searching)) {
+      errors.inn = 'ИНН не найден';
+    }
+
+    if (needsAddress && !address.trim()) {
+      errors.address = 'Укажите адрес регистрации';
+    }
+
+    if (!agreed) {
+      errors.agreed = 'Необходимо согласие';
+    }
+
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      toast({ title: 'Заполните все обязательные поля', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 1500));
     setSubmitting(false);

@@ -261,7 +261,7 @@ export default function BusinessProfilePage() {
                   className={cn(
                     'pr-10',
                     shaking && 'animate-shake',
-                    hasError && 'border-red-500 focus-visible:ring-red-500'
+                    (hasError || fieldErrors.inn) && 'border-destructive focus-visible:ring-destructive'
                   )}
                 />
                 {searching && (

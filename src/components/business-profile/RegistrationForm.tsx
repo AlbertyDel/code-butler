@@ -225,7 +225,7 @@ export function RegistrationForm() {
           {/* Legal type selector */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">Форма собственности</Label>
-            <RadioGroup value={legalType} onValueChange={handleTypeChange} className="grid grid-cols-3 gap-3">
+            <RadioGroup value={legalType} onValueChange={handleTypeChange} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {LEGAL_TYPES.map(({ value, label, icon: Icon }) => (
                 <label
                   key={value}

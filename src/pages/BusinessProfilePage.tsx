@@ -335,12 +335,15 @@ export default function BusinessProfilePage() {
               <Checkbox
                 checked={agreed}
                 onCheckedChange={(v) => setAgreed(v === true)}
-                className="mt-0.5 h-5 w-5 rounded-[4px] border-2"
+                className={cn("mt-0.5 h-5 w-5 rounded-[4px] border-2", fieldErrors.agreed && "border-destructive")}
               />
               <span className="text-sm text-muted-foreground leading-snug">
                 Я согласен на обработку персональных данных и передачу информации в ПАО Банк Точка
               </span>
             </label>
+            {fieldErrors.agreed && (
+              <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>
+            )}
 
             {/* Submit */}
             <Button

@@ -220,12 +220,12 @@ export function RegistrationForm() {
           Заполните данные для проверки юридического лица и подключения к платформе.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Legal type selector */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">Форма собственности</Label>
-            <RadioGroup value={legalType} onValueChange={handleTypeChange} className="grid grid-cols-3 gap-3">
+            <RadioGroup value={legalType} onValueChange={handleTypeChange} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {LEGAL_TYPES.map(({ value, label, icon: Icon }) => (
                 <label
                   key={value}

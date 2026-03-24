@@ -9,7 +9,7 @@ import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
+import { Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');
@@ -95,22 +95,11 @@ export default function ProfilePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <User className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">{displayName}</CardTitle>
-                <p className="text-sm text-muted-foreground">Управление личной информацией</p>
-              </div>
-            </div>
-            {!isEditing && (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Редактировать
-              </Button>
-            )}
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold truncate">{displayName}</h2>
+            <Button variant="outline" size="icon" onClick={() => setIsEditing(!isEditing)} className="h-9 w-9 shrink-0">
+              <Pencil className="h-4 w-4" />
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

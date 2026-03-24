@@ -88,7 +88,7 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   return (
     <>
       <div className="space-y-2">
-        <Label>ИНН</Label>
+        <Label>ИНН <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="10 цифр" maxLength={10} showSpinner={loading} error={notFound ? 'Компания с таким ИНН не найдена' : (errors.inn?.message as string)} />
       </div>
       {companyData && <CompanySummaryCard data={companyData} type="ooo" />}

@@ -201,22 +201,22 @@ export default function BusinessProfilePage() {
 
             {/* Segmented control */}
             <Tabs value={tab} onValueChange={handleTabChange}>
-              <TabsList className="w-full bg-muted/60 p-1">
+              <TabsList className="w-full h-auto flex flex-col sm:flex-row bg-muted/60 p-1 gap-1">
                 <TabsTrigger
                   value="ooo"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Юр. лицо (ООО)
                 </TabsTrigger>
                 <TabsTrigger
                   value="ip"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   ИП
                 </TabsTrigger>
                 <TabsTrigger
                   value="sz"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Самозанятый
                 </TabsTrigger>

@@ -230,7 +230,7 @@ export function RegistrationForm() {
                 <label
                   key={value}
                   className={cn(
-                    'relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 cursor-pointer transition-all duration-200',
+                    'relative flex flex-col items-center gap-2 rounded-xl border-2 min-h-[44px] py-2 px-4 cursor-pointer transition-all duration-200',
                     'hover:border-primary/50 hover:bg-accent/50',
                     legalType === value
                       ? 'border-primary bg-accent shadow-sm'

@@ -163,7 +163,7 @@ function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> })
       </div>
       <div className="space-y-2">
         <Label>Адрес регистрации <span className="text-destructive ml-1">*</span></Label>
-        <AddressCombobox value={watch('address') || ''} onChange={(v) => setValue('address', v, { shouldValidate: true })} placeholder="" error={errors.address?.message as string} />
+        <AddressCombobox value={watch('address') || ''} onChange={(v) => setValue('address', v, { shouldValidate: true })} error={errors.address?.message as string} />
       </div>
     </>
   );

@@ -306,6 +306,9 @@ export default function BusinessProfilePage() {
                   </div>
                 </div>
               )}
+              {fieldErrors.inn && !visibleFeedback && (
+                <p className="text-destructive text-xs mt-1">{fieldErrors.inn}</p>
+              )}
             </div>
 
             {/* Address for IP / SZ */}

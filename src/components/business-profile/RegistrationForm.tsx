@@ -11,6 +11,7 @@ import { DigitInput } from './DigitInput';
 import { AddressCombobox } from './AddressCombobox';
 import { registrationSchema, type RegistrationFormData, type LegalType } from './schemas';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const MOCK_COMPANY_OOO = { name: 'ООО "АЛЬФА ИНТЕГРАЦИЯ"', kpp: '770501001', ogrn: '1207700123456' };
 const MOCK_COMPANY_IP = { name: 'Иванов Иван Иванович', ogrnip: '312774600000012' };
@@ -189,6 +190,7 @@ function BankFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
 /* ───── Main Form ───── */
 export function RegistrationForm() {
   const [legalType, setLegalType] = useState<LegalType>('ooo');
+  const { toast } = useToast();
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
@@ -203,13 +205,22 @@ export function RegistrationForm() {
   const handleTypeChange = (value: string) => {
     const newType = value as LegalType;
     setLegalType(newType);
-    // Reset form with new legalType, keeping only legalType field
     form.reset({ legalType: newType, inn: '', account: '', bik: '' } as any);
   };
 
   const onSubmit = async (data: RegistrationFormData) => {
     console.log('Submitted:', data);
     await new Promise(r => setTimeout(r, 2000));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({ title: 'Заполните все обязательные поля', variant: 'destructive' });
+      return;
+    }
+    form.handleSubmit(onSubmit)();
   };
 
   return (
@@ -221,11 +232,11 @@ export function RegistrationForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleFormSubmit} className="space-y-6">
           {/* Legal type selector */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">Форма собственности</Label>
-            <RadioGroup value={legalType} onValueChange={handleTypeChange} className="flex flex-col sm:flex-row w-full gap-2 h-auto">
+            <RadioGroup value={legalType} onValueChange={handleTypeChange} className="flex flex-col sm:flex-row w-full h-auto p-1 gap-2 bg-muted rounded-xl sm:rounded-lg">
               {LEGAL_TYPES.map(({ value, label, icon: Icon }) => (
                 <label
                   key={value}
@@ -243,7 +254,7 @@ export function RegistrationForm() {
                     legalType === value ? 'text-primary' : 'text-muted-foreground'
                   )} />
                   <span className={cn(
-                    'text-sm font-medium text-center transition-colors',
+                    'text-sm font-medium text-center transition-colors whitespace-normal',
                     legalType === value ? 'text-foreground' : 'text-muted-foreground'
                   )}>{label}</span>
                 </label>

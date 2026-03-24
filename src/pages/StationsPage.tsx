@@ -185,9 +185,7 @@ export default function StationsPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Заголовок */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
-      </div>
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
 
       {/* Список станций */}
       <div className="space-y-3">
@@ -199,23 +197,30 @@ export default function StationsPage() {
                 У вас пока нет добавленных станций. Давайте подключим первую — система сама определит ее мощность и порты.
               </p>
               <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
-                Добавить станцию
+                Добавить
               </Button>
             </div>
           </div>
         ) : (
-          stations.map((station) => (
-            <StationRow
-              key={station.id}
-              station={station}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onOpenMaps={openInYandexMaps}
-              onSelect={handleSelect}
-              onStart={startCharging}
-              onStop={stopCharging}
-            />
-          ))
+          <>
+            {stations.map((station) => (
+              <StationRow
+                key={station.id}
+                station={station}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onOpenMaps={openInYandexMaps}
+                onSelect={handleSelect}
+                onStart={startCharging}
+                onStop={stopCharging}
+              />
+            ))}
+            <div className="flex justify-center pt-4">
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                Добавить
+              </Button>
+            </div>
+          </>
         )}
       </div>
 

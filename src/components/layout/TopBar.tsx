@@ -1,6 +1,5 @@
 import { CircleUserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -15,13 +14,11 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import logoCharger from '@/assets/logo-charger.svg';
@@ -33,7 +30,6 @@ interface TopBarProps {
 
 export function TopBar({ isLoading = false }: TopBarProps) {
   const { logout } = useAuth();
-  const { businessState } = useBusinessState();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -55,7 +51,6 @@ export function TopBar({ isLoading = false }: TopBarProps) {
         <div className="flex items-center gap-3">
           {isLoading ? (
             <>
-              <Skeleton className="h-6 w-28 rounded-full" />
               <div className="flex items-center gap-2 px-3">
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <Skeleton className="hidden sm:block h-4 w-20" />
@@ -95,19 +90,16 @@ export function TopBar({ isLoading = false }: TopBarProps) {
       <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Выход из аккаунта</AlertDialogTitle>
-            <AlertDialogDescription>
-              Вам потребуется заново авторизоваться в системе.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Выйти из аккаунта?</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogFooter>
+            <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">Отмена</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleLogout}
               className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Выйти
             </AlertDialogAction>
-            <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">Отмена</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

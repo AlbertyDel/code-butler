@@ -9,7 +9,7 @@ import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
+import { Phone, Mail, Pencil, Clock, BadgeCheck } from 'lucide-react';
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');
@@ -56,8 +56,6 @@ export default function ProfilePage() {
     setPhoneNumber(user?.phone || '');
   }, [user?.name, user?.phone]);
 
-  const displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Пользователь';
-
   const handlePhoneChange = (raw: string) => {
     const formatted = formatPhone(raw);
     setPhoneNumber(formatted);
@@ -95,8 +93,7 @@ export default function ProfilePage() {
     <div className="space-y-6 sm:space-y-8">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl sm:text-2xl font-bold truncate">{displayName}</h2>
+          <div className="flex items-center justify-end">
             <Button variant="outline" size="icon" onClick={() => setIsEditing(!isEditing)} className="h-9 w-9 shrink-0">
               <Pencil className="h-4 w-4" />
             </Button>
@@ -141,8 +138,8 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-end gap-3 w-full mt-6">
-                <Button onClick={handleSave} className="w-full sm:w-auto h-11 sm:h-10"><Check className="mr-2 h-4 w-4" />Сохранить</Button>
-                <Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto h-11 sm:h-10"><X className="mr-2 h-4 w-4" />Отмена</Button>
+                <Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto h-11 sm:h-10 text-sm font-medium">Отмена</Button>
+                <Button onClick={handleSave} className="w-full sm:w-auto h-11 sm:h-10 text-sm font-medium">Сохранить</Button>
               </div>
             </>
           ) : (
@@ -209,7 +206,7 @@ export default function ProfilePage() {
       )}
 
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={handleLogout}>
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive text-sm font-medium" onClick={handleLogout}>
           Выйти
         </Button>
       </div>

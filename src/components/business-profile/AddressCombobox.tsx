@@ -65,7 +65,6 @@ export function AddressCombobox({ value, onChange, error }: AddressComboboxProps
     <div ref={containerRef} className="relative">
       <div className="relative">
         <Input
-          placeholder="Начните вводить адрес..."
           value={value}
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}

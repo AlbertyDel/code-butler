@@ -19,7 +19,7 @@ export function AppLayout() {
     return (
       <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
         <TopBar isLoading={isInitialLoading} />
-        <main className="flex-1 overflow-y-auto pt-16 pb-24 mt-0 px-4">
+        <main className="flex-1 overflow-y-auto pt-20 pb-24 px-4 sm:pt-24">
           {isInitialLoading ? <PageSkeleton cards={4} /> : <Outlet />}
         </main>
         <MobileNavigation />

@@ -33,13 +33,13 @@ export function DeleteStationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
+          <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">Отмена</AlertDialogCancel>
           <AlertDialogAction 
             onClick={onConfirm}
             className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Удалить
           </AlertDialogAction>
-          <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">Отмена</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

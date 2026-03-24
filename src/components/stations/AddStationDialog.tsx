@@ -139,11 +139,11 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="w-full sm:w-auto h-11 sm:h-10 font-medium">
-              {editStation ? 'Сохранить' : 'Добавить'}
-            </Button>
             <Button type="button" variant="outline" className="w-full sm:w-auto h-11 sm:h-10" onClick={() => onOpenChange(false)}>
               Отмена
+            </Button>
+            <Button type="submit" className="w-full sm:w-auto h-11 sm:h-10 font-medium">
+              {editStation ? 'Сохранить' : 'Добавить'}
             </Button>
           </DialogFooter>
         </form>

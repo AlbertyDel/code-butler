@@ -323,7 +323,6 @@ export default function BusinessProfilePage() {
                   <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    placeholder="г. Москва, ул. Примерная, д. 1"
                     className={cn("pl-9", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
                   />
                 </div>

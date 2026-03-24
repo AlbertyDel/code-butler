@@ -102,14 +102,12 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       <Card>
-        <CardHeader>
+        <CardContent className="pt-5 space-y-5">
           <div className="flex items-center justify-end">
             <Button variant="outline" size="icon" onClick={() => setIsEditing(!isEditing)} className="h-9 w-9 shrink-0">
               <Pencil className="h-4 w-4" />
             </Button>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
           {isEditing ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2">

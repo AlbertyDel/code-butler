@@ -413,7 +413,7 @@ export default function TariffsPage() {
                         <SelectTrigger className="w-[90px] h-8 text-xs">
                           <SelectValue placeholder="С" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" className="z-[200]">
                           {TIME_OPTIONS.map((t) => (
                             <SelectItem key={t} value={t}>{t}</SelectItem>
                           ))}
@@ -427,7 +427,7 @@ export default function TariffsPage() {
                         <SelectTrigger className="w-[90px] h-8 text-xs">
                           <SelectValue placeholder="До" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper" className="z-[200]">
                           {TIME_OPTIONS.map((t) => (
                             <SelectItem key={t} value={t}>{t}</SelectItem>
                           ))}

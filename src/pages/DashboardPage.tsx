@@ -96,7 +96,6 @@ export default function DashboardPage() {
             Данные для аналитики отсутствуют. Добавьте зарядную станцию, чтобы начать сбор метрик и отслеживание активных сессий.
           </p>
           <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
             Добавить
           </Button>
           <AddStationDialog

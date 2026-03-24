@@ -169,6 +169,7 @@ export default function BusinessProfilePage() {
     setAgreed(false);
     setVisibleFeedback(null);
     setSearching(false);
+    setFieldErrors({});
   };
 
   const handleSubmit = async () => {

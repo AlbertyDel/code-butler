@@ -88,7 +88,7 @@ function OooFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   return (
     <>
       <div className="space-y-2">
-        <Label>ИНН</Label>
+        <Label>ИНН <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="10 цифр" maxLength={10} showSpinner={loading} error={notFound ? 'Компания с таким ИНН не найдена' : (errors.inn?.message as string)} />
       </div>
       {companyData && <CompanySummaryCard data={companyData} type="ooo" />}
@@ -106,12 +106,12 @@ function IpFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   return (
     <>
       <div className="space-y-2">
-        <Label>ИНН</Label>
+        <Label>ИНН <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={inn} onChange={(v) => setValue('inn', v)} placeholder="12 цифр" maxLength={12} showSpinner={loading} error={notFound ? 'ИП с таким ИНН не найден' : (errors.inn?.message as string)} />
       </div>
       {companyData && <CompanySummaryCard data={companyData} type="ip" />}
       <div className="space-y-2">
-        <Label>ФИО</Label>
+        <Label>ФИО <span className="text-destructive ml-1">*</span></Label>
         <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />
         {errors.fullName && <p className="text-sm text-destructive">{(errors.fullName.message as string)}</p>}
       </div>
@@ -125,16 +125,16 @@ function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> })
   return (
     <>
       <div className="space-y-2">
-        <Label>ИНН</Label>
+        <Label>ИНН <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={watch('inn') || ''} onChange={(v) => setValue('inn', v)} placeholder="12 цифр" maxLength={12} error={errors.inn?.message as string} />
       </div>
       <div className="space-y-2">
-        <Label>ФИО</Label>
+        <Label>ФИО <span className="text-destructive ml-1">*</span></Label>
         <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />
         {errors.fullName && <p className="text-sm text-destructive">{(errors.fullName.message as string)}</p>}
       </div>
       <div className="space-y-4">
-        <Label className="text-base font-semibold">Паспортные данные</Label>
+        <Label className="text-base font-semibold">Паспортные данные <span className="text-destructive ml-1">*</span></Label>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Серия</Label>
@@ -162,7 +162,7 @@ function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> })
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Адрес регистрации</Label>
+        <Label>Адрес регистрации <span className="text-destructive ml-1">*</span></Label>
         <AddressCombobox value={watch('address') || ''} onChange={(v) => setValue('address', v, { shouldValidate: true })} error={errors.address?.message as string} />
       </div>
     </>
@@ -175,11 +175,11 @@ function BankFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   return (
     <>
       <div className="space-y-2">
-        <Label>Расчетный счет</Label>
+        <Label>Расчетный счет <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={watch('account') || ''} onChange={(v) => setValue('account', v)} placeholder="20 цифр" maxLength={20} error={errors.account?.message as string} />
       </div>
       <div className="space-y-2">
-        <Label>БИК банка</Label>
+        <Label>БИК банка <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={watch('bik') || ''} onChange={(v) => setValue('bik', v)} placeholder="9 цифр" maxLength={9} error={errors.bik?.message as string} />
       </div>
     </>
@@ -230,7 +230,7 @@ export function RegistrationForm() {
                 <label
                   key={value}
                   className={cn(
-                    'relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 cursor-pointer transition-all duration-200',
+                    'relative flex flex-col items-center gap-2 rounded-xl border-2 min-h-[44px] py-2 px-4 cursor-pointer transition-all duration-200',
                     'hover:border-primary/50 hover:bg-accent/50',
                     legalType === value
                       ? 'border-primary bg-accent shadow-sm'
@@ -260,7 +260,7 @@ export function RegistrationForm() {
           </div>
 
           {/* Single submit button */}
-          <Button type="submit" className="w-full rounded-xl" size="lg" disabled={form.formState.isSubmitting}>
+          <Button type="submit" className="w-full rounded-xl" size="lg">
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />

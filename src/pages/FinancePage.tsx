@@ -148,7 +148,7 @@ export default function FinancePage() {
   if (isPageLoading) return <PageSkeleton cards={4} />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {/* BLOCK 1: Dashboard cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>

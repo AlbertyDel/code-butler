@@ -183,14 +183,10 @@ export default function StationsPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 sm:space-y-8">
       {/* Заголовок */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Станции</h1>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Добавить
-        </Button>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
       </div>
 
       {/* Список станций */}
@@ -203,8 +199,7 @@ export default function StationsPage() {
                 У вас пока нет добавленных станций. Давайте подключим первую — система сама определит ее мощность и порты.
               </p>
               <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Добавить
+                Добавить станцию
               </Button>
             </div>
           </div>

@@ -174,7 +174,7 @@ export default function SessionsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {activeSessions.length > 0 && (
         <div className="space-y-3">
           {activeSessions.map((session) => {
@@ -197,7 +197,7 @@ export default function SessionsPage() {
       )}
 
       <div className="space-y-4">
-        <h1 className="text-xl font-bold">История зарядных сессий</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">История зарядных сессий</h1>
         
         {paginatedGroups.length === 0 ? (
           <EmptyHistoryState />

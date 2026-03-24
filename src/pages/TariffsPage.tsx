@@ -224,10 +224,10 @@ export default function TariffsPage() {
   if (isPageLoading) return <PageSkeleton cards={4} />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Тарифы</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Тарифы</h1>
         {displayTariffs.length > 0 && (
           <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Plus className="h-4 w-4" />

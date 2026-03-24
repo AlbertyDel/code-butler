@@ -129,15 +129,15 @@ export default function LoginPage() {
   const { formRef, step, email, isLoading, countdown, setEmail, setStep, sendMagicLink, onSubmit } = useLogin();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-foreground p-4 md:p-0">
-      <Card className="w-full max-w-md md:w-[470px] min-h-screen md:min-h-0 rounded-none md:rounded-xl border-0 md:border">
-        <CardContent className="flex flex-col items-center px-4 py-6 md:p-8 min-h-screen md:min-h-0">
+    <div className="h-[100dvh] w-full flex flex-col items-center justify-center p-4 overflow-hidden bg-background">
+      <Card className="w-full max-w-md md:w-[470px] rounded-xl border">
+        <CardContent className="flex flex-col items-center px-4 py-6 md:p-8">
           <form
             ref={formRef}
-            className="flex flex-col items-center w-full flex-1"
+            className="flex flex-col items-center w-full"
             onSubmit={onSubmit}
           >
-            <div className="mb-auto md:mb-8 flex items-center justify-center">
+            <div className="mb-8 flex items-center justify-center">
               <img src={logoCharger} alt="Logo" className="h-12 w-auto" />
             </div>
 

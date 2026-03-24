@@ -179,7 +179,7 @@ export default function BusinessProfilePage() {
   };
 
   return (
-    <div className="mt-8 space-y-8 animate-in fade-in duration-300">
+    <div className="mt-4 sm:mt-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       <HeroSection onActivate={scrollToForm} />
       <HowItWorksSection />
       <BenefitsSection />

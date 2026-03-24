@@ -9,7 +9,7 @@ import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { User, Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
+import { Phone, Mail, Pencil, Check, X, Clock, BadgeCheck } from 'lucide-react';
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');

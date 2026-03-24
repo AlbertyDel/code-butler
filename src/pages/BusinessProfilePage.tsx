@@ -337,7 +337,10 @@ export default function BusinessProfilePage() {
             <label className="flex items-start gap-3 cursor-pointer">
               <Checkbox
                 checked={agreed}
-                onCheckedChange={(v) => setAgreed(v === true)}
+                onCheckedChange={(v) => {
+                  setAgreed(v === true);
+                  if (v === true) setFieldErrors((prev) => { const { agreed, ...rest } = prev; return rest; });
+                }}
                 className={cn("mt-0.5 h-5 w-5 rounded-[4px] border-2", fieldErrors.agreed && "border-destructive")}
               />
               <span className="text-sm text-muted-foreground leading-snug">

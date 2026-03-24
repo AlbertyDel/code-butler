@@ -70,6 +70,7 @@ export function AddressCombobox({ value, onChange, error }: AddressComboboxProps
           onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
           className={cn(error && 'border-destructive')}
         />
+
         {loading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}

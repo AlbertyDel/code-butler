@@ -197,7 +197,7 @@ export default function StationsPage() {
                 У вас пока нет добавленных станций. Давайте подключим первую — система сама определит ее мощность и порты.
               </p>
               <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
-                Добавить станцию
+                Добавить
               </Button>
             </div>
           </div>

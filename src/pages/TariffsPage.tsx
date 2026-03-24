@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
 import {
@@ -30,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Banknote, Plus, Pencil, Trash2, Clock, Zap } from 'lucide-react';
+import { Banknote, Pencil, Trash2, Clock, Zap } from 'lucide-react';
 
 interface SpecialCondition {
   id: string;
@@ -73,12 +72,10 @@ const TIME_OPTIONS = [
   '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
 ];
 
-/** Parse "HH:00" to number 0-23 */
 function timeToNum(t: string): number {
   return parseInt(t.split(':')[0], 10);
 }
 
-/** Check if two time ranges overlap (handles overnight ranges like 23:00-07:00) */
 function rangesOverlap(a: SpecialCondition, b: SpecialCondition): boolean {
   const expand = (from: string, to: string): Set<number> => {
     const f = timeToNum(from);
@@ -100,6 +97,10 @@ function rangesOverlap(a: SpecialCondition, b: SpecialCondition): boolean {
   return false;
 }
 
+function isConditionComplete(c: SpecialCondition): boolean {
+  return !!c.timeFrom && !!c.timeTo && c.price > 0;
+}
+
 export default function TariffsPage() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
@@ -112,17 +113,14 @@ export default function TariffsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTariff, setEditingTariff] = useState<Tariff | null>(null);
 
-  // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<Tariff | null>(null);
 
-  // Form state
   const [formName, setFormName] = useState('');
   const [formPrice, setFormPrice] = useState('');
   const [formConditions, setFormConditions] = useState<SpecialCondition[]>([]);
   const [formMaxTime, setFormMaxTime] = useState('');
   const [formMaxEnergy, setFormMaxEnergy] = useState('');
 
-  // Validation errors
   const [errors, setErrors] = useState<{ name?: string; price?: string; conditions?: string }>({});
 
   const displayTariffs = showMock ? MOCK_TARIFFS : tariffs;
@@ -185,7 +183,10 @@ export default function TariffsPage() {
     const newErrors: typeof errors = {};
     if (!formName.trim()) newErrors.name = 'Укажите название тарифа';
     if (!formPrice) newErrors.price = 'Укажите стоимость';
-    if (formConditions.length >= 2 && validateOverlap(formConditions)) {
+
+    const completeConditions = formConditions.filter(isConditionComplete);
+
+    if (completeConditions.length >= 2 && validateOverlap(completeConditions)) {
       newErrors.conditions = 'Временные интервалы условий не должны пересекаться.';
     }
     if (Object.keys(newErrors).length > 0) {
@@ -196,7 +197,7 @@ export default function TariffsPage() {
     const tariffData = {
       name: formName.trim(),
       pricePerKwh: Number(formPrice),
-      conditions: formConditions,
+      conditions: completeConditions,
       maxTimeMin: formMaxTime ? Number(formMaxTime) : undefined,
       maxEnergyKwh: formMaxEnergy ? Number(formMaxEnergy) : undefined,
     };
@@ -230,7 +231,6 @@ export default function TariffsPage() {
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Тарифы</h1>
         {displayTariffs.length > 0 && (
           <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4" />
             Создать
           </Button>
         )}
@@ -251,7 +251,7 @@ export default function TariffsPage() {
             Создайте первый тариф, чтобы начать зарабатывать на зарядных станциях.
           </p>
           <Button onClick={openCreateDialog} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Создать тариф
+            Создать
           </Button>
         </div>
       )}
@@ -259,72 +259,71 @@ export default function TariffsPage() {
       {/* Tariff grid */}
       {displayTariffs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayTariffs.map((tariff) => (
-            <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
-              <CardContent className="p-5 space-y-4">
-                {/* Top row */}
-                <div className="flex items-start justify-between">
-                  <h3 className="text-base font-semibold">{tariff.name}</h3>
-                  <div className="flex items-center gap-1 -mt-0.5">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                      onClick={() => openEditDialog(tariff)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setDeleteTarget(tariff)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+          {displayTariffs.map((tariff) => {
+            const validConditions = tariff.conditions.filter(isConditionComplete);
+            return (
+              <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <h3 className="text-base font-semibold">{tariff.name}</h3>
+                    <div className="flex items-center gap-1 -mt-0.5">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => openEditDialog(tariff)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => setDeleteTarget(tariff)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Price */}
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
-                  <span className="text-sm text-muted-foreground">₽ / кВт·ч</span>
-                </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold tracking-tight">{tariff.pricePerKwh}</span>
+                    <span className="text-sm text-muted-foreground">₽ / кВт·ч</span>
+                  </div>
 
-                {/* Conditions */}
-                <div className="text-sm text-muted-foreground space-y-1">
-                  {tariff.conditions.length > 0 ? (
-                    tariff.conditions.map((c) => (
-                      <p key={c.id} className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 shrink-0" />
-                        {c.price} ₽ с {c.timeFrom} до {c.timeTo}
-                      </p>
-                    ))
-                  ) : (
-                    <p>Без дополнительных условий</p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    {validConditions.length > 0 ? (
+                      validConditions.map((c) => (
+                        <p key={c.id} className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 shrink-0" />
+                          {c.price} ₽ с {c.timeFrom} до {c.timeTo}
+                        </p>
+                      ))
+                    ) : (
+                      <p>Без дополнительных условий</p>
+                    )}
+                  </div>
+
+                  {(tariff.maxTimeMin || tariff.maxEnergyKwh) && (
+                    <div className="border-t pt-3 text-sm text-muted-foreground space-y-1">
+                      {tariff.maxTimeMin && (
+                        <p className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 shrink-0" />
+                          Лимит времени: {tariff.maxTimeMin} минут
+                        </p>
+                      )}
+                      {tariff.maxEnergyKwh && (
+                        <p className="flex items-center gap-1.5">
+                          <Zap className="h-3.5 w-3.5 shrink-0" />
+                          Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
+                        </p>
+                      )}
+                    </div>
                   )}
-                </div>
-
-                {/* Limits */}
-                {(tariff.maxTimeMin || tariff.maxEnergyKwh) && (
-                  <div className="border-t pt-3 text-sm text-muted-foreground space-y-1">
-                    {tariff.maxTimeMin && (
-                      <p className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 shrink-0" />
-                        Лимит времени: {tariff.maxTimeMin} минут
-                      </p>
-                    )}
-                    {tariff.maxEnergyKwh && (
-                      <p className="flex items-center gap-1.5">
-                        <Zap className="h-3.5 w-3.5 shrink-0" />
-                        Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
-                      </p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -343,7 +342,7 @@ export default function TariffsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto px-5 py-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <div className="flex-1 overflow-y-auto px-5 py-4">
             <div className="space-y-5">
               {/* Name input */}
               <div className="space-y-2">
@@ -391,55 +390,61 @@ export default function TariffsPage() {
                 {formConditions.map((cond) => (
                   <div
                     key={cond.id}
-                    className="flex flex-wrap items-center gap-2 rounded-md bg-secondary p-3"
+                    className="rounded-md bg-secondary p-3 space-y-2"
                   >
-                    <span className="text-sm text-muted-foreground shrink-0">Каждый день</span>
-                     <Select
-                      value={cond.timeFrom || undefined}
-                      onValueChange={(v) => updateCondition(cond.id, 'timeFrom', v)}
-                    >
-                      <SelectTrigger className="w-[90px] h-8 text-xs">
-                        <SelectValue placeholder="С" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TIME_OPTIONS.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <span className="text-sm text-muted-foreground">–</span>
-                     <Select
-                      value={cond.timeTo || undefined}
-                      onValueChange={(v) => updateCondition(cond.id, 'timeTo', v)}
-                    >
-                      <SelectTrigger className="w-[90px] h-8 text-xs">
-                        <SelectValue placeholder="До" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TIME_OPTIONS.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        className="w-24 h-8 text-xs pr-6 focus-visible:ring-primary"
-                        placeholder="Цена"
-                        min={0}
-                        value={cond.price || ''}
-                        onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
-                      />
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">₽</span>
+                    {/* Row 1: Header */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Каждый день</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeCondition(cond.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 ml-auto text-muted-foreground hover:text-destructive"
-                      onClick={() => removeCondition(cond.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {/* Row 2: Time & Price */}
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={cond.timeFrom || undefined}
+                        onValueChange={(v) => updateCondition(cond.id, 'timeFrom', v)}
+                      >
+                        <SelectTrigger className="w-[90px] h-8 text-xs">
+                          <SelectValue placeholder="С" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TIME_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="text-sm text-muted-foreground">–</span>
+                      <Select
+                        value={cond.timeTo || undefined}
+                        onValueChange={(v) => updateCondition(cond.id, 'timeTo', v)}
+                      >
+                        <SelectTrigger className="w-[90px] h-8 text-xs">
+                          <SelectValue placeholder="До" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TIME_OPTIONS.map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="relative">
+                        <Input
+                          type="number"
+                          className="w-24 h-8 text-xs pr-6 focus-visible:ring-primary"
+                          placeholder="Цена"
+                          min={0}
+                          value={cond.price || ''}
+                          onChange={(e) => updateCondition(cond.id, 'price', Number(e.target.value))}
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">₽</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
                 {errors.conditions && (
@@ -501,9 +506,9 @@ export default function TariffsPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Вы собираетесь удалить тариф: {deleteTarget?.name}</AlertDialogTitle>
+            <AlertDialogTitle>Удалить тариф "{deleteTarget?.name}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              Действие отменить нельзя. Тариф будет безвозвратно удален и отвязан от всех станций.
+              Тариф будет безвозвратно удален и отвязан от всех станций.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

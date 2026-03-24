@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PageSkeleton } from '@/components/PageSkeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,16 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Phone, Mail, Pencil, Clock, BadgeCheck } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');
@@ -176,7 +186,7 @@ export default function ProfilePage() {
       {businessState !== 'promo' && (
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle>Коммерческие данные</CardTitle>
+            <div className="text-base font-semibold">Коммерческие данные</div>
           </CardHeader>
           <CardContent>
             {businessState === 'pending' && (
@@ -206,9 +216,27 @@ export default function ProfilePage() {
       )}
 
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive text-sm font-medium" onClick={handleLogout}>
-          Выйти
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive text-sm font-medium">
+              Выйти
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Выйти из аккаунта?</AlertDialogTitle>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">Отмена</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleLogout}
+                className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Выйти
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

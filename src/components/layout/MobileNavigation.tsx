@@ -31,6 +31,7 @@ export function MobileNavigation() {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex w-full items-center justify-around h-16">
+
         {visibleItems.map((item) => {
           const isActive =
             location.pathname === item.to ||

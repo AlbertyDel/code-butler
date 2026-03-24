@@ -202,18 +202,25 @@ export default function StationsPage() {
             </div>
           </div>
         ) : (
-          stations.map((station) => (
-            <StationRow
-              key={station.id}
-              station={station}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onOpenMaps={openInYandexMaps}
-              onSelect={handleSelect}
-              onStart={startCharging}
-              onStop={stopCharging}
-            />
-          ))
+          <>
+            {stations.map((station) => (
+              <StationRow
+                key={station.id}
+                station={station}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onOpenMaps={openInYandexMaps}
+                onSelect={handleSelect}
+                onStart={startCharging}
+                onStop={stopCharging}
+              />
+            ))}
+            <div className="flex justify-center pt-4">
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                Добавить
+              </Button>
+            </div>
+          </>
         )}
       </div>
 

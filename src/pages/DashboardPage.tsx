@@ -12,8 +12,7 @@ import {
   MapPin, 
   TrendingUp, 
   BatteryCharging,
-  Activity,
-  Plus
+  Activity
 } from 'lucide-react';
 
 interface StatCardProps {

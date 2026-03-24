@@ -484,14 +484,14 @@ export default function TariffsPage() {
           </div>
 
           <div className="flex flex-col gap-2 w-full p-5 border-t bg-background">
+            <Button variant="outline" className="w-full sm:w-auto h-11 sm:h-10" onClick={() => setDialogOpen(false)}>
+              Отмена
+            </Button>
             <Button
               onClick={handleSave}
               className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isEditing ? 'Сохранить' : 'Создать'}
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto h-11 sm:h-10" onClick={() => setDialogOpen(false)}>
-              Отмена
             </Button>
           </div>
         </DialogContent>

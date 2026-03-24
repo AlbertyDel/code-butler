@@ -220,7 +220,7 @@ export function RegistrationForm() {
           Заполните данные для проверки юридического лица и подключения к платформе.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Legal type selector */}
           <div className="space-y-3">

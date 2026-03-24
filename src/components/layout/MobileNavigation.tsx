@@ -30,7 +30,7 @@ export function MobileNavigation() {
       className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 pointer-events-auto backdrop-blur supports-[backdrop-filter]:bg-card/80"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="grid grid-cols-5 w-full h-16">
+      <div className="flex w-full items-center justify-around h-16">
         {visibleItems.map((item) => {
           const isActive =
             location.pathname === item.to ||
@@ -41,14 +41,14 @@ export function MobileNavigation() {
               key={item.to}
               to={item.to}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 h-full touch-none',
+                'flex-1 flex flex-col items-center justify-center gap-1 h-full touch-none',
                 isActive ? 'text-primary' : 'text-muted-foreground'
               )}
               aria-current={isActive ? 'page' : undefined}
             >
               <item.icon
                 className={cn(
-                  'h-6 w-6 transition-colors',
+                  'h-5 w-5 shrink-0 mb-0.5 transition-colors',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               />

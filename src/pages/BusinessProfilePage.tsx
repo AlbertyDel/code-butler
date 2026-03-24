@@ -175,8 +175,10 @@ export default function BusinessProfilePage() {
   const handleSubmit = async () => {
     const errors: Record<string, string> = {};
 
-    if (inn.length !== maxLen) {
-      errors.inn = `Введите ${maxLen} цифр`;
+    if (inn.length === 0) {
+      errors.inn = 'Поле обязательно для заполнения';
+    } else if (inn.length !== maxLen) {
+      errors.inn = `ИНН должен содержать ${maxLen} цифр`;
     } else if (visibleFeedback?.type === 'error' || (!visibleFeedback && !searching)) {
       errors.inn = 'ИНН не найден';
     }
@@ -192,7 +194,6 @@ export default function BusinessProfilePage() {
     setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) {
-      toast({ title: 'Заполните все обязательные поля', variant: 'destructive' });
       return;
     }
 

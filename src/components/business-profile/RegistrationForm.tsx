@@ -175,7 +175,7 @@ function BankFields({ form }: { form: ReturnType<typeof useForm<any>> }) {
   return (
     <>
       <div className="space-y-2">
-        <Label>Расчетный счет</Label>
+        <Label>Расчетный счет <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={watch('account') || ''} onChange={(v) => setValue('account', v)} placeholder="20 цифр" maxLength={20} error={errors.account?.message as string} />
       </div>
       <div className="space-y-2">

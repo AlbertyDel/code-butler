@@ -97,6 +97,7 @@ export default function BusinessProfilePage() {
   const [shaking, setShaking] = useState(false);
   const [searching, setSearching] = useState(false);
   const [visibleFeedback, setVisibleFeedback] = useState<MockResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const innRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

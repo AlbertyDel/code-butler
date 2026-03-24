@@ -149,7 +149,12 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Имя</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">Имя</p>
+                    <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)} className="h-8 w-8 -mr-2 -mt-1 text-muted-foreground hover:text-foreground">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                   <p className="font-medium">{firstName || <span className="text-muted-foreground italic">Не указано</span>}</p>
                 </div>
                 <div className="space-y-1">

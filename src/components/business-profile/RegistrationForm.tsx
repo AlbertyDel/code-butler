@@ -125,11 +125,11 @@ function SelfEmployedFields({ form }: { form: ReturnType<typeof useForm<any>> })
   return (
     <>
       <div className="space-y-2">
-        <Label>ИНН</Label>
+        <Label>ИНН <span className="text-destructive ml-1">*</span></Label>
         <DigitInput value={watch('inn') || ''} onChange={(v) => setValue('inn', v)} placeholder="12 цифр" maxLength={12} error={errors.inn?.message as string} />
       </div>
       <div className="space-y-2">
-        <Label>ФИО</Label>
+        <Label>ФИО <span className="text-destructive ml-1">*</span></Label>
         <Input {...register('fullName')} placeholder="Иванов Иван Иванович" className={errors.fullName ? 'border-destructive' : ''} />
         {errors.fullName && <p className="text-sm text-destructive">{(errors.fullName.message as string)}</p>}
       </div>

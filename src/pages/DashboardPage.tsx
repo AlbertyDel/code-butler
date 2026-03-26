@@ -1,6 +1,7 @@
 import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
@@ -14,6 +15,121 @@ import {
   BatteryCharging,
   Activity
 } from 'lucide-react';
+import type { ChargingSession, Station } from '@/types';
+
+const MOCK_STATIONS: Station[] = [
+  {
+    id: 'mock-station-1',
+    name: 'ТЦ Мега Парковка B2',
+    address: 'ул. Ленина, 42',
+    latitude: 55.75,
+    longitude: 37.62,
+    status: 'charging',
+    connectors: [{ id: 'c1', stationId: 'mock-station-1', type: 'CCS', powerKw: 150, status: 'charging' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 35, port0: 40, port1: 38, internal: 42 },
+    stats: { energyTodayKwh: 120, sessionsToday: 5, totalSessions: 342, totalEnergyKwh: 8500, totalHours: 1200 },
+  },
+  {
+    id: 'mock-station-2',
+    name: 'Офис Центральный',
+    address: 'пр. Мира, 15',
+    latitude: 55.76,
+    longitude: 37.63,
+    status: 'charging',
+    connectors: [{ id: 'c2', stationId: 'mock-station-2', type: 'Type2', powerKw: 22, status: 'charging' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 30, port0: 35, port1: 33, internal: 37 },
+    stats: { energyTodayKwh: 45, sessionsToday: 3, totalSessions: 156, totalEnergyKwh: 3200, totalHours: 600 },
+  },
+  {
+    id: 'mock-station-3',
+    name: 'АЗС Лукойл #47',
+    address: 'Каширское шоссе, 61',
+    latitude: 55.65,
+    longitude: 37.64,
+    status: 'available',
+    connectors: [{ id: 'c3', stationId: 'mock-station-3', type: 'CHAdeMO', powerKw: 50, status: 'available' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 28, port0: 32, port1: 30, internal: 34 },
+    stats: { energyTodayKwh: 78, sessionsToday: 4, totalSessions: 210, totalEnergyKwh: 5100, totalHours: 900 },
+  },
+];
+
+const MOCK_ACTIVE_SESSIONS: ChargingSession[] = [
+  {
+    id: 'mock-session-1',
+    stationId: 'mock-station-1',
+    connectorId: 'c1',
+    userId: 'user-1',
+    startTime: new Date(Date.now() - 45 * 60000).toISOString(),
+    energyKwh: 32.4,
+    cost: 486,
+    status: 'active',
+  },
+  {
+    id: 'mock-session-2',
+    stationId: 'mock-station-2',
+    connectorId: 'c2',
+    userId: 'user-1',
+    startTime: new Date(Date.now() - 120 * 60000).toISOString(),
+    energyKwh: 18.7,
+    cost: 280.5,
+    status: 'active',
+  },
+  {
+    id: 'mock-session-3',
+    stationId: 'mock-station-1',
+    connectorId: 'c1',
+    userId: 'user-2',
+    startTime: new Date(Date.now() - 15 * 60000).toISOString(),
+    energyKwh: 8.1,
+    cost: 121.5,
+    status: 'active',
+  },
+];
+
+const MOCK_COMPLETED_SESSIONS: ChargingSession[] = [
+  {
+    id: 'mock-session-c1',
+    stationId: 'mock-station-1',
+    connectorId: 'c1',
+    userId: 'user-1',
+    startTime: new Date(Date.now() - 5 * 3600000).toISOString(),
+    endTime: new Date(Date.now() - 4 * 3600000).toISOString(),
+    energyKwh: 42.0,
+    cost: 630,
+    status: 'completed',
+  },
+  {
+    id: 'mock-session-c2',
+    stationId: 'mock-station-2',
+    connectorId: 'c2',
+    userId: 'user-1',
+    startTime: new Date(Date.now() - 24 * 3600000).toISOString(),
+    endTime: new Date(Date.now() - 23 * 3600000).toISOString(),
+    energyKwh: 19.5,
+    cost: 292.5,
+    status: 'completed',
+  },
+  {
+    id: 'mock-session-c3',
+    stationId: 'mock-station-3',
+    connectorId: 'c3',
+    userId: 'user-1',
+    startTime: new Date(Date.now() - 48 * 3600000).toISOString(),
+    endTime: new Date(Date.now() - 47 * 3600000).toISOString(),
+    energyKwh: 35.2,
+    cost: 528,
+    status: 'completed',
+  },
+];
 
 interface StatCardProps {
   title: string;

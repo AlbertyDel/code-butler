@@ -108,7 +108,7 @@ export default function BusinessProfilePage() {
   const hasError = visibleFeedback?.type === 'error';
   const needsAddress = tab === 'ip' || tab === 'sz';
 
-  const isReadOnly = businessState === 'pending' || (businessState === 'rejected' && !isEditing);
+  const isReadOnly = businessState === 'rejected' && !isEditing;
 
   const triggerShake = () => {
     setShaking(true);

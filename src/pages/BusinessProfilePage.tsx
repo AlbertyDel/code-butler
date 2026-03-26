@@ -222,9 +222,27 @@ export default function BusinessProfilePage() {
 
   return (
     <div className="mt-4 sm:mt-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      <HeroSection onActivate={scrollToForm} />
-      <HowItWorksSection />
-      <BenefitsSection />
+      {businessState === 'promo' && (
+        <>
+          <HeroSection onActivate={scrollToForm} />
+          <HowItWorksSection />
+          <BenefitsSection />
+        </>
+      )}
+
+      {businessState === 'rejected' && (
+        <div className="max-w-2xl mx-auto">
+          <Alert className="border-destructive/30 bg-destructive/5">
+            <XCircle className="h-5 w-5 text-destructive" />
+            <AlertDescription className="ml-2">
+              <p className="font-semibold text-foreground">Заявка отклонена</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Здесь будет ответ от Точки для клиента
+              </p>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       <div ref={formRef} className="max-w-2xl mx-auto">
         <Card>

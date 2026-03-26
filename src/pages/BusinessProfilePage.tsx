@@ -83,7 +83,20 @@ export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
   const navigate = useNavigate();
 
+  const [tab, setTab] = useState<LegalTab>('ooo');
+  const [inn, setInn] = useState('');
+  const [address, setAddress] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [shaking, setShaking] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [visibleFeedback, setVisibleFeedback] = useState<MockResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isRejectedEditing, setIsRejectedEditing] = useState(false);
+  const innRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Guard: redirect if not in promo or rejected state
   useEffect(() => {
@@ -101,19 +114,6 @@ export default function BusinessProfilePage() {
       setIsRejectedEditing(false);
     }
   }, [businessState]);
-  const [tab, setTab] = useState<LegalTab>('ooo');
-  const [inn, setInn] = useState('');
-  const [address, setAddress] = useState('');
-  const [agreed, setAgreed] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [shaking, setShaking] = useState(false);
-  const [searching, setSearching] = useState(false);
-  const [visibleFeedback, setVisibleFeedback] = useState<MockResult | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const innRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLDivElement>(null);
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const maxLen = INN_MAX[tab];
   const hasError = visibleFeedback?.type === 'error';

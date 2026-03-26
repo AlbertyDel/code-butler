@@ -402,11 +402,6 @@ export default function BusinessProfilePage() {
               </Button>
             )}
 
-            {businessState === 'pending' && (
-              <Button className="w-full" size="lg" disabled>
-                Заявка на проверке...
-              </Button>
-            )}
           </CardContent>
         </Card>
       </div>

@@ -174,10 +174,22 @@ const StatCard = memo(function StatCard({
 });
 
 export default function DashboardPage() {
-  const { stations, addStation, startCharging, isLoading: stationsLoading } = useStations();
-  const { activeSessions, sessions, isLoading: sessionsLoading } = useSessions();
+  const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
+  const { activeSessions: realActiveSessions, sessions: realSessions, isLoading: sessionsLoading } = useSessions();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [showMock, setShowMock] = useState(() => {
+    try { return localStorage.getItem('dashboard_mock') === '1'; } catch { return false; }
+  });
+
+  const handleToggleMock = (v: boolean) => {
+    setShowMock(v);
+    try { localStorage.setItem('dashboard_mock', v ? '1' : '0'); } catch {}
+  };
+
+  const stations = showMock ? MOCK_STATIONS : realStations;
+  const sessions = showMock ? [...MOCK_ACTIVE_SESSIONS, ...MOCK_COMPLETED_SESSIONS] : realSessions;
+  const activeSessions = showMock ? MOCK_ACTIVE_SESSIONS : realActiveSessions;
 
   // Calculate statistics from real data
   const statistics = useMemo(() => ({
@@ -185,7 +197,7 @@ export default function DashboardPage() {
     totalEnergyKwh: Number(sessions.reduce((sum, s) => sum + (Number(s.energyKwh) || 0), 0)).toFixed(1),
   }), [sessions]);
 
-  const isLoading = stationsLoading || sessionsLoading;
+  const isLoading = !showMock && (stationsLoading || sessionsLoading);
 
   if (isLoading) {
     return (

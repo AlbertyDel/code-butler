@@ -83,12 +83,24 @@ export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
   const navigate = useNavigate();
 
-  // Guard: redirect if not in promo state
+  const [isRejectedEditing, setIsRejectedEditing] = useState(false);
+
+  // Guard: redirect if not in promo or rejected state
   useEffect(() => {
-    if (businessState !== 'promo') {
+    if (businessState !== 'promo' && businessState !== 'rejected') {
       navigate('/profile', { replace: true });
     }
   }, [businessState, navigate]);
+
+  // Pre-fill fields when in rejected state
+  useEffect(() => {
+    if (businessState === 'rejected') {
+      setTab('ooo');
+      setInn('1234567890');
+      setAgreed(true);
+      setIsRejectedEditing(false);
+    }
+  }, [businessState]);
   const [tab, setTab] = useState<LegalTab>('ooo');
   const [inn, setInn] = useState('');
   const [address, setAddress] = useState('');

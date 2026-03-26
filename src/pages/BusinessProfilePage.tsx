@@ -162,8 +162,10 @@ export default function BusinessProfilePage() {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  if (businessState !== 'promo') return null;
+  if (businessState !== 'promo' && businessState !== 'rejected') return null;
   if (submitted) return <PendingCard />;
+
+  const isReadOnly = businessState === 'rejected' && !isRejectedEditing;
 
   const handleInnChange = (raw: string) => {
     const digits = raw.replace(/\D/g, '');

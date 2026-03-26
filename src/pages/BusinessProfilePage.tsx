@@ -297,9 +297,11 @@ export default function BusinessProfilePage() {
                   placeholder={`${maxLen} цифр`}
                   maxLength={maxLen + 1}
                   inputMode="numeric"
+                  disabled={isReadOnly}
                   className={cn(
                     'pr-10',
                     shaking && 'animate-shake',
+                    isReadOnly && 'bg-muted',
                     (hasError || fieldErrors.inn) && 'border-destructive focus-visible:ring-destructive'
                   )}
                 />

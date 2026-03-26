@@ -184,7 +184,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {businessState !== 'promo' && (
+      {(businessState === 'pending' || businessState === 'active' || businessState === 'rejected') && (
         <Card>
           <CardHeader className="pb-4">
             <div className="text-base font-semibold">Коммерческие данные</div>
@@ -197,6 +197,31 @@ export default function ProfilePage() {
                   <Clock className="h-4 w-4 shrink-0" />
                   <span>Заявка в работе. Ожидаем ответ от банка.</span>
                 </div>
+              </div>
+            )}
+            {businessState === 'rejected' && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3">
+                    <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-destructive">Заявка отклонена</p>
+                      <p className="text-sm text-muted-foreground">
+                        Здесь будет ответ от Точки для клиента
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-sm font-medium"
+                  onClick={() => navigate('/business-profile')}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Исправить и отправить повторно
+                </Button>
               </div>
             )}
             {businessState === 'active' && (

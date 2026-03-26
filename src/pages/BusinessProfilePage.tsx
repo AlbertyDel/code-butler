@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin, AlertCircle, Pencil } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { HeroSection } from '@/components/business-profile/HeroSection';
@@ -34,6 +33,12 @@ const MOCK_DATA: Record<LegalTab, Record<string, MockResult>> = {
       type: 'success',
       title: 'ООО "Заряд Плюс"',
       subtitle: 'ИНН: 1234567890 \u2022 КПП: 770501001 \u2022 ОГРН: 1127746543210',
+      text: '',
+    },
+    '7728168971': {
+      type: 'success',
+      title: 'АО "АЛЬФА-БАНК"',
+      subtitle: 'ИНН: 7728168971 \u2022 КПП: 770801001 \u2022 ОГРН: 1027700067328',
       text: '',
     },
   },
@@ -82,18 +87,12 @@ export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
   const navigate = useNavigate();
 
-  // Guard: redirect if not in allowed states
-  useEffect(() => {
-    if (businessState !== 'promo' && businessState !== 'rejected') {
-      navigate('/profile', { replace: true });
-    }
-  }, [businessState, navigate]);
+  const prefill = businessState !== 'promo';
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [tab, setTab] = useState<LegalTab>('ooo');
-  const [inn, setInn] = useState('');
-  const [address, setAddress] = useState('');
-  const [agreed, setAgreed] = useState(false);
+  const [tab, setTab] = useState<LegalTab>(prefill ? 'ooo' : 'ooo');
+  const [inn, setInn] = useState(prefill ? '7728168971' : '');
+  const [address, setAddress] = useState(prefill ? 'г Москва, ул Каланчевская, д 27' : '');
+  const [agreed, setAgreed] = useState(prefill ? true : false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shaking, setShaking] = useState(false);
@@ -108,7 +107,12 @@ export default function BusinessProfilePage() {
   const hasError = visibleFeedback?.type === 'error';
   const needsAddress = tab === 'ip' || tab === 'sz';
 
-  const isReadOnly = businessState === 'rejected' && !isEditing;
+  // Guard: redirect if not in allowed states
+  useEffect(() => {
+    if (businessState !== 'promo' && businessState !== 'rejected') {
+      navigate('/profile', { replace: true });
+    }
+  }, [businessState, navigate]);
 
   const triggerShake = () => {
     setShaking(true);
@@ -156,7 +160,6 @@ export default function BusinessProfilePage() {
   if (submitted) return <PendingCard />;
 
   const handleInnChange = (raw: string) => {
-    if (isReadOnly) return;
     const digits = raw.replace(/\D/g, '');
     if (digits.length > maxLen) {
       triggerShake();
@@ -167,7 +170,6 @@ export default function BusinessProfilePage() {
   };
 
   const handleTabChange = (v: string) => {
-    if (isReadOnly) return;
     setTab(v as LegalTab);
     setInn('');
     setAddress('');
@@ -206,7 +208,6 @@ export default function BusinessProfilePage() {
     await new Promise((r) => setTimeout(r, 1500));
     setSubmitting(false);
     setSubmitted(true);
-    setIsEditing(false);
     setBusinessState('pending');
     navigate('/profile');
   };
@@ -226,25 +227,6 @@ export default function BusinessProfilePage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Rejected alert with edit button */}
-            {businessState === 'rejected' && (
-              <Alert variant="destructive" className="relative">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Заявка отклонена</AlertTitle>
-                <AlertDescription>Пожалуйста, проверьте правильность введенных данных.</AlertDescription>
-                {!isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                )}
-              </Alert>
-            )}
-
             {/* Security info banner */}
             <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <ShieldCheck className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
@@ -255,24 +237,21 @@ export default function BusinessProfilePage() {
 
             {/* Segmented control */}
             <Tabs value={tab} onValueChange={handleTabChange}>
-              <TabsList className={cn("w-full h-auto flex flex-col sm:flex-row bg-muted/60 p-1 gap-1", isReadOnly && "opacity-60 pointer-events-none")}>
+              <TabsList className="w-full h-auto flex flex-col sm:flex-row bg-muted/60 p-1 gap-1">
                 <TabsTrigger
                   value="ooo"
-                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Юр. лицо (ООО)
                 </TabsTrigger>
                 <TabsTrigger
                   value="ip"
-                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   ИП
                 </TabsTrigger>
                 <TabsTrigger
                   value="sz"
-                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Самозанятый
@@ -291,7 +270,6 @@ export default function BusinessProfilePage() {
                   placeholder={`${maxLen} цифр`}
                   maxLength={maxLen + 1}
                   inputMode="numeric"
-                  disabled={isReadOnly}
                   className={cn(
                     'pr-10',
                     shaking && 'animate-shake',
@@ -354,7 +332,6 @@ export default function BusinessProfilePage() {
                   <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    disabled={isReadOnly}
                     className={cn("pl-9", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
                   />
                 </div>
@@ -365,10 +342,9 @@ export default function BusinessProfilePage() {
             )}
 
             {/* Consent checkbox */}
-            <label className={cn("flex items-start gap-3", isReadOnly ? "pointer-events-none opacity-60" : "cursor-pointer")}>
+            <label className="flex items-start gap-3 cursor-pointer">
               <Checkbox
                 checked={agreed}
-                disabled={isReadOnly}
                 onCheckedChange={(v) => {
                   setAgreed(v === true);
                   if (v === true) setFieldErrors((prev) => { const { agreed, ...rest } = prev; return rest; });
@@ -383,24 +359,21 @@ export default function BusinessProfilePage() {
               <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>
             )}
 
-            {/* Submit — conditional rendering */}
-            {(businessState === 'promo' || isEditing) && (
-              <Button
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-                size="lg"
-                disabled={submitting}
-                onClick={handleSubmit}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Отправка...
-                  </>
-                ) : (
-                  'Отправить заявку'
-                )}
-              </Button>
-            )}
+            {/* Submit button — always visible */}
+            <Button
+              className="w-full h-11 sm:h-10"
+              disabled={submitting}
+              onClick={handleSubmit}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Отправка...
+                </>
+              ) : (
+                'Отправить заявку'
+              )}
+            </Button>
 
           </CardContent>
         </Card>

@@ -237,6 +237,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {/* Тестовые данные */}
+      <div className="flex items-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/50 px-4 py-2.5 text-sm">
+        <Switch checked={showMock} onCheckedChange={handleToggleMock} />
+        <span className="text-muted-foreground">Тестовые данные</span>
+      </div>
+
       {/* Статистика */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

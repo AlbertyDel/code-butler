@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin, Pencil, XCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -82,12 +83,6 @@ export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
   const navigate = useNavigate();
 
-  // Guard: redirect if not in promo state
-  useEffect(() => {
-    if (businessState !== 'promo') {
-      navigate('/profile', { replace: true });
-    }
-  }, [businessState, navigate]);
   const [tab, setTab] = useState<LegalTab>('ooo');
   const [inn, setInn] = useState('');
   const [address, setAddress] = useState('');
@@ -98,9 +93,27 @@ export default function BusinessProfilePage() {
   const [searching, setSearching] = useState(false);
   const [visibleFeedback, setVisibleFeedback] = useState<MockResult | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isRejectedEditing, setIsRejectedEditing] = useState(false);
   const innRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Guard: redirect if not in promo or rejected state
+  useEffect(() => {
+    if (businessState !== 'promo' && businessState !== 'rejected') {
+      navigate('/profile', { replace: true });
+    }
+  }, [businessState, navigate]);
+
+  // Pre-fill fields when in rejected state
+  useEffect(() => {
+    if (businessState === 'rejected') {
+      setTab('ooo');
+      setInn('1234567890');
+      setAgreed(true);
+      setIsRejectedEditing(false);
+    }
+  }, [businessState]);
 
   const maxLen = INN_MAX[tab];
   const hasError = visibleFeedback?.type === 'error';
@@ -149,8 +162,10 @@ export default function BusinessProfilePage() {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  if (businessState !== 'promo') return null;
+  if (businessState !== 'promo' && businessState !== 'rejected') return null;
   if (submitted) return <PendingCard />;
+
+  const isReadOnly = businessState === 'rejected' && !isRejectedEditing;
 
   const handleInnChange = (raw: string) => {
     const digits = raw.replace(/\D/g, '');
@@ -207,9 +222,27 @@ export default function BusinessProfilePage() {
 
   return (
     <div className="mt-4 sm:mt-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      <HeroSection onActivate={scrollToForm} />
-      <HowItWorksSection />
-      <BenefitsSection />
+      {businessState === 'promo' && (
+        <>
+          <HeroSection onActivate={scrollToForm} />
+          <HowItWorksSection />
+          <BenefitsSection />
+        </>
+      )}
+
+      {businessState === 'rejected' && (
+        <div className="max-w-2xl mx-auto">
+          <Alert className="border-destructive/30 bg-destructive/5">
+            <XCircle className="h-5 w-5 text-destructive" />
+            <AlertDescription className="ml-2">
+              <p className="font-semibold text-foreground">Заявка отклонена</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Здесь будет ответ от Точки для клиента
+              </p>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       <div ref={formRef} className="max-w-2xl mx-auto">
         <Card>
@@ -227,22 +260,25 @@ export default function BusinessProfilePage() {
             </div>
 
             {/* Segmented control */}
-            <Tabs value={tab} onValueChange={handleTabChange}>
+            <Tabs value={tab} onValueChange={isReadOnly ? undefined : handleTabChange}>
               <TabsList className="w-full h-auto flex flex-col sm:flex-row bg-muted/60 p-1 gap-1">
                 <TabsTrigger
                   value="ooo"
+                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Юр. лицо (ООО)
                 </TabsTrigger>
                 <TabsTrigger
                   value="ip"
+                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   ИП
                 </TabsTrigger>
                 <TabsTrigger
                   value="sz"
+                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Самозанятый
@@ -261,9 +297,11 @@ export default function BusinessProfilePage() {
                   placeholder={`${maxLen} цифр`}
                   maxLength={maxLen + 1}
                   inputMode="numeric"
+                  disabled={isReadOnly}
                   className={cn(
                     'pr-10',
                     shaking && 'animate-shake',
+                    isReadOnly && 'bg-muted',
                     (hasError || fieldErrors.inn) && 'border-destructive focus-visible:ring-destructive'
                   )}
                 />
@@ -323,7 +361,8 @@ export default function BusinessProfilePage() {
                   <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className={cn("pl-9", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
+                    disabled={isReadOnly}
+                    className={cn("pl-9", isReadOnly && "bg-muted", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
                   />
                 </div>
                 {fieldErrors.address && (
@@ -333,9 +372,10 @@ export default function BusinessProfilePage() {
             )}
 
             {/* Consent checkbox */}
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label className={cn("flex items-start gap-3", isReadOnly ? 'cursor-default' : 'cursor-pointer')}>
               <Checkbox
                 checked={agreed}
+                disabled={isReadOnly}
                 onCheckedChange={(v) => {
                   setAgreed(v === true);
                   if (v === true) setFieldErrors((prev) => { const { agreed, ...rest } = prev; return rest; });
@@ -350,22 +390,33 @@ export default function BusinessProfilePage() {
               <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>
             )}
 
-            {/* Submit */}
-            <Button
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              size="lg"
-              disabled={submitting}
-              onClick={handleSubmit}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Отправка...
-                </>
-              ) : (
-                'Отправить заявку'
-              )}
-            </Button>
+            {/* Action buttons */}
+            {isReadOnly ? (
+              <Button
+                className="w-full font-semibold"
+                size="lg"
+                onClick={() => setIsRejectedEditing(true)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Редактировать и отправить повторно
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                size="lg"
+                disabled={submitting}
+                onClick={handleSubmit}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Отправка...
+                  </>
+                ) : (
+                  businessState === 'rejected' ? 'Отправить повторно' : 'Отправить заявку'
+                )}
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>

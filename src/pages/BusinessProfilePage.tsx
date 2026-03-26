@@ -390,22 +390,33 @@ export default function BusinessProfilePage() {
               <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>
             )}
 
-            {/* Submit */}
-            <Button
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              size="lg"
-              disabled={submitting}
-              onClick={handleSubmit}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Отправка...
-                </>
-              ) : (
-                'Отправить заявку'
-              )}
-            </Button>
+            {/* Action buttons */}
+            {isReadOnly ? (
+              <Button
+                className="w-full font-semibold"
+                size="lg"
+                onClick={() => setIsRejectedEditing(true)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Редактировать и отправить повторно
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                size="lg"
+                disabled={submitting}
+                onClick={handleSubmit}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Отправка...
+                  </>
+                ) : (
+                  businessState === 'rejected' ? 'Отправить повторно' : 'Отправить заявку'
+                )}
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>

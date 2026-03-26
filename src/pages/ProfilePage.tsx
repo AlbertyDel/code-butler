@@ -9,7 +9,7 @@ import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Phone, Mail, Pencil, Clock, BadgeCheck } from 'lucide-react';
+import { Phone, Mail, Pencil, Clock, BadgeCheck, XCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,

@@ -361,7 +361,8 @@ export default function BusinessProfilePage() {
                   <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className={cn("pl-9", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
+                    disabled={isReadOnly}
+                    className={cn("pl-9", isReadOnly && "bg-muted", fieldErrors.address && "border-destructive focus-visible:ring-destructive")}
                   />
                 </div>
                 {fieldErrors.address && (

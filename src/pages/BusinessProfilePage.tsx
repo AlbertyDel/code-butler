@@ -372,9 +372,10 @@ export default function BusinessProfilePage() {
             )}
 
             {/* Consent checkbox */}
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label className={cn("flex items-start gap-3", isReadOnly ? 'cursor-default' : 'cursor-pointer')}>
               <Checkbox
                 checked={agreed}
+                disabled={isReadOnly}
                 onCheckedChange={(v) => {
                   setAgreed(v === true);
                   if (v === true) setFieldErrors((prev) => { const { agreed, ...rest } = prev; return rest; });

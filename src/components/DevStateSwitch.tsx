@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 const states: { value: BusinessState; label: string; color: string }[] = [
   { value: 'promo', label: 'P', color: 'bg-muted text-foreground' },
   { value: 'pending', label: 'W', color: 'bg-amber-500 text-white' },
-  { value: 'rejected', label: 'R', color: 'bg-destructive text-white' },
   { value: 'active', label: 'A', color: 'bg-primary text-primary-foreground' },
 ];
 

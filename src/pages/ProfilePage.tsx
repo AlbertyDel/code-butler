@@ -9,8 +9,7 @@ import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Phone, Mail, Pencil, Clock, BadgeCheck, AlertCircle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Phone, Mail, Pencil, Clock, BadgeCheck } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -185,22 +184,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      {businessState === 'rejected' && (
-        <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Заявка отклонена</AlertTitle>
-          <AlertDescription>Неверно указан ИНН или реквизиты не прошли проверку банка.</AlertDescription>
-          <Button
-            onClick={() => navigate('/business-profile')}
-            variant="outline"
-            className="mt-4 border-destructive text-destructive hover:bg-destructive/10"
-          >
-            <Pencil className="w-4 h-4 mr-2" /> Исправить данные
-          </Button>
-        </Alert>
-      )}
-
-      {(businessState === 'pending' || businessState === 'active') && (
+      {businessState !== 'promo' && (
         <Card>
           <CardHeader className="pb-4">
             <div className="text-base font-semibold">Коммерческие данные</div>
@@ -208,7 +192,7 @@ export default function ProfilePage() {
           <CardContent>
             {businessState === 'pending' && (
               <div className="space-y-2">
-                <p className="font-medium text-foreground">АО &quot;АЛЬФА-БАНК&quot;</p>
+                <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
                 <div className="flex items-center gap-2 text-sm text-amber-600">
                   <Clock className="h-4 w-4 shrink-0" />
                   <span>Заявка в работе. Ожидаем ответ от банка.</span>
@@ -219,11 +203,11 @@ export default function ProfilePage() {
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">АО &quot;АЛЬФА-БАНК&quot;</p>
+                    <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
                     <BadgeCheck className="h-5 w-5 text-primary shrink-0" />
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    ИНН: 7728168971 &middot; КПП: 770801001 &middot; ОГРН: 1027700067328
+                    ИНН: 7705123456 &middot; КПП: 770501001 &middot; ОГРН: 1207700123456
                   </p>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertTriangle, Clock, Loader2, ShieldCheck, MapPin } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,12 +34,6 @@ const MOCK_DATA: Record<LegalTab, Record<string, MockResult>> = {
       type: 'success',
       title: 'ООО "Заряд Плюс"',
       subtitle: 'ИНН: 1234567890 \u2022 КПП: 770501001 \u2022 ОГРН: 1127746543210',
-      text: '',
-    },
-    '7728168971': {
-      type: 'success',
-      title: 'АО "АЛЬФА-БАНК"',
-      subtitle: 'ИНН: 7728168971 \u2022 КПП: 770801001 \u2022 ОГРН: 1027700067328',
       text: '',
     },
   },
@@ -87,12 +82,16 @@ export default function BusinessProfilePage() {
   const { businessState, setBusinessState } = useBusinessState();
   const navigate = useNavigate();
 
-  const prefill = businessState !== 'promo';
-
-  const [tab, setTab] = useState<LegalTab>(prefill ? 'ooo' : 'ooo');
-  const [inn, setInn] = useState(prefill ? '7728168971' : '');
-  const [address, setAddress] = useState(prefill ? 'г Москва, ул Каланчевская, д 27' : '');
-  const [agreed, setAgreed] = useState(prefill ? true : false);
+  // Guard: redirect if not in promo state
+  useEffect(() => {
+    if (businessState !== 'promo') {
+      navigate('/profile', { replace: true });
+    }
+  }, [businessState, navigate]);
+  const [tab, setTab] = useState<LegalTab>('ooo');
+  const [inn, setInn] = useState('');
+  const [address, setAddress] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shaking, setShaking] = useState(false);
@@ -105,14 +104,8 @@ export default function BusinessProfilePage() {
 
   const maxLen = INN_MAX[tab];
   const hasError = visibleFeedback?.type === 'error';
+  const canSubmit = inn.length === maxLen && agreed && !submitting && !searching && visibleFeedback?.type === 'success';
   const needsAddress = tab === 'ip' || tab === 'sz';
-
-  // Guard: redirect if not in allowed states
-  useEffect(() => {
-    if (businessState !== 'promo' && businessState !== 'rejected') {
-      navigate('/profile', { replace: true });
-    }
-  }, [businessState, navigate]);
 
   const triggerShake = () => {
     setShaking(true);
@@ -156,7 +149,7 @@ export default function BusinessProfilePage() {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  if (businessState !== 'promo' && businessState !== 'rejected') return null;
+  if (businessState !== 'promo') return null;
   if (submitted) return <PendingCard />;
 
   const handleInnChange = (raw: string) => {
@@ -212,13 +205,11 @@ export default function BusinessProfilePage() {
     navigate('/profile');
   };
 
-  const showPromoSections = businessState === 'promo';
-
   return (
     <div className="mt-4 sm:mt-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      {showPromoSections && <HeroSection onActivate={scrollToForm} />}
-      {showPromoSections && <HowItWorksSection />}
-      {showPromoSections && <BenefitsSection />}
+      <HeroSection onActivate={scrollToForm} />
+      <HowItWorksSection />
+      <BenefitsSection />
 
       <div ref={formRef} className="max-w-2xl mx-auto">
         <Card>
@@ -359,9 +350,10 @@ export default function BusinessProfilePage() {
               <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>
             )}
 
-            {/* Submit button — always visible */}
+            {/* Submit */}
             <Button
-              className="w-full h-11 sm:h-10"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              size="lg"
               disabled={submitting}
               onClick={handleSubmit}
             >
@@ -374,7 +366,6 @@ export default function BusinessProfilePage() {
                 'Отправить заявку'
               )}
             </Button>
-
           </CardContent>
         </Card>
       </div>

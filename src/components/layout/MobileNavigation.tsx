@@ -18,7 +18,7 @@ export function MobileNavigation() {
     { to: '/dashboard', icon: Home, label: 'Главная', show: true },
     { to: '/stations', icon: Zap, label: 'Станции', show: true },
     { to: '/sessions', icon: List, label: 'Сессии', show: true },
-    { to: '/business-profile', icon: Briefcase, label: 'Бизнес', show: businessState === 'promo' || businessState === 'rejected' },
+    { to: '/business-profile', icon: Briefcase, label: 'Бизнес', show: businessState === 'promo' },
     { to: '/tariffs', icon: Banknote, label: 'Тарифы', show: businessState === 'active' },
     { to: '/finance', icon: Wallet, label: 'Финансы', show: businessState === 'active' },
   ];

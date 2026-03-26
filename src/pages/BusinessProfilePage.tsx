@@ -260,22 +260,25 @@ export default function BusinessProfilePage() {
             </div>
 
             {/* Segmented control */}
-            <Tabs value={tab} onValueChange={handleTabChange}>
+            <Tabs value={tab} onValueChange={isReadOnly ? undefined : handleTabChange}>
               <TabsList className="w-full h-auto flex flex-col sm:flex-row bg-muted/60 p-1 gap-1">
                 <TabsTrigger
                   value="ooo"
+                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Юр. лицо (ООО)
                 </TabsTrigger>
                 <TabsTrigger
                   value="ip"
+                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   ИП
                 </TabsTrigger>
                 <TabsTrigger
                   value="sz"
+                  disabled={isReadOnly}
                   className="w-full py-2.5 text-xs sm:text-sm whitespace-normal text-center data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   Самозанятый

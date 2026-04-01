@@ -198,38 +198,50 @@ export default function DashboardPage() {
   }), [sessions]);
 
   const isLoading = !showMock && (stationsLoading || sessionsLoading);
+  const isEmpty = !showMock && stations.length === 0 && activeSessions.length === 0;
+
+  const mockToggle = (
+    <div className="flex items-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/50 px-4 py-2.5 text-sm">
+      <Switch checked={showMock} onCheckedChange={handleToggleMock} />
+      <span className="text-muted-foreground">Тестовые данные</span>
+    </div>
+  );
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 animate-pulse">
-            <Zap className="h-6 w-6 text-primary" />
+      <div className="space-y-6">
+        {mockToggle}
+        <div className="flex flex-1 items-center justify-center min-h-[40vh]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 animate-pulse">
+              <Zap className="h-6 w-6 text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground">Загрузка...</p>
           </div>
-          <p className="text-sm text-muted-foreground">Загрузка...</p>
         </div>
       </div>
     );
   }
 
-  const isEmpty = stations.length === 0 && activeSessions.length === 0;
-
   if (isEmpty) {
     return (
-      <div className="flex flex-1 items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center text-center max-w-sm">
-          <Activity className="h-16 w-16 text-muted-foreground/40" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            Данные для аналитики отсутствуют. Добавьте зарядную станцию, чтобы начать сбор метрик и отслеживание активных сессий.
-          </p>
-          <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
-            Добавить
-          </Button>
-          <AddStationDialog
-            open={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            onSubmit={addStation}
-          />
+      <div className="space-y-6">
+        {mockToggle}
+        <div className="flex flex-1 items-center justify-center min-h-[40vh]">
+          <div className="flex flex-col items-center text-center max-w-sm">
+            <Activity className="h-16 w-16 text-muted-foreground/40" />
+            <p className="mt-4 text-sm text-muted-foreground">
+              Данные для аналитики отсутствуют. Добавьте зарядную станцию, чтобы начать сбор метрик и отслеживание активных сессий.
+            </p>
+            <Button className="mt-6" onClick={() => setIsAddDialogOpen(true)}>
+              Добавить
+            </Button>
+            <AddStationDialog
+              open={isAddDialogOpen}
+              onOpenChange={setIsAddDialogOpen}
+              onSubmit={addStation}
+            />
+          </div>
         </div>
       </div>
     );
@@ -237,11 +249,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Тестовые данные */}
-      <div className="flex items-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/50 px-4 py-2.5 text-sm">
-        <Switch checked={showMock} onCheckedChange={handleToggleMock} />
-        <span className="text-muted-foreground">Тестовые данные</span>
-      </div>
+      {mockToggle}
 
       {/* Статистика */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,10 +1,11 @@
 import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
+import { MockToggle } from '@/components/MockToggle';
+import { useMockToggle } from '@/hooks/useMockToggle';
 import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
 import { useToast } from '@/hooks/use-toast';
@@ -178,14 +179,7 @@ export default function DashboardPage() {
   const { activeSessions: realActiveSessions, sessions: realSessions, isLoading: sessionsLoading } = useSessions();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [showMock, setShowMock] = useState(() => {
-    try { return localStorage.getItem('dashboard_mock') === '1'; } catch { return false; }
-  });
-
-  const handleToggleMock = (v: boolean) => {
-    setShowMock(v);
-    try { localStorage.setItem('dashboard_mock', v ? '1' : '0'); } catch {}
-  };
+  const [showMock, setShowMock] = useMockToggle('dashboard_mock');
 
   const stations = showMock ? MOCK_STATIONS : realStations;
   const sessions = showMock ? [...MOCK_ACTIVE_SESSIONS, ...MOCK_COMPLETED_SESSIONS] : realSessions;
@@ -200,12 +194,7 @@ export default function DashboardPage() {
   const isLoading = !showMock && (stationsLoading || sessionsLoading);
   const isEmpty = !showMock && stations.length === 0 && activeSessions.length === 0;
 
-  const mockToggle = (
-    <div className="flex items-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/50 px-4 py-2.5 text-sm">
-      <Switch checked={showMock} onCheckedChange={handleToggleMock} />
-      <span className="text-muted-foreground">Тестовые данные</span>
-    </div>
-  );
+  const mockToggle = <MockToggle checked={showMock} onCheckedChange={setShowMock} />;
 
   if (isLoading) {
     return (

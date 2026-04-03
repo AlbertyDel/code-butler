@@ -1,8 +1,11 @@
-import { useState, memo, useCallback } from 'react';
+import { useState, memo, useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useStations } from '@/hooks/useStations';
+import { MockToggle } from '@/components/MockToggle';
+import { useMockToggle } from '@/hooks/useMockToggle';
+import { mockStations } from '@/lib/mock-data';
 import { 
   MapPin, 
   Plus,
@@ -135,7 +138,6 @@ const StationRow = memo(function StationRow({
     </Card>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if station data changed
   const prev = prevProps.station;
   const next = nextProps.station;
   return prev.id === next.id &&
@@ -146,23 +148,92 @@ const StationRow = memo(function StationRow({
 });
 
 export default function StationsPage() {
-  const { stations, addStation, updateStation, deleteStation, startCharging, stopCharging } = useStations();
+  const { stations: realStations, addStation: realAddStation, updateStation: realUpdateStation, deleteStation: realDeleteStation, startCharging: realStartCharging, stopCharging: realStopCharging } = useStations();
+  const [showMock, setShowMock] = useMockToggle('stations_mock');
+  const [mockLocalStations, setMockLocalStations] = useState<Station[]>(() => [...mockStations]);
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editStation, setEditStation] = useState<Station | null>(null);
   const [stationToDelete, setStationToDelete] = useState<Station | null>(null);
   const [detailStation, setDetailStation] = useState<Station | null>(null);
 
+  const stations = showMock ? mockLocalStations : realStations;
+
+  const handleAddStation = useCallback((stationData: Partial<Station>) => {
+    if (showMock) {
+      const newStation: Station = {
+        id: `mock-new-${Date.now()}`,
+        name: stationData.name || 'Новая станция',
+        address: stationData.address || '',
+        latitude: stationData.latitude || 55.75,
+        longitude: stationData.longitude || 37.62,
+        status: 'available',
+        connectors: [{ id: `c-new-${Date.now()}`, stationId: `mock-new-${Date.now()}`, type: 'Type2', powerKw: 22, status: 'available' }],
+        ownerId: 'user-1',
+        createdAt: new Date().toISOString(),
+        electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+        temperature: { inputContacts: 30, port0: 30, port1: 30, internal: 30 },
+        stats: { energyTodayKwh: 0, sessionsToday: 0, totalSessions: 0, totalEnergyKwh: 0, totalHours: 0 },
+      };
+      setMockLocalStations(prev => [...prev, newStation]);
+    } else {
+      realAddStation(stationData);
+    }
+  }, [showMock, realAddStation]);
+
   const handleEditStation = useCallback((stationData: Partial<Station>) => {
     if (!editStation) return;
-    updateStation({ id: editStation.id, data: stationData });
+    if (showMock) {
+      setMockLocalStations(prev => prev.map(s =>
+        s.id === editStation.id ? { ...s, ...stationData } : s
+      ));
+    } else {
+      realUpdateStation({ id: editStation.id, data: stationData });
+    }
     setEditStation(null);
-  }, [editStation, updateStation]);
+  }, [editStation, showMock, realUpdateStation]);
 
   const handleDeleteStation = useCallback(() => {
     if (!stationToDelete) return;
-    deleteStation(stationToDelete.id);
+    if (showMock) {
+      setMockLocalStations(prev => prev.filter(s => s.id !== stationToDelete.id));
+    } else {
+      realDeleteStation(stationToDelete.id);
+    }
     setStationToDelete(null);
-  }, [stationToDelete, deleteStation]);
+  }, [stationToDelete, showMock, realDeleteStation]);
+
+  const handleStartCharging = useCallback((stationId: string) => {
+    if (showMock) {
+      setMockLocalStations(prev => prev.map(s =>
+        s.id === stationId ? {
+          ...s,
+          status: 'charging' as const,
+          connectors: s.connectors.map((c, i) =>
+            i === 0 ? { ...c, status: 'charging' as const } : c
+          ),
+        } : s
+      ));
+    } else {
+      realStartCharging(stationId);
+    }
+  }, [showMock, realStartCharging]);
+
+  const handleStopCharging = useCallback((stationId: string) => {
+    if (showMock) {
+      setMockLocalStations(prev => prev.map(s =>
+        s.id === stationId ? {
+          ...s,
+          status: 'available' as const,
+          connectors: s.connectors.map(c =>
+            c.status === 'charging' ? { ...c, status: 'available' as const } : c
+          ),
+        } : s
+      ));
+    } else {
+      realStopCharging(stationId);
+    }
+  }, [showMock, realStopCharging]);
 
   const openInYandexMaps = useCallback((e: React.MouseEvent, station: Station) => {
     e.stopPropagation();
@@ -182,12 +253,14 @@ export default function StationsPage() {
     setDetailStation(station);
   }, []);
 
+  const mockToggle = <MockToggle checked={showMock} onCheckedChange={setShowMock} />;
+
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Заголовок */}
+      {mockToggle}
+
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
 
-      {/* Список станций */}
       <div className="space-y-3">
         {stations.length === 0 ? (
           <div className="flex flex-1 items-center justify-center min-h-[60vh]">
@@ -211,8 +284,8 @@ export default function StationsPage() {
                 onDelete={handleDelete}
                 onOpenMaps={openInYandexMaps}
                 onSelect={handleSelect}
-                onStart={startCharging}
-                onStop={stopCharging}
+                onStart={handleStartCharging}
+                onStop={handleStopCharging}
               />
             ))}
             <div className="flex justify-center pt-4">
@@ -224,14 +297,12 @@ export default function StationsPage() {
         )}
       </div>
 
-      {/* Диалог добавления */}
       <AddStationDialog
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        onSubmit={addStation}
+        onSubmit={handleAddStation}
       />
 
-      {/* Диалог редактирования */}
       <AddStationDialog
         open={!!editStation}
         onOpenChange={(open) => !open && setEditStation(null)}
@@ -239,7 +310,6 @@ export default function StationsPage() {
         editStation={editStation}
       />
 
-      {/* Диалог удаления */}
       <DeleteStationDialog
         open={!!stationToDelete}
         onOpenChange={(open) => !open && setStationToDelete(null)}
@@ -247,7 +317,6 @@ export default function StationsPage() {
         onConfirm={handleDeleteStation}
       />
 
-      {/* Панель деталей */}
       <StationDetailSheet
         station={detailStation}
         open={!!detailStation}

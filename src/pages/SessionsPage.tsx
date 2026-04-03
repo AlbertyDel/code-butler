@@ -157,7 +157,6 @@ function buildGroupedSessions(completedSessions: ChargingSession[]) {
     let label: string;
 
     if (date.getTime() === today.getTime()) {
-      label: 'Сегодня';
       label = 'Сегодня';
     } else if (date.getTime() === yesterday.getTime()) {
       label = 'Вчера';

@@ -1,9 +1,12 @@
-import { memo, useState, useMemo } from 'react';
+import { memo, useState, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
+import { MockToggle } from '@/components/MockToggle';
+import { useMockToggle } from '@/hooks/useMockToggle';
 import { useSessions } from '@/hooks/useSessions';
+import { mockSessions, mockStations } from '@/lib/mock-data';
 import { Clock, Zap, History } from 'lucide-react';
 import {
   Pagination,
@@ -124,20 +127,115 @@ function EmptyHistoryState() {
   );
 }
 
+function buildGroupedSessions(completedSessions: ChargingSession[]) {
+  const groups: { label: string; sessions: ChargingSession[] }[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const sessionsByDate = new Map<string, ChargingSession[]>();
+
+  completedSessions.forEach(session => {
+    const date = new Date(session.startTime);
+    date.setHours(0, 0, 0, 0);
+    const key = date.toISOString();
+
+    if (!sessionsByDate.has(key)) {
+      sessionsByDate.set(key, []);
+    }
+    sessionsByDate.get(key)!.push(session);
+  });
+
+  const sortedDates = Array.from(sessionsByDate.keys()).sort((a, b) =>
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
+  sortedDates.forEach(dateKey => {
+    const date = new Date(dateKey);
+    let label: string;
+
+    if (date.getTime() === today.getTime()) {
+      label: 'Сегодня';
+      label = 'Сегодня';
+    } else if (date.getTime() === yesterday.getTime()) {
+      label = 'Вчера';
+    } else {
+      label = date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    }
+
+    groups.push({
+      label,
+      sessions: sessionsByDate.get(dateKey)!.sort((a, b) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      ),
+    });
+  });
+
+  return groups;
+}
+
+const formatDurationFn = (startTime: string, endTime?: string): string => {
+  const start = new Date(startTime);
+  const end = endTime ? new Date(endTime) : new Date();
+  const durationMs = end.getTime() - start.getTime();
+  const minutes = Math.floor(durationMs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours} ч ${mins} м` : `${mins} м`;
+};
+
 export default function SessionsPage() {
   const {
-    activeSessions,
-    completedSessions,
-    groupedSessions,
-    stopSession,
-    getStation,
-    formatDuration,
+    activeSessions: realActiveSessions,
+    completedSessions: realCompletedSessions,
+    groupedSessions: realGroupedSessions,
+    stopSession: realStopSession,
+    getStation: realGetStation,
+    formatDuration: realFormatDuration,
   } = useSessions();
+
+  const [showMock, setShowMock] = useMockToggle('sessions_mock');
+  const [mockSessionsLocal, setMockSessionsLocal] = useState<ChargingSession[]>(() => [...mockSessions]);
+
+  const mockActiveSessions = useMemo(() =>
+    mockSessionsLocal.filter(s => s.status === 'active'), [mockSessionsLocal]);
+  const mockCompletedSessions = useMemo(() =>
+    mockSessionsLocal.filter(s => s.status !== 'active'), [mockSessionsLocal]);
+  const mockGrouped = useMemo(() =>
+    buildGroupedSessions(mockCompletedSessions), [mockCompletedSessions]);
+
+  const mockGetStation = useCallback((stationId: string) =>
+    mockStations.find(s => s.id === stationId), []);
+
+  const activeSessions = showMock ? mockActiveSessions : realActiveSessions;
+  const completedSessions = showMock ? mockCompletedSessions : realCompletedSessions;
+  const groupedSessions = showMock ? mockGrouped : realGroupedSessions;
+  const getStation = showMock ? mockGetStation : realGetStation;
+  const formatDuration = showMock ? formatDurationFn : realFormatDuration;
+
+  const handleStopSession = useCallback((sessionId: string, station: Station | undefined) => {
+    if (showMock) {
+      setMockSessionsLocal(prev => prev.map(s =>
+        s.id === sessionId ? {
+          ...s,
+          status: 'completed' as const,
+          endTime: new Date().toISOString(),
+        } : s
+      ));
+    } else if (station) {
+      realStopSession({ sessionId, deviceId: station.id });
+    }
+  }, [showMock, realStopSession]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(completedSessions.length / ITEMS_PER_PAGE);
 
-  // Paginate: flatten completed sessions, slice, then re-group
   const paginatedGroups = useMemo(() => {
     const allCompleted = groupedSessions.flatMap(g => 
       g.sessions.map(s => ({ ...s, _groupLabel: g.label }))
@@ -173,8 +271,12 @@ export default function SessionsPage() {
     return pages;
   };
 
+  const mockToggle = <MockToggle checked={showMock} onCheckedChange={setShowMock} />;
+
   return (
     <div className="space-y-6 sm:space-y-8">
+      {mockToggle}
+
       {activeSessions.length > 0 && (
         <div className="space-y-3">
           {activeSessions.map((session) => {
@@ -185,10 +287,7 @@ export default function SessionsPage() {
                 session={session}
                 station={station}
                 onStop={(sessionId: string) => {
-                  console.log('[SessionsPage] Stopping session:', sessionId, 'station:', station?.id);
-                  if (station) {
-                    stopSession({ sessionId, deviceId: station.id });
-                  }
+                  handleStopSession(sessionId, station);
                 }}
               />
             );

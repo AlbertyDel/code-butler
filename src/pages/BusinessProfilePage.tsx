@@ -98,9 +98,9 @@ export default function BusinessProfilePage() {
   const formRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Guard: redirect if not in promo or rejected state
+  // Guard: redirect if not in promo state
   useEffect(() => {
-    if (businessState !== 'promo' && businessState !== 'rejected') {
+    if (businessState !== 'promo') {
       navigate('/profile', { replace: true });
     }
   }, [businessState, navigate]);

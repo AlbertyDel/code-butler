@@ -26,10 +26,10 @@ import {
   PaginationNext, PaginationPrevious, PaginationEllipsis,
 } from '@/components/ui/pagination';
 import {
-  Wallet, Lock, Hourglass, Zap, ArrowDownToLine, Download, CalendarIcon,
+  Wallet, Lock, Hourglass, Zap, ArrowDownToLine, Download, CalendarIcon, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
-import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
+import { format, isAfter, isBefore, startOfDay, endOfDay, setMonth, setYear } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -71,10 +71,21 @@ const mockTransactions: Transaction[] = [
 
 type MockState = 'empty' | 'filled_no_processing' | 'filled_with_processing';
 
-const MOCK_SCENARIOS: Record<MockState, { balance: number; available: number; processing: number; transactions: Transaction[] }> = {
-  empty: { balance: 0, available: 0, processing: 0, transactions: [] },
-  filled_no_processing: { balance: 18385, available: 18385, processing: 0, transactions: mockTransactions.filter(t => t.type === 'income' || t.status !== 'processing') },
-  filled_with_processing: { balance: 18385, available: 14500, processing: 5000, transactions: mockTransactions },
+// Balance = total money not yet paid out
+// Processing = part of balance with active withdrawal request
+// Available = Balance - Processing
+const MOCK_SCENARIOS: Record<MockState, { balance: number; processing: number; transactions: Transaction[] }> = {
+  empty: { balance: 0, processing: 0, transactions: [] },
+  filled_no_processing: {
+    balance: 18385,
+    processing: 0,
+    transactions: mockTransactions.filter(t => t.status !== 'processing'),
+  },
+  filled_with_processing: {
+    balance: 18385,
+    processing: 5000,
+    transactions: mockTransactions,
+  },
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -82,6 +93,11 @@ const ITEMS_PER_PAGE = 10;
 const BANKS = [
   'Сбербанк', 'Тинькофф', 'Альфа-Банк', 'ВТБ', 'Газпромбанк',
   'Райффайзен', 'Россельхозбанк', 'Открытие', 'Совкомбанк', 'Промсвязьбанк',
+];
+
+const MONTHS_RU = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
 ];
 
 // --- Helpers ---
@@ -107,7 +123,7 @@ function cleanDigits(value: string): string {
 type StatusStyle = { label: string; className: string };
 
 function getStatusDisplay(t: Transaction): StatusStyle {
-  const base = 'inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium leading-none';
+  const base = 'inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium leading-4 whitespace-nowrap';
   if (t.type === 'income') {
     return { label: 'Зачислено', className: `${base} bg-emerald-500/10 text-emerald-600 border-emerald-500/20` };
   }
@@ -117,6 +133,10 @@ function getStatusDisplay(t: Transaction): StatusStyle {
     case 'error': return { label: 'Ошибка', className: `${base} bg-destructive/10 text-destructive border-destructive/20` };
     default: return { label: '', className: '' };
   }
+}
+
+function fmtMoney(n: number) {
+  return n.toLocaleString('ru-RU');
 }
 
 // --- Component ---
@@ -130,20 +150,19 @@ export default function FinancePage() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [mockState, setMockState] = useState<MockState>('filled_with_processing');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsPageLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
-  const [mockState, setMockState] = useState<MockState>('filled_with_processing');
-
   const hasMockData = showMock;
   const scenario = hasMockData ? MOCK_SCENARIOS[mockState] : null;
   const transactions = scenario?.transactions ?? [];
   const balance = scenario?.balance ?? 0;
-  const available = scenario?.available ?? 0;
   const processing = scenario?.processing ?? 0;
+  const available = balance - processing;
 
   const isEmpty = !hasMockData ? true : mockState === 'empty';
   const hasData = hasMockData && mockState !== 'empty';
@@ -222,39 +241,36 @@ export default function FinancePage() {
         <EmptyNoData />
       ) : (
         <>
-          {/* Unified Summary Block */}
+          {/* Summary Block */}
           <Card>
             <CardContent className="p-5 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                {/* Primary: Available */}
+              <div className="space-y-4">
+                {/* Primary */}
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Доступно к выводу</p>
                   <p className="text-3xl sm:text-4xl font-bold tracking-tight">
-                    {available.toLocaleString('ru-RU')} ₽
+                    {fmtMoney(available)} ₽
                   </p>
-                  {available > 0 && (
-                    <div className="pt-2">
-                      <Button onClick={() => setWithdrawOpen(true)} size="sm">
-                        Запросить вывод
-                      </Button>
-                    </div>
-                  )}
                 </div>
-
-                {/* Secondary metrics */}
-                <div className="flex flex-row sm:flex-col gap-4 sm:gap-3 sm:items-end sm:text-right">
+                {available > 0 && (
+                  <Button onClick={() => setWithdrawOpen(true)} size="sm">
+                    Запросить вывод
+                  </Button>
+                )}
+                {/* Secondary row */}
+                <div className="flex items-center gap-6 pt-2 border-t border-border">
                   <div>
-                    <p className="text-xs text-muted-foreground">Общий баланс</p>
-                    <p className="text-lg font-semibold">{balance.toLocaleString('ru-RU')} ₽</p>
+                    <p className="text-xs text-muted-foreground">Баланс</p>
+                    <p className="text-base font-semibold">{fmtMoney(balance)} ₽</p>
                   </div>
                   {processing > 0 && (
                     <div>
-                      <div className="flex items-center gap-1 sm:justify-end">
+                      <div className="flex items-center gap-1">
                         <Lock className="h-3 w-3 text-muted-foreground" />
                         <p className="text-xs text-muted-foreground">В обработке</p>
                       </div>
-                      <p className="text-lg font-semibold text-muted-foreground">
-                        {processing.toLocaleString('ru-RU')} ₽
+                      <p className="text-base font-semibold text-muted-foreground">
+                        {fmtMoney(processing)} ₽
                       </p>
                     </div>
                   )}
@@ -277,13 +293,12 @@ export default function FinancePage() {
                   <div className="hidden md:flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <FilterTabs filter={filter} onChange={setFilter} />
-                      <DatePicker label="от" date={dateFrom} onChange={setDateFrom} />
-                      <DatePicker label="до" date={dateTo} onChange={setDateTo} />
-                      {(dateFrom || dateTo) && (
-                        <Button variant="ghost" size="sm" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
-                          Сбросить
-                        </Button>
-                      )}
+                      <PeriodPicker
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        onChangeFrom={setDateFrom}
+                        onChangeTo={setDateTo}
+                      />
                     </div>
                     <Button variant="outline" size="sm" onClick={handleDownloadCsv}>
                       <Download className="h-4 w-4 mr-1.5" />
@@ -294,15 +309,12 @@ export default function FinancePage() {
                   {/* Tablet */}
                   <div className="hidden sm:flex md:hidden flex-wrap items-center gap-2">
                     <FilterTabs filter={filter} onChange={setFilter} />
-                    <div className="flex items-center gap-2">
-                      <DatePicker label="от" date={dateFrom} onChange={setDateFrom} />
-                      <DatePicker label="до" date={dateTo} onChange={setDateTo} />
-                      {(dateFrom || dateTo) && (
-                        <Button variant="ghost" size="sm" className="px-2" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
-                          ✕
-                        </Button>
-                      )}
-                    </div>
+                    <PeriodPicker
+                      dateFrom={dateFrom}
+                      dateTo={dateTo}
+                      onChangeFrom={setDateFrom}
+                      onChangeTo={setDateTo}
+                    />
                     <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="ml-auto">
                       <Download className="h-4 w-4 mr-1.5" />
                       Выгрузить
@@ -312,15 +324,12 @@ export default function FinancePage() {
                   {/* Mobile */}
                   <div className="flex flex-col gap-2 sm:hidden">
                     <FilterTabs filter={filter} onChange={setFilter} />
-                    <div className="flex items-center gap-2">
-                      <DatePicker label="от" date={dateFrom} onChange={setDateFrom} className="flex-1" />
-                      <DatePicker label="до" date={dateTo} onChange={setDateTo} className="flex-1" />
-                      {(dateFrom || dateTo) && (
-                        <Button variant="ghost" size="sm" className="px-2 shrink-0" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
-                          ✕
-                        </Button>
-                      )}
-                    </div>
+                    <PeriodPicker
+                      dateFrom={dateFrom}
+                      dateTo={dateTo}
+                      onChangeFrom={setDateFrom}
+                      onChangeTo={setDateTo}
+                    />
                     <Button variant="outline" size="sm" className="w-full" onClick={handleDownloadCsv}>
                       <Download className="h-4 w-4 mr-1.5" />
                       Выгрузить
@@ -453,22 +462,79 @@ function FilterTabs({ filter, onChange }: { filter: FilterType; onChange: (f: Fi
   );
 }
 
-// --- Date Picker ---
+// --- Grouped Period Picker ---
 
-function DatePicker({ label, date, onChange, className }: { label: string; date?: Date; onChange: (d: Date | undefined) => void; className?: string }) {
+function PeriodPicker({
+  dateFrom,
+  dateTo,
+  onChangeFrom,
+  onChangeTo,
+}: {
+  dateFrom?: Date;
+  dateTo?: Date;
+  onChangeFrom: (d: Date | undefined) => void;
+  onChangeTo: (d: Date | undefined) => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [calMonth, setCalMonth] = useState<Date>(new Date());
+  const [selectingField, setSelectingField] = useState<'from' | 'to'>('from');
+  const [showMonthSelect, setShowMonthSelect] = useState(false);
+
+  const handleSelect = (d: Date | undefined) => {
+    if (!d) return;
+    if (selectingField === 'from') {
+      onChangeFrom(d);
+      if (dateTo && isAfter(d, dateTo)) onChangeTo(undefined);
+      setSelectingField('to');
+    } else {
+      if (dateFrom && isBefore(d, dateFrom)) {
+        onChangeFrom(d);
+      } else {
+        onChangeTo(d);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    onChangeFrom(undefined);
+    onChangeTo(undefined);
+    setSelectingField('from');
+  };
+
+  const handleApply = () => {
+    setOpen(false);
+  };
+
+  const currentMonth = calMonth.getMonth();
+  const currentYear = calMonth.getFullYear();
+  const yearRange = Array.from({ length: 7 }, (_, i) => currentYear - 3 + i);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={cn(
-          'justify-start text-left font-normal',
-          !date && 'text-muted-foreground',
-          className
-        )}>
-          <CalendarIcon className="h-4 w-4 mr-1.5 shrink-0" />
-          {date ? format(date, 'dd.MM.yyyy') : label}
-        </Button>
+        <button
+          className={cn(
+            'inline-flex items-center h-9 rounded-md border border-input bg-background text-sm transition-colors hover:bg-accent/50',
+            'w-full sm:w-auto'
+          )}
+        >
+          <span className={cn(
+            'flex items-center gap-1.5 px-3 h-full',
+            selectingField === 'from' && open && 'bg-accent/50',
+            !dateFrom && 'text-muted-foreground',
+          )}>
+            <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+            {dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}
+          </span>
+          <span className="w-px h-4 bg-border shrink-0" />
+          <span className={cn(
+            'flex items-center gap-1.5 px-3 h-full',
+            selectingField === 'to' && open && 'bg-accent/50',
+            !dateTo && 'text-muted-foreground',
+          )}>
+            {dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}
+          </span>
+        </button>
       </PopoverTrigger>
       <PopoverContent
         className="w-auto p-0"
@@ -477,13 +543,102 @@ function DatePicker({ label, date, onChange, className }: { label: string; date?
         sideOffset={4}
         avoidCollisions={false}
       >
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={(d) => { onChange(d); setOpen(false); }}
-          locale={ru}
-          className="p-3 pointer-events-auto"
-        />
+        <div className="p-3 pointer-events-auto">
+          {/* Month/Year header */}
+          <div className="flex items-center justify-between mb-3">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() - 1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <button
+              onClick={() => setShowMonthSelect(!showMonthSelect)}
+              className="text-sm font-medium hover:underline px-2"
+            >
+              {MONTHS_RU[currentMonth]} {currentYear}
+            </button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() + 1))}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {showMonthSelect ? (
+            <div className="space-y-3">
+              {/* Year */}
+              <div className="flex flex-wrap gap-1 justify-center">
+                {yearRange.map(y => (
+                  <button
+                    key={y}
+                    onClick={() => { setCalMonth(setYear(calMonth, y)); }}
+                    className={cn(
+                      'px-2 py-1 text-xs rounded-md transition-colors',
+                      y === currentYear ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                    )}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+              {/* Months */}
+              <div className="grid grid-cols-3 gap-1">
+                {MONTHS_RU.map((m, i) => (
+                  <button
+                    key={m}
+                    onClick={() => { setCalMonth(setMonth(calMonth, i)); setShowMonthSelect(false); }}
+                    className={cn(
+                      'px-2 py-1.5 text-xs rounded-md transition-colors',
+                      i === currentMonth ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                    )}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <Calendar
+                mode="single"
+                selected={selectingField === 'from' ? dateFrom : dateTo}
+                onSelect={handleSelect}
+                month={calMonth}
+                onMonthChange={setCalMonth}
+                locale={ru}
+                className="p-0 pointer-events-auto"
+                classNames={{
+                  caption: 'hidden',
+                  nav: 'hidden',
+                }}
+                modifiers={{
+                  range_start: dateFrom ? [dateFrom] : [],
+                  range_end: dateTo ? [dateTo] : [],
+                  range_middle: dateFrom && dateTo ? {
+                    after: dateFrom,
+                    before: dateTo,
+                  } : undefined,
+                }}
+                modifiersClassNames={{
+                  range_start: 'bg-primary text-primary-foreground rounded-l-md',
+                  range_end: 'bg-primary text-primary-foreground rounded-r-md',
+                  range_middle: 'bg-accent text-accent-foreground rounded-none',
+                }}
+              />
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  disabled={!dateFrom && !dateTo}
+                  className="text-xs"
+                >
+                  Сбросить
+                </Button>
+                <Button size="sm" onClick={handleApply} className="text-xs">
+                  Применить
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
@@ -533,7 +688,7 @@ function WithdrawDialog({ open, onOpenChange }: WithdrawDialogProps) {
   const [accountNumber, setAccountNumber] = useState('');
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(cleanDigits(e.target.value));
-  const handleFillAll = () => setAmount(String(MOCK_SCENARIOS.filled_with_processing.available));
+  const handleFillAll = () => setAmount(String(MOCK_SCENARIOS.filled_with_processing.balance - MOCK_SCENARIOS.filled_with_processing.processing));
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let digits = cleanDigits(e.target.value);

@@ -258,11 +258,16 @@ export default function StationsPage() {
 
   const mockToggle = <MockToggle checked={showMock} onCheckedChange={setShowMock} />;
 
+  const { flowState } = useSessionFlow();
+  const bannerConfig = SESSION_FLOW_BANNER_MAP[flowState];
+
   return (
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
 
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
+
+      {bannerConfig && <SessionStatusBanner config={bannerConfig} />}
 
       <div className="space-y-3">
         {stations.length === 0 ? (

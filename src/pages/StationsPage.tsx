@@ -177,37 +177,7 @@ export default function StationsPage() {
     setStationToDelete(null);
   }, [stationToDelete, showMock, realDeleteStation]);
 
-  const handleStartCharging = useCallback((stationId: string) => {
-    if (showMock) {
-      setMockLocalStations(prev => prev.map(s =>
-        s.id === stationId ? {
-          ...s,
-          status: 'charging' as const,
-          connectors: s.connectors.map((c, i) =>
-            i === 0 ? { ...c, status: 'charging' as const } : c
-          ),
-        } : s
-      ));
-    } else {
-      realStartCharging(stationId);
-    }
-  }, [showMock, realStartCharging]);
 
-  const handleStopCharging = useCallback((stationId: string) => {
-    if (showMock) {
-      setMockLocalStations(prev => prev.map(s =>
-        s.id === stationId ? {
-          ...s,
-          status: 'available' as const,
-          connectors: s.connectors.map(c =>
-            c.status === 'charging' ? { ...c, status: 'available' as const } : c
-          ),
-        } : s
-      ));
-    } else {
-      realStopCharging(stationId);
-    }
-  }, [showMock, realStopCharging]);
 
   const openInYandexMaps = useCallback((e: React.MouseEvent, station: Station) => {
     e.stopPropagation();

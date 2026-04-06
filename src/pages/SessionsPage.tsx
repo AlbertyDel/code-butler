@@ -212,19 +212,7 @@ export default function SessionsPage() {
   const getStation = showMock ? mockGetStation : realGetStation;
   const formatDuration = showMock ? formatDurationFn : realFormatDuration;
 
-  const handleStopSession = useCallback((sessionId: string, station: Station | undefined) => {
-    if (showMock) {
-      setMockSessionsLocal(prev => prev.map(s =>
-        s.id === sessionId ? {
-          ...s,
-          status: 'completed' as const,
-          endTime: new Date().toISOString(),
-        } : s
-      ));
-    } else if (station) {
-      realStopSession({ sessionId, deviceId: station.id });
-    }
-  }, [showMock, realStopSession]);
+
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(completedSessions.length / ITEMS_PER_PAGE);

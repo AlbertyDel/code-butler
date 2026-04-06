@@ -4,7 +4,7 @@ import { toast as sonnerToast } from 'sonner';
 interface LegacyToastProps {
   title?: string;
   description?: string;
-  variant?: 'default' | 'destructive';
+  variant?: 'default' | 'destructive' | 'warning';
   [key: string]: unknown;
 }
 
@@ -15,8 +15,10 @@ function toast(props: LegacyToastProps) {
 
   if (variant === 'destructive') {
     sonnerToast.error(message, options);
+  } else if (variant === 'warning') {
+    sonnerToast.warning(message, options);
   } else {
-    sonnerToast.success(message, options);
+    sonnerToast(message, options);
   }
 
   return { id: '', dismiss: () => {}, update: () => {} };

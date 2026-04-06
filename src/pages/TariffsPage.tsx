@@ -197,12 +197,12 @@ export default function TariffsPage() {
       newErrors.maxTime = 'Максимум 600 минут';
     }
 
-    // Validate maxEnergy (required, 1–200)
+    // Validate maxEnergy (required, 5–200)
     const maxEnergyNum = Number(formMaxEnergy);
     if (!formMaxEnergy) {
       newErrors.maxEnergy = 'Укажите лимит энергии';
-    } else if (!Number.isFinite(maxEnergyNum) || maxEnergyNum < 1) {
-      newErrors.maxEnergy = 'Минимум 1 кВт·ч';
+    } else if (!Number.isFinite(maxEnergyNum) || maxEnergyNum < 5) {
+      newErrors.maxEnergy = 'Минимум 5 кВт·ч';
     } else if (maxEnergyNum > 200) {
       newErrors.maxEnergy = 'Максимум 200 кВт·ч';
     }
@@ -483,35 +483,41 @@ export default function TariffsPage() {
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
-                    <Input
-                      type="number"
-                      placeholder="5–600"
-                      min={5}
-                      max={600}
-                      value={formMaxTime}
-                      onChange={(e) => {
-                        setFormMaxTime(e.target.value);
-                        if (errors.maxTime) setErrors((prev) => ({ ...prev, maxTime: undefined }));
-                      }}
-                      className={errors.maxTime ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
-                    />
+                    <Label className="text-xs text-muted-foreground">Лимит времени <span className="text-destructive">*</span></Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        placeholder="от 5 до 600"
+                        min={5}
+                        max={600}
+                        value={formMaxTime}
+                        onChange={(e) => {
+                          setFormMaxTime(e.target.value);
+                          if (errors.maxTime) setErrors((prev) => ({ ...prev, maxTime: undefined }));
+                        }}
+                        className={`pr-14 ${errors.maxTime ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}`}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">мин.</span>
+                    </div>
                     {errors.maxTime && <p className="text-xs text-destructive">{errors.maxTime}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
-                    <Input
-                      type="number"
-                      placeholder="1–200"
-                      min={1}
-                      max={200}
-                      value={formMaxEnergy}
-                      onChange={(e) => {
-                        setFormMaxEnergy(e.target.value);
-                        if (errors.maxEnergy) setErrors((prev) => ({ ...prev, maxEnergy: undefined }));
-                      }}
-                      className={errors.maxEnergy ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
-                    />
+                    <Label className="text-xs text-muted-foreground">Лимит энергии <span className="text-destructive">*</span></Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        placeholder="от 1 до 200"
+                        min={1}
+                        max={200}
+                        value={formMaxEnergy}
+                        onChange={(e) => {
+                          setFormMaxEnergy(e.target.value);
+                          if (errors.maxEnergy) setErrors((prev) => ({ ...prev, maxEnergy: undefined }));
+                        }}
+                        className={`pr-16 ${errors.maxEnergy ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}`}
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">кВт·ч</span>
+                    </div>
                     {errors.maxEnergy && <p className="text-xs text-destructive">{errors.maxEnergy}</p>}
                   </div>
                 </div>

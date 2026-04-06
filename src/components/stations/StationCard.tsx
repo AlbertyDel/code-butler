@@ -4,6 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Play, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
+import { useSessionFlow } from '@/contexts/SessionFlowContext';
+import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import type { Station, ChargerStatus } from '@/types';
 
 interface StationCardProps {
@@ -40,6 +43,14 @@ export const StationCard = memo(function StationCard({
   onStop, 
   showActions = true 
 }: StationCardProps) {
+  const { flowState } = useSessionFlow();
+
+  // Show connection_recovery / waiting_for_station_response banners for charging stations
+  const bannerConfig = station.status === 'charging' &&
+    (flowState === 'connection_recovery' || flowState === 'waiting_for_station_response')
+    ? SESSION_FLOW_BANNER_MAP[flowState]
+    : undefined;
+
   const openInYandexMaps = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `https://yandex.ru/maps/?pt=${station.longitude},${station.latitude}&z=17&l=map`;
@@ -115,17 +126,11 @@ export const StationCard = memo(function StationCard({
             </Badge>
           ))}
         </div>
+
+        {bannerConfig && (
+          <SessionStatusBanner config={bannerConfig} className="mt-3" />
+        )}
       </CardContent>
     </Card>
   );
-}, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if station data or callbacks changed
-  const prev = prevProps.station;
-  const next = nextProps.station;
-  return prev.id === next.id &&
-    prev.name === next.name &&
-    prev.address === next.address &&
-    prev.status === next.status &&
-    prev.connectors.length === next.connectors.length &&
-    prevProps.showActions === nextProps.showActions;
 });

@@ -30,8 +30,10 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
   stations,
   onStart,
 }: QuickLaunchCardProps) {
-  const { flowState } = useSessionFlow();
-  const bannerConfig = flowState === 'waiting_for_connector'
+  const { flowState, dismissConnectorBanner } = useSessionFlow();
+
+  // Show banner for all non-idle states
+  const bannerConfig = flowState !== 'idle'
     ? SESSION_FLOW_BANNER_MAP[flowState]
     : undefined;
 
@@ -53,6 +55,16 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
 
   const selectedStation = stations.find((s) => s.id === currentSelectedId);
 
+  const handleStationChange = (value: string) => {
+    setSelectedId(value);
+    dismissConnectorBanner();
+  };
+
+  const handleStart = () => {
+    dismissConnectorBanner();
+    onStart(currentSelectedId);
+  };
+
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardContent className="p-4">
@@ -68,7 +80,7 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
 
             <Select
               value={hasAvailable ? currentSelectedId : ''}
-              onValueChange={setSelectedId}
+              onValueChange={handleStationChange}
               disabled={!hasAvailable}
             >
               <SelectTrigger className="h-11 w-full min-w-0 flex-1">
@@ -115,7 +127,7 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
           <Button
             disabled={!hasAvailable}
             className="h-11 shrink-0 sm:ml-auto"
-            onClick={() => onStart(currentSelectedId)}
+            onClick={handleStart}
           >
             <Zap className="mr-2 h-4 w-4" />
             Запустить

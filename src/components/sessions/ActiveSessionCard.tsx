@@ -18,6 +18,15 @@ import { useSessionFlow } from '@/contexts/SessionFlowContext';
 import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import type { ChargingSession, Station } from '@/types';
 
+function formatElapsed(startTime: string): string {
+  const diff = Math.max(0, Math.floor((Date.now() - new Date(startTime).getTime()) / 1000));
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
 interface ActiveSessionCardProps {
   session: ChargingSession;
   station?: Station;

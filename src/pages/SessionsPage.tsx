@@ -275,9 +275,14 @@ export default function SessionsPage() {
 
   const mockToggle = <MockToggle checked={showMock} onCheckedChange={setShowMock} />;
 
+  const { flowState } = useSessionFlow();
+  const bannerConfig = SESSION_FLOW_BANNER_MAP[flowState];
+
   return (
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
+
+      {bannerConfig && <SessionStatusBanner config={bannerConfig} />}
 
       {activeSessions.length > 0 && (
         <div className="space-y-3">

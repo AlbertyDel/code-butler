@@ -42,11 +42,28 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
   const minutes = durationMinutes % 60;
   const timeLabel = hours > 0 ? `${hours} ч ${minutes} м` : `${minutes} м`;
 
+  const stopDialog = (
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Остановить сессию?</AlertDialogTitle>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Отмена</AlertDialogCancel>
+        <AlertDialogAction
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          onClick={() => onStop(session.id)}
+        >
+          Остановить
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  );
+
   return (
-    <Card className="border-primary/30 bg-primary/5 overflow-hidden">
-      <CardContent className="p-0">
+    <Card className="border-primary/30 bg-primary/5">
+      <CardContent className="p-4 space-y-4">
         {/* ── Top row: icon + station + stop ── */}
-        <div className="flex items-center gap-3 p-4 pb-0">
+        <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary animate-pulse">
             <BatteryCharging className="h-4 w-4 text-primary-foreground" />
           </div>
@@ -63,32 +80,19 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
             )}
           </div>
 
-          {/* Stop — icon-only on mobile, label on md+ */}
+          {/* Stop — icon-only on mobile/tablet, label on lg+ */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 variant="destructive"
                 size="icon"
-                className="h-8 w-8 shrink-0 md:hidden"
+                className="h-8 w-8 shrink-0 lg:hidden"
                 aria-label="Остановить"
               >
                 <Square className="h-3.5 w-3.5" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Остановить сессию?</AlertDialogTitle>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={() => onStop(session.id)}
-                >
-                  Остановить
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
+            {stopDialog}
           </AlertDialog>
 
           <AlertDialog>
@@ -96,31 +100,18 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
               <Button
                 variant="destructive"
                 size="sm"
-                className="hidden md:inline-flex gap-1.5 h-8 px-3 text-xs shrink-0"
+                className="hidden lg:inline-flex gap-1.5 h-8 px-3 text-xs shrink-0"
               >
                 <Square className="h-3 w-3" />
                 Остановить
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Остановить сессию?</AlertDialogTitle>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  onClick={() => onStop(session.id)}
-                >
-                  Остановить
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
+            {stopDialog}
           </AlertDialog>
         </div>
 
-        {/* ── Metrics 2×2 → 4-col ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border mt-4">
+        {/* ── Metrics ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Metric icon={Clock} value={timeLabel} label="Время" />
           <Metric icon={Zap} value={session.energyKwh} label="кВт·ч" />
           <Metric icon={Activity} value={session.currentAmps} label="А" />
@@ -129,9 +120,7 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
 
         {/* ── Flow banner ── */}
         {bannerConfig && (
-          <div className="p-3 pt-0 mt-3">
-            <SessionStatusBanner config={bannerConfig} />
-          </div>
+          <SessionStatusBanner config={bannerConfig} />
         )}
       </CardContent>
     </Card>
@@ -160,10 +149,10 @@ function Metric({
   label: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-0.5 bg-primary/5 py-3 px-2">
+    <div className="flex flex-col items-center gap-0.5">
       <Icon className="h-3.5 w-3.5 text-muted-foreground" />
       {value == null ? (
-        <Skeleton className="h-5 w-10 rounded mt-0.5" />
+        <Skeleton className="h-5 w-10 rounded" />
       ) : (
         <span className="text-base font-semibold leading-tight">{value}</span>
       )}

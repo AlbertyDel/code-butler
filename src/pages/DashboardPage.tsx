@@ -280,7 +280,7 @@ export default function DashboardPage() {
       {activeSessions.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Активные сессии</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             {activeSessions.map((session) => {
               const station = stations.find(s => s.id === session.stationId);
               return (

@@ -10,15 +10,15 @@ interface LegacyToastProps {
 
 function toast(props: LegacyToastProps) {
   const { title, description, variant } = props;
-  const message = title || '';
-  const options = { description: description || undefined };
+  // Prefer description as the single message; fall back to title
+  const message = description || title || '';
 
   if (variant === 'destructive') {
-    sonnerToast.error(message, options);
+    sonnerToast.error(message);
   } else if (variant === 'warning') {
-    sonnerToast.warning(message, options);
+    sonnerToast.warning(message);
   } else {
-    sonnerToast(message, options);
+    sonnerToast(message);
   }
 
   return { id: '', dismiss: () => {}, update: () => {} };

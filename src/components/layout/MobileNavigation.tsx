@@ -27,7 +27,7 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 pointer-events-auto backdrop-blur supports-[backdrop-filter]:bg-card/80"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card pointer-events-auto"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex w-full items-center justify-around h-16">

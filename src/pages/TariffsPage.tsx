@@ -478,9 +478,7 @@ export default function TariffsPage() {
 
               {/* Session limits */}
               <div className="space-y-2">
-                <Label>
-                  Ограничения сессии <span className="text-destructive">*</span>
-                </Label>
+                <Label>Ограничения сессии</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Лимит времени <span className="text-destructive">*</span></Label>

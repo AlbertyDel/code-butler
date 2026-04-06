@@ -12,6 +12,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
+import { useSessionFlow } from '@/contexts/SessionFlowContext';
+import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import type { ChargingSession, Station } from '@/types';
 
 interface ActiveSessionCardProps {
@@ -25,6 +28,11 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
   station, 
   onStop 
 }: ActiveSessionCardProps) {
+  const { flowState } = useSessionFlow();
+  // Show connection_recovery and waiting_for_station_response banners inside session card
+  const bannerConfig = (flowState === 'connection_recovery' || flowState === 'waiting_for_station_response')
+    ? SESSION_FLOW_BANNER_MAP[flowState]
+    : undefined;
   const startTime = new Date(session.startTime);
   const now = new Date();
   const durationMs = now.getTime() - startTime.getTime();
@@ -113,6 +121,10 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
             </div>
           </div>
         </div>
+
+        {bannerConfig && (
+          <SessionStatusBanner config={bannerConfig} className="mt-3" />
+        )}
       </CardContent>
     </Card>
   );

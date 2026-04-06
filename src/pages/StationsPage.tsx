@@ -6,9 +6,6 @@ import { useStations } from '@/hooks/useStations';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { mockStations } from '@/lib/mock-data';
-import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
-import { useSessionFlow } from '@/contexts/SessionFlowContext';
-import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import { 
   MapPin, 
   Plus,
@@ -258,16 +255,11 @@ export default function StationsPage() {
 
   const mockToggle = <MockToggle checked={showMock} onCheckedChange={setShowMock} />;
 
-  const { flowState } = useSessionFlow();
-  const bannerConfig = SESSION_FLOW_BANNER_MAP[flowState];
-
   return (
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
 
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
-
-      {bannerConfig && <SessionStatusBanner config={bannerConfig} />}
 
       <div className="space-y-3">
         {stations.length === 0 ? (

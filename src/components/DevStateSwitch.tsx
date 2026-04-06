@@ -14,11 +14,8 @@ const states: { value: BusinessState; label: string; color: string }[] = [
 const flowStates: { value: SessionFlowState; label: string; title: string }[] = [
   { value: 'idle', label: '—', title: 'idle' },
   { value: 'waiting_for_connector', label: '🔌', title: 'waiting_for_connector' },
-  { value: 'waiting_for_station_response', label: '📡', title: 'waiting_for_station_response' },
   { value: 'connection_recovery', label: '📶', title: 'connection_recovery' },
-  { value: 'session_active', label: '⚡', title: 'session_active' },
-  { value: 'session_finishing', label: '⏳', title: 'session_finishing' },
-  { value: 'fault', label: '💥', title: 'fault' },
+  { value: 'waiting_for_station_response', label: '📡', title: 'waiting_for_station_response' },
 ];
 
 export function DevStateSwitch() {

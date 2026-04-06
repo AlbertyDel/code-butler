@@ -177,6 +177,13 @@ const StatCard = memo(function StatCard({
   );
 });
 
+function DashboardFlowBanner() {
+  const { flowState } = useSessionFlow();
+  const bannerConfig = SESSION_FLOW_BANNER_MAP[flowState];
+  if (!bannerConfig) return null;
+  return <SessionStatusBanner config={bannerConfig} />;
+}
+
 export default function DashboardPage() {
   const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
   const { activeSessions: realActiveSessions, sessions: realSessions, isLoading: sessionsLoading } = useSessions();

@@ -197,12 +197,12 @@ export default function TariffsPage() {
       newErrors.maxTime = 'Максимум 600 минут';
     }
 
-    // Validate maxEnergy (required, 1–200)
+    // Validate maxEnergy (required, 5–200)
     const maxEnergyNum = Number(formMaxEnergy);
     if (!formMaxEnergy) {
       newErrors.maxEnergy = 'Укажите лимит энергии';
-    } else if (!Number.isFinite(maxEnergyNum) || maxEnergyNum < 1) {
-      newErrors.maxEnergy = 'Минимум 1 кВт·ч';
+    } else if (!Number.isFinite(maxEnergyNum) || maxEnergyNum < 5) {
+      newErrors.maxEnergy = 'Минимум 5 кВт·ч';
     } else if (maxEnergyNum > 200) {
       newErrors.maxEnergy = 'Максимум 200 кВт·ч';
     }

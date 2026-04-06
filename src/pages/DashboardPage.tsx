@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
+import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
+import { useSessionFlow } from '@/contexts/SessionFlowContext';
 import { useToast } from '@/hooks/use-toast';
+import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import { 
   Zap, 
   MapPin, 
@@ -267,8 +270,9 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Быстрый запуск */}
+      {/* Быстрый запуск + persistent banner */}
       <QuickLaunchCard stations={stations} onStart={startCharging} />
+      <DashboardFlowBanner />
 
       {/* Активные сессии */}
       {activeSessions.length > 0 && (

@@ -73,6 +73,8 @@ const MOCK_ACTIVE_SESSIONS: ChargingSession[] = [
     energyKwh: 32.4,
     cost: 486,
     status: 'active',
+    currentAmps: 32,
+    currentKw: 22.1,
   },
   {
     id: 'mock-session-2',
@@ -83,6 +85,8 @@ const MOCK_ACTIVE_SESSIONS: ChargingSession[] = [
     energyKwh: 18.7,
     cost: 280.5,
     status: 'active',
+    currentAmps: 16,
+    currentKw: 7.4,
   },
   {
     id: 'mock-session-3',
@@ -93,6 +97,7 @@ const MOCK_ACTIVE_SESSIONS: ChargingSession[] = [
     energyKwh: 8.1,
     cost: 121.5,
     status: 'active',
+    // no currentAmps/currentKw — will show skeleton
   },
 ];
 

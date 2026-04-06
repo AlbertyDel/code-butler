@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +18,15 @@ import { useSessionFlow } from '@/contexts/SessionFlowContext';
 import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import type { ChargingSession, Station } from '@/types';
 
+function formatElapsed(startTime: string): string {
+  const diff = Math.max(0, Math.floor((Date.now() - new Date(startTime).getTime()) / 1000));
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
 interface ActiveSessionCardProps {
   session: ChargingSession;
   station?: Station;
@@ -35,12 +44,12 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
       ? SESSION_FLOW_BANNER_MAP[flowState]
       : undefined;
 
-  const startTime = new Date(session.startTime);
-  const now = new Date();
-  const durationMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
-  const hours = Math.floor(durationMinutes / 60);
-  const minutes = durationMinutes % 60;
-  const timeLabel = hours > 0 ? `${hours} ч ${minutes} м` : `${minutes} м`;
+  const [timeLabel, setTimeLabel] = useState(() => formatElapsed(session.startTime));
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeLabel(formatElapsed(session.startTime)), 1000);
+    return () => clearInterval(id);
+  }, [session.startTime]);
 
   const stopDialog = (
     <AlertDialogContent>

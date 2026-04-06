@@ -35,12 +35,12 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
       ? SESSION_FLOW_BANNER_MAP[flowState]
       : undefined;
 
-  const startTime = new Date(session.startTime);
-  const now = new Date();
-  const durationMinutes = Math.floor((now.getTime() - startTime.getTime()) / 60000);
-  const hours = Math.floor(durationMinutes / 60);
-  const minutes = durationMinutes % 60;
-  const timeLabel = hours > 0 ? `${hours} ч ${minutes} м` : `${minutes} м`;
+  const [timeLabel, setTimeLabel] = useState(() => formatElapsed(session.startTime));
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeLabel(formatElapsed(session.startTime)), 1000);
+    return () => clearInterval(id);
+  }, [session.startTime]);
 
   const stopDialog = (
     <AlertDialogContent>

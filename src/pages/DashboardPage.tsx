@@ -177,12 +177,6 @@ const StatCard = memo(function StatCard({
   );
 });
 
-function DashboardFlowBanner() {
-  const { flowState } = useSessionFlow();
-  const bannerConfig = SESSION_FLOW_BANNER_MAP[flowState];
-  if (!bannerConfig) return null;
-  return <SessionStatusBanner config={bannerConfig} />;
-}
 
 export default function DashboardPage() {
   const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
@@ -277,9 +271,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Быстрый запуск + persistent banner */}
+      {/* Быстрый запуск с inline banner */}
       <QuickLaunchCard stations={stations} onStart={startCharging} />
-      <DashboardFlowBanner />
 
       {/* Активные сессии */}
       {activeSessions.length > 0 && (

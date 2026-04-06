@@ -504,8 +504,8 @@ export default function TariffsPage() {
                     <div className="relative">
                       <Input
                         type="number"
-                        placeholder="от 1 до 200"
-                        min={1}
+                        placeholder="от 5 до 200"
+                        min={5}
                         max={200}
                         value={formMaxEnergy}
                         onChange={(e) => {

@@ -70,9 +70,13 @@ const mockTransactions: Transaction[] = [
   { id: 't-15', date: '2025-03-08T22:30:00Z', type: 'income', amount: 190, status: 'credited', stationName: 'ЭЗС Бутово' },
 ];
 
-const MOCK_BALANCE = 18385;
-const MOCK_AVAILABLE = 14500;
-const MOCK_PROCESSING = 5000;
+type MockState = 'empty' | 'filled_no_processing' | 'filled_with_processing';
+
+const MOCK_SCENARIOS: Record<MockState, { balance: number; available: number; processing: number; transactions: Transaction[] }> = {
+  empty: { balance: 0, available: 0, processing: 0, transactions: [] },
+  filled_no_processing: { balance: 18385, available: 18385, processing: 0, transactions: mockTransactions.filter(t => t.type === 'income' || t.status !== 'processing') },
+  filled_with_processing: { balance: 18385, available: 14500, processing: 5000, transactions: mockTransactions },
+};
 
 const ITEMS_PER_PAGE = 10;
 
@@ -130,11 +134,14 @@ export default function FinancePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  const [mockState, setMockState] = useState<MockState>('filled_with_processing');
+
   const hasMockData = showMock;
-  const transactions = hasMockData ? mockTransactions : [];
-  const balance = hasMockData ? MOCK_BALANCE : 0;
-  const available = hasMockData ? MOCK_AVAILABLE : 0;
-  const processing = hasMockData ? MOCK_PROCESSING : 0;
+  const scenario = hasMockData ? MOCK_SCENARIOS[mockState] : null;
+  const transactions = scenario?.transactions ?? [];
+  const balance = scenario?.balance ?? 0;
+  const available = scenario?.available ?? 0;
+  const processing = scenario?.processing ?? 0;
   const hasAnyMoney = balance > 0 || available > 0 || processing > 0;
 
   const filtered = useMemo(() => {
@@ -187,7 +194,21 @@ export default function FinancePage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <MockToggle checked={showMock} onCheckedChange={setShowMock} />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <MockToggle checked={showMock} onCheckedChange={setShowMock} />
+        {showMock && (
+          <Select value={mockState} onValueChange={(v) => setMockState(v as MockState)}>
+            <SelectTrigger className="w-full sm:w-[260px] h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="empty">Пустое состояние</SelectItem>
+              <SelectItem value="filled_no_processing">Баланс есть, вывод = 0</SelectItem>
+              <SelectItem value="filled_with_processing">Баланс + в обработке</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      </div>
 
       {/* Summary block */}
       {isPending && !hasMockData ? (
@@ -223,8 +244,8 @@ export default function FinancePage() {
               <p className="text-lg font-semibold text-muted-foreground">
                 {processing.toLocaleString('ru-RU')} ₽
               </p>
-              {processing === 0 && (
-                <p className="text-xs text-muted-foreground mt-0.5">Нет активных заявок</p>
+               {processing === 0 && (
+                <p className="text-xs text-muted-foreground mt-0.5">Сейчас нет активных заявок на вывод</p>
               )}
             </div>
           </div>
@@ -392,7 +413,7 @@ function DatePicker({ label, date, onChange }: { label: string; date?: Date; onC
           {date ? format(date, 'dd.MM.yyyy') : label}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align="start" side="bottom" sideOffset={4}>
         <Calendar
           mode="single"
           selected={date}

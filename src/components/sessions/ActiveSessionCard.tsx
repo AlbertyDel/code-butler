@@ -121,6 +121,10 @@ export const ActiveSessionCard = memo(function ActiveSessionCard({
             </div>
           </div>
         </div>
+
+        {bannerConfig && (
+          <SessionStatusBanner config={bannerConfig} className="mt-3" />
+        )}
       </CardContent>
     </Card>
   );

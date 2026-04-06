@@ -8,12 +8,9 @@ import { useMockToggle } from '@/hooks/useMockToggle';
 import { mockStations } from '@/lib/mock-data';
 import { 
   MapPin, 
-  Plus,
   Pencil,
   Trash2,
   Plug,
-  Play,
-  Square
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
@@ -48,8 +45,6 @@ interface StationRowProps {
   onDelete: (station: Station) => void;
   onOpenMaps: (e: React.MouseEvent, station: Station) => void;
   onSelect: (station: Station) => void;
-  onStart: (stationId: string) => void;
-  onStop: (stationId: string) => void;
 }
 
 const StationRow = memo(function StationRow({ 
@@ -58,8 +53,6 @@ const StationRow = memo(function StationRow({
   onDelete, 
   onOpenMaps,
   onSelect,
-  onStart,
-  onStop
 }: StationRowProps) {
   return (
     <Card className="transition-shadow hover:shadow-md cursor-pointer" onClick={() => onSelect(station)}>
@@ -97,25 +90,6 @@ const StationRow = memo(function StationRow({
             </div>
           </div>
           <div className="flex gap-2 justify-end shrink-0 items-center">
-            {station.status === 'available' && (
-              <Button
-                onClick={(e) => { e.stopPropagation(); onStart(station.id); }}
-                className="gap-1.5 w-[140px] h-11"
-              >
-                <Play className="h-4 w-4" />
-                Запустить
-              </Button>
-            )}
-            {station.status === 'charging' && (
-              <Button
-                variant="destructive"
-                onClick={(e) => { e.stopPropagation(); onStop(station.id); }}
-                className="gap-1.5 w-[140px] h-11"
-              >
-                <Square className="h-4 w-4" />
-                Остановить
-              </Button>
-            )}
             <Button
               variant="outline"
               size="icon"
@@ -148,7 +122,7 @@ const StationRow = memo(function StationRow({
 });
 
 export default function StationsPage() {
-  const { stations: realStations, addStation: realAddStation, updateStation: realUpdateStation, deleteStation: realDeleteStation, startCharging: realStartCharging, stopCharging: realStopCharging } = useStations();
+  const { stations: realStations, addStation: realAddStation, updateStation: realUpdateStation, deleteStation: realDeleteStation } = useStations();
   const [showMock, setShowMock] = useMockToggle('stations_mock');
   const [mockLocalStations, setMockLocalStations] = useState<Station[]>(() => [...mockStations]);
 
@@ -203,37 +177,7 @@ export default function StationsPage() {
     setStationToDelete(null);
   }, [stationToDelete, showMock, realDeleteStation]);
 
-  const handleStartCharging = useCallback((stationId: string) => {
-    if (showMock) {
-      setMockLocalStations(prev => prev.map(s =>
-        s.id === stationId ? {
-          ...s,
-          status: 'charging' as const,
-          connectors: s.connectors.map((c, i) =>
-            i === 0 ? { ...c, status: 'charging' as const } : c
-          ),
-        } : s
-      ));
-    } else {
-      realStartCharging(stationId);
-    }
-  }, [showMock, realStartCharging]);
 
-  const handleStopCharging = useCallback((stationId: string) => {
-    if (showMock) {
-      setMockLocalStations(prev => prev.map(s =>
-        s.id === stationId ? {
-          ...s,
-          status: 'available' as const,
-          connectors: s.connectors.map(c =>
-            c.status === 'charging' ? { ...c, status: 'available' as const } : c
-          ),
-        } : s
-      ));
-    } else {
-      realStopCharging(stationId);
-    }
-  }, [showMock, realStopCharging]);
 
   const openInYandexMaps = useCallback((e: React.MouseEvent, station: Station) => {
     e.stopPropagation();
@@ -284,8 +228,6 @@ export default function StationsPage() {
                 onDelete={handleDelete}
                 onOpenMaps={openInYandexMaps}
                 onSelect={handleSelect}
-                onStart={handleStartCharging}
-                onStop={handleStopCharging}
               />
             ))}
             <div className="flex justify-center pt-4">

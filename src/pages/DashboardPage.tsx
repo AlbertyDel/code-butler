@@ -1,7 +1,7 @@
 import { memo, useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CompactSessionCard } from '@/components/sessions/CompactSessionCard';
+import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
 import { MockToggle } from '@/components/MockToggle';
@@ -177,7 +177,7 @@ const StatCard = memo(function StatCard({
 
 export default function DashboardPage() {
   const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
-  const { activeSessions: realActiveSessions, sessions: realSessions, isLoading: sessionsLoading } = useSessions();
+  const { activeSessions: realActiveSessions, sessions: realSessions, stopSession, isLoading: sessionsLoading } = useSessions();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showMock, setShowMock] = useMockToggle('dashboard_mock');
@@ -276,19 +276,23 @@ export default function DashboardPage() {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Активные сессии</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            {activeSessions.map((session) => (
-              <CompactSessionCard
-                key={session.id}
-                session={session}
-                station={stations.find(s => s.id === session.stationId)}
-                onStop={(sessionId) => {
-                  toast({
-                    title: "Сессия остановлена",
-                    description: "Зарядка успешно завершена",
-                  });
-                }}
-              />
-            ))}
+            {activeSessions.map((session) => {
+              const station = stations.find(s => s.id === session.stationId);
+              return (
+                <ActiveSessionCard
+                  key={session.id}
+                  session={session}
+                  station={station}
+                  onStop={(sessionId) => {
+                    if (showMock) {
+                      toast({ description: "Зарядка завершена" });
+                    } else if (station) {
+                      stopSession({ sessionId, deviceId: station.id });
+                    }
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       )}

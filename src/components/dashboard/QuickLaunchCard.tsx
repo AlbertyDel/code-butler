@@ -32,8 +32,8 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
 }: QuickLaunchCardProps) {
   const { flowState, dismissConnectorBanner } = useSessionFlow();
 
-  // Show banner for all non-idle states
-  const bannerConfig = flowState !== 'idle'
+  // Show only waiting_for_connector banner in QuickLaunchCard
+  const bannerConfig = flowState === 'waiting_for_connector'
     ? SESSION_FLOW_BANNER_MAP[flowState]
     : undefined;
 

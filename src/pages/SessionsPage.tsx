@@ -2,7 +2,6 @@ import { memo, useState, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { useSessions } from '@/hooks/useSessions';
@@ -191,10 +190,8 @@ const formatDurationFn = (startTime: string, endTime?: string): string => {
 
 export default function SessionsPage() {
   const {
-    activeSessions: realActiveSessions,
     completedSessions: realCompletedSessions,
     groupedSessions: realGroupedSessions,
-    stopSession: realStopSession,
     getStation: realGetStation,
     formatDuration: realFormatDuration,
   } = useSessions();
@@ -202,8 +199,6 @@ export default function SessionsPage() {
   const [showMock, setShowMock] = useMockToggle('sessions_mock');
   const [mockSessionsLocal, setMockSessionsLocal] = useState<ChargingSession[]>(() => [...mockSessions]);
 
-  const mockActiveSessions = useMemo(() =>
-    mockSessionsLocal.filter(s => s.status === 'active'), [mockSessionsLocal]);
   const mockCompletedSessions = useMemo(() =>
     mockSessionsLocal.filter(s => s.status !== 'active'), [mockSessionsLocal]);
   const mockGrouped = useMemo(() =>
@@ -212,25 +207,12 @@ export default function SessionsPage() {
   const mockGetStation = useCallback((stationId: string) =>
     mockStations.find(s => s.id === stationId), []);
 
-  const activeSessions = showMock ? mockActiveSessions : realActiveSessions;
   const completedSessions = showMock ? mockCompletedSessions : realCompletedSessions;
   const groupedSessions = showMock ? mockGrouped : realGroupedSessions;
   const getStation = showMock ? mockGetStation : realGetStation;
   const formatDuration = showMock ? formatDurationFn : realFormatDuration;
 
-  const handleStopSession = useCallback((sessionId: string, station: Station | undefined) => {
-    if (showMock) {
-      setMockSessionsLocal(prev => prev.map(s =>
-        s.id === sessionId ? {
-          ...s,
-          status: 'completed' as const,
-          endTime: new Date().toISOString(),
-        } : s
-      ));
-    } else if (station) {
-      realStopSession({ sessionId, deviceId: station.id });
-    }
-  }, [showMock, realStopSession]);
+
 
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(completedSessions.length / ITEMS_PER_PAGE);
@@ -275,24 +257,6 @@ export default function SessionsPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
-
-      {activeSessions.length > 0 && (
-        <div className="space-y-3">
-          {activeSessions.map((session) => {
-            const station = getStation(session.stationId);
-            return (
-              <ActiveSessionCard
-                key={session.id}
-                session={session}
-                station={station}
-                onStop={(sessionId: string) => {
-                  handleStopSession(sessionId, station);
-                }}
-              />
-            );
-          })}
-        </div>
-      )}
 
       <div className="space-y-4">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">История зарядных сессий</h1>

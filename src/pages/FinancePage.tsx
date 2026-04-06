@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table';
@@ -19,6 +20,9 @@ import {
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Sheet, SheetContent,
+} from '@/components/ui/sheet';
 import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
@@ -241,35 +245,38 @@ export default function FinancePage() {
         <EmptyNoData />
       ) : (
         <>
-          {/* Summary Block */}
-          <Card>
+          {/* Summary Block — compact 2-col on desktop, stacked on mobile */}
+          <Card className="max-w-xl">
             <CardContent className="p-5 sm:p-6">
-              <div className="space-y-4">
-                {/* Primary */}
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Доступно к выводу</p>
-                  <p className="text-3xl sm:text-4xl font-bold tracking-tight">
-                    {fmtMoney(available)} ₽
-                  </p>
-                </div>
-                {available > 0 && (
-                  <Button onClick={() => setWithdrawOpen(true)} size="sm">
-                    Запросить вывод
-                  </Button>
-                )}
-                {/* Secondary row */}
-                <div className="flex items-center gap-6 pt-2 border-t border-border">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                {/* Left: primary */}
+                <div className="space-y-3">
                   <div>
+                    <p className="text-sm text-muted-foreground">Доступно к выводу</p>
+                    <p className="text-3xl font-bold tracking-tight mt-0.5">
+                      {fmtMoney(available)} ₽
+                    </p>
+                  </div>
+                  {available > 0 && (
+                    <Button onClick={() => setWithdrawOpen(true)} size="sm">
+                      Запросить вывод
+                    </Button>
+                  )}
+                </div>
+
+                {/* Right: secondary metrics */}
+                <div className="flex flex-row sm:flex-col gap-4 sm:gap-3 sm:items-end pt-1 sm:pt-0 border-t sm:border-t-0 border-border sm:min-w-[120px]">
+                  <div className="sm:text-right">
                     <p className="text-xs text-muted-foreground">Баланс</p>
-                    <p className="text-base font-semibold">{fmtMoney(balance)} ₽</p>
+                    <p className="text-base font-semibold mt-0.5">{fmtMoney(balance)} ₽</p>
                   </div>
                   {processing > 0 && (
-                    <div>
-                      <div className="flex items-center gap-1">
+                    <div className="sm:text-right">
+                      <div className="flex items-center gap-1 sm:justify-end">
                         <Lock className="h-3 w-3 text-muted-foreground" />
                         <p className="text-xs text-muted-foreground">В обработке</p>
                       </div>
-                      <p className="text-base font-semibold text-muted-foreground">
+                      <p className="text-base font-semibold text-muted-foreground mt-0.5">
                         {fmtMoney(processing)} ₽
                       </p>
                     </div>
@@ -342,8 +349,8 @@ export default function FinancePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="pl-4 sm:pl-5">Дата</TableHead>
-                        <TableHead>Описание</TableHead>
+                        <TableHead className="pl-4 sm:pl-5 text-left">Дата</TableHead>
+                        <TableHead className="text-left">Описание</TableHead>
                         <TableHead className="text-right">Сумма</TableHead>
                         <TableHead className="text-right pr-4 sm:pr-5">Статус</TableHead>
                       </TableRow>
@@ -359,10 +366,10 @@ export default function FinancePage() {
                         const st = getStatusDisplay(t);
                         return (
                           <TableRow key={t.id}>
-                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-muted-foreground">
+                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-muted-foreground text-left">
                               {format(new Date(t.date), 'dd.MM.yyyy, HH:mm')}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-left">
                               <div className="flex items-center gap-2">
                                 {t.type === 'income' ? (
                                   <Zap className="h-4 w-4 text-primary shrink-0" />
@@ -462,6 +469,182 @@ function FilterTabs({ filter, onChange }: { filter: FilterType; onChange: (f: Fi
   );
 }
 
+// --- Calendar Body (shared between Popover and Sheet) ---
+
+function CalendarBody({
+  dateFrom,
+  dateTo,
+  onChangeFrom,
+  onChangeTo,
+  onClose,
+}: {
+  dateFrom?: Date;
+  dateTo?: Date;
+  onChangeFrom: (d: Date | undefined) => void;
+  onChangeTo: (d: Date | undefined) => void;
+  onClose: () => void;
+}) {
+  const [calMonth, setCalMonth] = useState<Date>(dateFrom ?? new Date());
+  const [selectingField, setSelectingField] = useState<'from' | 'to'>('from');
+  const [showMonthSelect, setShowMonthSelect] = useState(false);
+  const [localFrom, setLocalFrom] = useState(dateFrom);
+  const [localTo, setLocalTo] = useState(dateTo);
+
+  const handleSelect = (d: Date | undefined) => {
+    if (!d) return;
+    if (selectingField === 'from') {
+      setLocalFrom(d);
+      if (localTo && isAfter(d, localTo)) setLocalTo(undefined);
+      setSelectingField('to');
+    } else {
+      if (localFrom && isBefore(d, localFrom)) {
+        setLocalFrom(d);
+      } else {
+        setLocalTo(d);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    onChangeFrom(undefined);
+    onChangeTo(undefined);
+    setLocalFrom(undefined);
+    setLocalTo(undefined);
+    setSelectingField('from');
+    onClose();
+  };
+
+  const handleApply = () => {
+    onChangeFrom(localFrom);
+    onChangeTo(localTo);
+    onClose();
+  };
+
+  const currentMonth = calMonth.getMonth();
+  const currentYear = calMonth.getFullYear();
+  const yearRange = Array.from({ length: 7 }, (_, i) => currentYear - 3 + i);
+
+  return (
+    <div className="p-3 pointer-events-auto">
+      {/* Month/Year header */}
+      <div className="flex items-center justify-between mb-3">
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() - 1))}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <button
+          onClick={() => setShowMonthSelect(!showMonthSelect)}
+          className="text-sm font-medium hover:underline px-2"
+        >
+          {MONTHS_RU[currentMonth]} {currentYear}
+        </button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() + 1))}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Selection indicator */}
+      <div className="flex gap-1 mb-3">
+        <button
+          onClick={() => setSelectingField('from')}
+          className={cn(
+            'flex-1 text-center text-xs py-1.5 rounded-md border transition-colors',
+            selectingField === 'from' ? 'border-primary bg-primary/5 text-foreground' : 'border-transparent text-muted-foreground'
+          )}
+        >
+          {localFrom ? format(localFrom, 'dd.MM.yyyy') : 'От'}
+        </button>
+        <button
+          onClick={() => setSelectingField('to')}
+          className={cn(
+            'flex-1 text-center text-xs py-1.5 rounded-md border transition-colors',
+            selectingField === 'to' ? 'border-primary bg-primary/5 text-foreground' : 'border-transparent text-muted-foreground'
+          )}
+        >
+          {localTo ? format(localTo, 'dd.MM.yyyy') : 'До'}
+        </button>
+      </div>
+
+      {showMonthSelect ? (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-1 justify-center">
+            {yearRange.map(y => (
+              <button
+                key={y}
+                onClick={() => setCalMonth(setYear(calMonth, y))}
+                className={cn(
+                  'px-2 py-1 text-xs rounded-md transition-colors',
+                  y === currentYear ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                )}
+              >
+                {y}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {MONTHS_RU.map((m, i) => (
+              <button
+                key={m}
+                onClick={() => { setCalMonth(setMonth(calMonth, i)); setShowMonthSelect(false); }}
+                className={cn(
+                  'px-2 py-1.5 text-xs rounded-md transition-colors',
+                  i === currentMonth ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                )}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <Calendar
+          mode="single"
+          selected={selectingField === 'from' ? localFrom : localTo}
+          onSelect={handleSelect}
+          month={calMonth}
+          onMonthChange={setCalMonth}
+          locale={ru}
+          className="p-0 pointer-events-auto"
+          classNames={{
+            caption: 'hidden',
+            nav: 'hidden',
+          }}
+          modifiers={{
+            range_start: localFrom ? [localFrom] : [],
+            range_end: localTo ? [localTo] : [],
+            range_middle: localFrom && localTo ? {
+              after: localFrom,
+              before: localTo,
+            } : undefined,
+          }}
+          modifiersClassNames={{
+            range_start: 'bg-primary text-primary-foreground rounded-l-md',
+            range_end: 'bg-primary text-primary-foreground rounded-r-md',
+            range_middle: 'bg-accent text-accent-foreground rounded-none',
+          }}
+        />
+      )}
+
+      {/* Footer */}
+      {!showMonthSelect && (
+        <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            disabled={!localFrom && !localTo && !dateFrom && !dateTo}
+            className="text-xs"
+          >
+            Сбросить
+          </Button>
+          <Button size="sm" onClick={handleApply} className="text-xs">
+            Применить
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Grouped Period Picker ---
 
 function PeriodPicker({
@@ -476,65 +659,57 @@ function PeriodPicker({
   onChangeTo: (d: Date | undefined) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [calMonth, setCalMonth] = useState<Date>(new Date());
-  const [selectingField, setSelectingField] = useState<'from' | 'to'>('from');
-  const [showMonthSelect, setShowMonthSelect] = useState(false);
+  const isMobile = useIsMobile();
 
-  const handleSelect = (d: Date | undefined) => {
-    if (!d) return;
-    if (selectingField === 'from') {
-      onChangeFrom(d);
-      if (dateTo && isAfter(d, dateTo)) onChangeTo(undefined);
-      setSelectingField('to');
-    } else {
-      if (dateFrom && isBefore(d, dateFrom)) {
-        onChangeFrom(d);
-      } else {
-        onChangeTo(d);
-      }
-    }
-  };
+  // Fixed-width segments: "ДД.ММ.ГГГГ" is ~10ch, we use min-w to keep stable
+  const trigger = (
+    <button
+      onClick={() => setOpen(true)}
+      className={cn(
+        'inline-flex items-center h-9 rounded-md border border-input bg-background text-sm transition-colors hover:bg-accent/50',
+        'w-full sm:w-auto'
+      )}
+    >
+      <span className={cn(
+        'flex items-center gap-1.5 h-full min-w-[7.5rem] justify-center px-3',
+        !dateFrom && 'text-muted-foreground',
+      )}>
+        <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+        <span>{dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}</span>
+      </span>
+      <span className="w-px h-4 bg-border shrink-0" />
+      <span className={cn(
+        'flex items-center justify-center h-full min-w-[7.5rem] px-3',
+        !dateTo && 'text-muted-foreground',
+      )}>
+        <span>{dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}</span>
+      </span>
+    </button>
+  );
 
-  const handleReset = () => {
-    onChangeFrom(undefined);
-    onChangeTo(undefined);
-    setSelectingField('from');
-  };
-
-  const handleApply = () => {
-    setOpen(false);
-  };
-
-  const currentMonth = calMonth.getMonth();
-  const currentYear = calMonth.getFullYear();
-  const yearRange = Array.from({ length: 7 }, (_, i) => currentYear - 3 + i);
+  if (isMobile) {
+    return (
+      <>
+        {trigger}
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent side="bottom" className="px-0 pt-2 pb-0 rounded-t-xl">
+            <CalendarBody
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onChangeFrom={onChangeFrom}
+              onChangeTo={onChangeTo}
+              onClose={() => setOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          className={cn(
-            'inline-flex items-center h-9 rounded-md border border-input bg-background text-sm transition-colors hover:bg-accent/50',
-            'w-full sm:w-auto'
-          )}
-        >
-          <span className={cn(
-            'flex items-center gap-1.5 px-3 h-full',
-            selectingField === 'from' && open && 'bg-accent/50',
-            !dateFrom && 'text-muted-foreground',
-          )}>
-            <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
-            {dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}
-          </span>
-          <span className="w-px h-4 bg-border shrink-0" />
-          <span className={cn(
-            'flex items-center gap-1.5 px-3 h-full',
-            selectingField === 'to' && open && 'bg-accent/50',
-            !dateTo && 'text-muted-foreground',
-          )}>
-            {dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}
-          </span>
-        </button>
+        {trigger}
       </PopoverTrigger>
       <PopoverContent
         className="w-auto p-0"
@@ -543,102 +718,13 @@ function PeriodPicker({
         sideOffset={4}
         avoidCollisions={false}
       >
-        <div className="p-3 pointer-events-auto">
-          {/* Month/Year header */}
-          <div className="flex items-center justify-between mb-3">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() - 1))}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <button
-              onClick={() => setShowMonthSelect(!showMonthSelect)}
-              className="text-sm font-medium hover:underline px-2"
-            >
-              {MONTHS_RU[currentMonth]} {currentYear}
-            </button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() + 1))}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {showMonthSelect ? (
-            <div className="space-y-3">
-              {/* Year */}
-              <div className="flex flex-wrap gap-1 justify-center">
-                {yearRange.map(y => (
-                  <button
-                    key={y}
-                    onClick={() => { setCalMonth(setYear(calMonth, y)); }}
-                    className={cn(
-                      'px-2 py-1 text-xs rounded-md transition-colors',
-                      y === currentYear ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                    )}
-                  >
-                    {y}
-                  </button>
-                ))}
-              </div>
-              {/* Months */}
-              <div className="grid grid-cols-3 gap-1">
-                {MONTHS_RU.map((m, i) => (
-                  <button
-                    key={m}
-                    onClick={() => { setCalMonth(setMonth(calMonth, i)); setShowMonthSelect(false); }}
-                    className={cn(
-                      'px-2 py-1.5 text-xs rounded-md transition-colors',
-                      i === currentMonth ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
-                    )}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <>
-              <Calendar
-                mode="single"
-                selected={selectingField === 'from' ? dateFrom : dateTo}
-                onSelect={handleSelect}
-                month={calMonth}
-                onMonthChange={setCalMonth}
-                locale={ru}
-                className="p-0 pointer-events-auto"
-                classNames={{
-                  caption: 'hidden',
-                  nav: 'hidden',
-                }}
-                modifiers={{
-                  range_start: dateFrom ? [dateFrom] : [],
-                  range_end: dateTo ? [dateTo] : [],
-                  range_middle: dateFrom && dateTo ? {
-                    after: dateFrom,
-                    before: dateTo,
-                  } : undefined,
-                }}
-                modifiersClassNames={{
-                  range_start: 'bg-primary text-primary-foreground rounded-l-md',
-                  range_end: 'bg-primary text-primary-foreground rounded-r-md',
-                  range_middle: 'bg-accent text-accent-foreground rounded-none',
-                }}
-              />
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleReset}
-                  disabled={!dateFrom && !dateTo}
-                  className="text-xs"
-                >
-                  Сбросить
-                </Button>
-                <Button size="sm" onClick={handleApply} className="text-xs">
-                  Применить
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
+        <CalendarBody
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onChangeFrom={onChangeFrom}
+          onChangeTo={onChangeTo}
+          onClose={() => setOpen(false)}
+        />
       </PopoverContent>
     </Popover>
   );

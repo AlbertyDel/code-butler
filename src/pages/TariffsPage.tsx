@@ -121,7 +121,7 @@ export default function TariffsPage() {
   const [formMaxTime, setFormMaxTime] = useState('');
   const [formMaxEnergy, setFormMaxEnergy] = useState('');
 
-  const [errors, setErrors] = useState<{ name?: string; price?: string; conditions?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; price?: string; conditions?: string; maxTime?: string; maxEnergy?: string }>({});
 
   const displayTariffs = showMock ? MOCK_TARIFFS : tariffs;
 

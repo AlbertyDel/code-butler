@@ -6,9 +6,6 @@ import { useStations } from '@/hooks/useStations';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { mockStations } from '@/lib/mock-data';
-import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
-import { useSessionFlow } from '@/contexts/SessionFlowContext';
-import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import { 
   MapPin, 
   Plus,

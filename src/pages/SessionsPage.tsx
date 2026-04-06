@@ -3,12 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
-import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { useSessions } from '@/hooks/useSessions';
-import { useSessionFlow } from '@/contexts/SessionFlowContext';
-import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import { mockSessions, mockStations } from '@/lib/mock-data';
 import { Clock, Zap, History } from 'lucide-react';
 import {

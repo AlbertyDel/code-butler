@@ -73,7 +73,7 @@ function getFeedback(tab: LegalTab, inn: string, maxLen: number): MockResult | n
 }
 
 /* ── Inline rejected edit form ── */
-function RejectedEditForm({ onSubmitted }: { onSubmitted: () => void }) {
+function RejectedEditForm({ onSubmitted, onCancel }: { onSubmitted: () => void; onCancel: () => void }) {
   const [tab, setTab] = useState<LegalTab>('ooo');
   const [inn, setInn] = useState('1234567890');
   const [address, setAddress] = useState('');
@@ -218,11 +218,11 @@ function RejectedEditForm({ onSubmitted }: { onSubmitted: () => void }) {
       {fieldErrors.agreed && <p className="text-destructive text-xs -mt-4 ml-8">{fieldErrors.agreed}</p>}
 
       <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
-        <Button variant="outline" onClick={() => onSubmitted()} className="w-full sm:w-auto h-11 sm:h-10 text-sm font-medium">
+        <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto h-11 sm:h-10 text-sm font-medium">
           Отмена
         </Button>
         <Button disabled={submitting} onClick={handleSubmit} className="w-full sm:w-auto h-11 sm:h-10 text-sm font-medium">
-          {submitting ? (<><Loader2 className="h-4 w-4 animate-spin mr-2" />Отправка...</>) : 'Отправить повторно'}
+          {submitting ? (<><Loader2 className="h-4 w-4 animate-spin mr-2" />Отправка...</>) : 'Отправить заявку'}
         </Button>
       </div>
     </div>
@@ -403,33 +403,33 @@ export default function ProfilePage() {
             {/* ── Rejected ── */}
             {businessState === 'rejected' && (
               <div className="space-y-5">
-                {/* Status card */}
-                <div className="space-y-3">
-                  <p className="font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
-                  <div className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3">
-                    <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-medium text-destructive">Заявка отклонена</p>
-                      <p className="text-sm text-muted-foreground">
-                        Здесь будет ответ от Точки для клиента
-                      </p>
-                    </div>
+                <div className="rounded-xl border border-destructive/15 bg-destructive/[0.03] p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                    <span className="text-sm font-medium text-destructive">Заявка отклонена</span>
+                  </div>
+                  <div className="space-y-1 pl-6">
+                    <p className="text-sm font-medium text-foreground">ООО &quot;Заряд Плюс&quot;</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Здесь будет ответ от Точки для клиента
+                    </p>
                   </div>
                 </div>
 
-                {/* Action or inline form */}
                 {!isRejectedEditing ? (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 text-sm font-medium"
+                    className="text-sm font-medium"
                     onClick={() => setIsRejectedEditing(true)}
                   >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Исправить данные
+                    Редактировать заявку
                   </Button>
                 ) : (
-                  <RejectedEditForm onSubmitted={handleRejectedResubmit} />
+                  <RejectedEditForm
+                    onSubmitted={handleRejectedResubmit}
+                    onCancel={() => setIsRejectedEditing(false)}
+                  />
                 )}
               </div>
             )}

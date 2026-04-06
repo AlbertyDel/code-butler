@@ -83,6 +83,9 @@ export interface ChargingSession {
   energyKwh: number;
   cost: number;
   status: 'active' | 'completed' | 'cancelled' | 'error';
+  /** Live telemetry — may be absent if server hasn't sent data yet */
+  currentAmps?: number;
+  currentKw?: number;
 }
 
 export interface Tariff {

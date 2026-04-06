@@ -9,6 +9,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Zap } from 'lucide-react';
+import { SessionStatusBanner } from '@/components/sessions/SessionStatusBanner';
+import { useSessionFlow } from '@/contexts/SessionFlowContext';
+import { SESSION_FLOW_BANNER_MAP } from '@/types/session-flow';
 import type { Station } from '@/types';
 
 const statusConfig: Record<string, { color: string; disabled: boolean }> = {
@@ -27,6 +30,11 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
   stations,
   onStart,
 }: QuickLaunchCardProps) {
+  const { flowState } = useSessionFlow();
+  const bannerConfig = flowState === 'waiting_for_connector'
+    ? SESSION_FLOW_BANNER_MAP[flowState]
+    : undefined;
+
   const availableStations = useMemo(
     () => stations.filter((s) => s.status === 'available'),
     [stations]
@@ -113,6 +121,10 @@ export const QuickLaunchCard = memo(function QuickLaunchCard({
             Запустить
           </Button>
         </div>
+
+        {bannerConfig && (
+          <SessionStatusBanner config={bannerConfig} className="mt-3" />
+        )}
       </CardContent>
     </Card>
   );

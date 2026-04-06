@@ -480,7 +480,7 @@ function WithdrawDialog({ open, onOpenChange }: WithdrawDialogProps) {
   const [accountNumber, setAccountNumber] = useState('');
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(cleanDigits(e.target.value));
-  const handleFillAll = () => setAmount(String(MOCK_AVAILABLE));
+  const handleFillAll = () => setAmount(String(MOCK_SCENARIOS.filled_with_processing.available));
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let digits = cleanDigits(e.target.value);

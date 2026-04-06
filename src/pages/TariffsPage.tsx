@@ -56,12 +56,15 @@ const MOCK_TARIFFS: Tariff[] = [
       { id: 'c1', timeFrom: '23:00', timeTo: '07:00', price: 15 },
     ],
     maxTimeMin: 120,
+    maxEnergyKwh: 50,
   },
   {
     id: '2',
     name: 'Ночной',
     pricePerKwh: 12,
     conditions: [],
+    maxTimeMin: 60,
+    maxEnergyKwh: 30,
   },
 ];
 
@@ -184,6 +187,26 @@ export default function TariffsPage() {
     if (!formName.trim()) newErrors.name = 'Укажите название тарифа';
     if (!formPrice) newErrors.price = 'Укажите стоимость';
 
+    // Validate maxTime (required, 5–600)
+    const maxTimeNum = Number(formMaxTime);
+    if (!formMaxTime) {
+      newErrors.maxTime = 'Укажите лимит времени';
+    } else if (!Number.isFinite(maxTimeNum) || maxTimeNum < 5) {
+      newErrors.maxTime = 'Минимум 5 минут';
+    } else if (maxTimeNum > 600) {
+      newErrors.maxTime = 'Максимум 600 минут';
+    }
+
+    // Validate maxEnergy (required, 1–200)
+    const maxEnergyNum = Number(formMaxEnergy);
+    if (!formMaxEnergy) {
+      newErrors.maxEnergy = 'Укажите лимит энергии';
+    } else if (!Number.isFinite(maxEnergyNum) || maxEnergyNum < 1) {
+      newErrors.maxEnergy = 'Минимум 1 кВт·ч';
+    } else if (maxEnergyNum > 200) {
+      newErrors.maxEnergy = 'Максимум 200 кВт·ч';
+    }
+
     const completeConditions = formConditions.filter(isConditionComplete);
 
     if (completeConditions.length >= 2 && validateOverlap(completeConditions)) {
@@ -198,8 +221,8 @@ export default function TariffsPage() {
       name: formName.trim(),
       pricePerKwh: Number(formPrice),
       conditions: completeConditions,
-      maxTimeMin: formMaxTime ? Number(formMaxTime) : undefined,
-      maxEnergyKwh: formMaxEnergy ? Number(formMaxEnergy) : undefined,
+      maxTimeMin: maxTimeNum,
+      maxEnergyKwh: maxEnergyNum,
     };
 
     if (editingTariff) {
@@ -304,22 +327,16 @@ export default function TariffsPage() {
                     )}
                   </div>
 
-                  {(tariff.maxTimeMin || tariff.maxEnergyKwh) && (
-                    <div className="border-t pt-3 text-sm text-muted-foreground space-y-1">
-                      {tariff.maxTimeMin && (
-                        <p className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5 shrink-0" />
-                          Лимит времени: {tariff.maxTimeMin} минут
-                        </p>
-                      )}
-                      {tariff.maxEnergyKwh && (
-                        <p className="flex items-center gap-1.5">
-                          <Zap className="h-3.5 w-3.5 shrink-0" />
-                          Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <div className="border-t pt-3 text-sm text-muted-foreground space-y-1">
+                    <p className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 shrink-0" />
+                      Лимит времени: {tariff.maxTimeMin} мин
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <Zap className="h-3.5 w-3.5 shrink-0" />
+                      Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -461,27 +478,41 @@ export default function TariffsPage() {
 
               {/* Session limits */}
               <div className="space-y-2">
-                <Label>Ограничения сессии</Label>
+                <Label>
+                  Ограничения сессии <span className="text-destructive">*</span>
+                </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Лимит времени (минуты)</Label>
                     <Input
                       type="number"
-                      placeholder="Нет"
-                      min={0}
+                      placeholder="5–600"
+                      min={5}
+                      max={600}
                       value={formMaxTime}
-                      onChange={(e) => setFormMaxTime(e.target.value)}
+                      onChange={(e) => {
+                        setFormMaxTime(e.target.value);
+                        if (errors.maxTime) setErrors((prev) => ({ ...prev, maxTime: undefined }));
+                      }}
+                      className={errors.maxTime ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
                     />
+                    {errors.maxTime && <p className="text-xs text-destructive">{errors.maxTime}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs text-muted-foreground">Лимит энергии (кВт·ч)</Label>
                     <Input
                       type="number"
-                      placeholder="Нет"
-                      min={0}
+                      placeholder="1–200"
+                      min={1}
+                      max={200}
                       value={formMaxEnergy}
-                      onChange={(e) => setFormMaxEnergy(e.target.value)}
+                      onChange={(e) => {
+                        setFormMaxEnergy(e.target.value);
+                        if (errors.maxEnergy) setErrors((prev) => ({ ...prev, maxEnergy: undefined }));
+                      }}
+                      className={errors.maxEnergy ? 'border-destructive focus-visible:ring-destructive' : 'focus-visible:ring-primary'}
                     />
+                    {errors.maxEnergy && <p className="text-xs text-destructive">{errors.maxEnergy}</p>}
                   </div>
                 </div>
               </div>

@@ -2,10 +2,10 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import type { SessionFlowState } from '@/types/session-flow';
 
 interface SessionFlowContextValue {
-  /** Текущее UI-состояние сценария зарядки (приходит от сервера) */
   flowState: SessionFlowState;
-  /** Установить состояние (в проде — по данным сервера, в деве — вручную) */
   setFlowState: (state: SessionFlowState) => void;
+  /** Сбросить waiting_for_connector в idle (смена станции, повторный запуск) */
+  dismissConnectorBanner: () => void;
 }
 
 const SessionFlowContext = createContext<SessionFlowContextValue | undefined>(undefined);
@@ -17,8 +17,12 @@ export function SessionFlowProvider({ children }: { children: ReactNode }) {
     setFlowState(state);
   }, []);
 
+  const dismissConnectorBanner = useCallback(() => {
+    setFlowState((prev) => (prev === 'waiting_for_connector' ? 'idle' : prev));
+  }, []);
+
   return (
-    <SessionFlowContext.Provider value={{ flowState, setFlowState: handleSetFlowState }}>
+    <SessionFlowContext.Provider value={{ flowState, setFlowState: handleSetFlowState, dismissConnectorBanner }}>
       {children}
     </SessionFlowContext.Provider>
   );

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { BusinessStateProvider } from "./contexts/BusinessStateContext";
+import { SessionFlowProvider } from "./contexts/SessionFlowContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PageLoader } from "./components/PageLoader";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -62,6 +63,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BusinessStateProvider>
+          <SessionFlowProvider>
           <TooltipProvider>
             <Toaster />
             <BrowserRouter>
@@ -92,6 +94,7 @@ const App = () => (
               </Suspense>
             </BrowserRouter>
           </TooltipProvider>
+          </SessionFlowProvider>
         </BusinessStateProvider>
       </AuthProvider>
     </QueryClientProvider>

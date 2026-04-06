@@ -1,6 +1,8 @@
 import { useBusinessState, type BusinessState } from '@/contexts/BusinessStateContext';
+import { useSessionFlow } from '@/contexts/SessionFlowContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import type { SessionFlowState } from '@/types/session-flow';
 
 const states: { value: BusinessState; label: string; color: string }[] = [
   { value: 'promo', label: 'P', color: 'bg-muted text-foreground' },
@@ -9,8 +11,19 @@ const states: { value: BusinessState; label: string; color: string }[] = [
   { value: 'rejected', label: 'R', color: 'bg-destructive text-destructive-foreground' },
 ];
 
+const flowStates: { value: SessionFlowState; label: string; title: string }[] = [
+  { value: 'idle', label: '—', title: 'idle' },
+  { value: 'waiting_for_connector', label: '🔌', title: 'waiting_for_connector' },
+  { value: 'waiting_for_station_response', label: '📡', title: 'waiting_for_station_response' },
+  { value: 'connection_recovery', label: '📶', title: 'connection_recovery' },
+  { value: 'session_active', label: '⚡', title: 'session_active' },
+  { value: 'session_finishing', label: '⏳', title: 'session_finishing' },
+  { value: 'fault', label: '💥', title: 'fault' },
+];
+
 export function DevStateSwitch() {
   const { businessState, setBusinessState } = useBusinessState();
+  const { flowState, setFlowState } = useSessionFlow();
 
   return (
     <div className="fixed bottom-24 right-4 z-[100] flex flex-col gap-1.5 md:bottom-4">
@@ -29,6 +42,26 @@ export function DevStateSwitch() {
           {s.label}
         </button>
       ))}
+
+      {/* Session flow state switcher */}
+      <div className="mt-2 flex flex-col gap-1">
+        <span className="text-[8px] text-muted-foreground text-center">Flow</span>
+        {flowStates.map((fs) => (
+          <button
+            key={fs.value}
+            onClick={() => setFlowState(fs.value)}
+            className={cn(
+              'h-7 w-9 rounded-full text-[10px] font-bold shadow-lg transition-all border',
+              flowState === fs.value
+                ? 'bg-primary/20 border-primary ring-1 ring-primary scale-110'
+                : 'bg-card text-muted-foreground border-border hover:scale-105'
+            )}
+            title={fs.title}
+          >
+            {fs.label}
+          </button>
+        ))}
+      </div>
 
       {/* Dev toast test buttons */}
       <div className="mt-2 flex flex-col gap-1">

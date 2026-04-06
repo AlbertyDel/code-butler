@@ -107,13 +107,14 @@ function cleanDigits(value: string): string {
 type StatusStyle = { label: string; className: string };
 
 function getStatusDisplay(t: Transaction): StatusStyle {
+  const base = 'inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium leading-none';
   if (t.type === 'income') {
-    return { label: 'Зачислено', className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' };
+    return { label: 'Зачислено', className: `${base} bg-emerald-500/10 text-emerald-600 border-emerald-500/20` };
   }
   switch (t.status as WithdrawalStatus) {
-    case 'processing': return { label: 'В обработке', className: 'bg-amber-500/10 text-amber-600 border-amber-500/20' };
-    case 'done': return { label: 'Выполнено', className: 'bg-primary/10 text-primary border-primary/20' };
-    case 'error': return { label: 'Ошибка', className: 'bg-destructive/10 text-destructive border-destructive/20' };
+    case 'processing': return { label: 'В обработке', className: `${base} bg-amber-500/10 text-amber-600 border-amber-500/20` };
+    case 'done': return { label: 'Выполнено', className: `${base} bg-emerald-500/10 text-emerald-600 border-emerald-500/20` };
+    case 'error': return { label: 'Ошибка', className: `${base} bg-destructive/10 text-destructive border-destructive/20` };
     default: return { label: '', className: '' };
   }
 }
@@ -221,40 +222,46 @@ export default function FinancePage() {
         <EmptyNoData />
       ) : (
         <>
-          {/* Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
-            <Card>
-              <CardContent className="p-5 space-y-3">
-                <p className="text-sm text-muted-foreground">Доступно к выводу</p>
-                <p className="text-3xl font-bold text-primary">
-                  {available.toLocaleString('ru-RU')} ₽
-                </p>
-                {available > 0 && (
-                  <Button onClick={() => setWithdrawOpen(true)} className="w-full sm:w-auto">
-                    Запросить вывод
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="flex flex-row sm:flex-col gap-3 sm:gap-2 sm:justify-center">
-              <div className="flex-1 sm:flex-none rounded-lg border bg-card px-4 py-3">
-                <p className="text-xs text-muted-foreground">Баланс</p>
-                <p className="text-lg font-semibold">{balance.toLocaleString('ru-RU')} ₽</p>
-              </div>
-              {processing > 0 && (
-                <div className="flex-1 sm:flex-none rounded-lg border bg-card px-4 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-xs text-muted-foreground">В обработке</p>
-                    <Lock className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                  <p className="text-lg font-semibold text-muted-foreground">
-                    {processing.toLocaleString('ru-RU')} ₽
+          {/* Unified Summary Block */}
+          <Card>
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                {/* Primary: Available */}
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Доступно к выводу</p>
+                  <p className="text-3xl sm:text-4xl font-bold tracking-tight">
+                    {available.toLocaleString('ru-RU')} ₽
                   </p>
+                  {available > 0 && (
+                    <div className="pt-2">
+                      <Button onClick={() => setWithdrawOpen(true)} size="sm">
+                        Запросить вывод
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+
+                {/* Secondary metrics */}
+                <div className="flex flex-row sm:flex-col gap-4 sm:gap-3 sm:items-end sm:text-right">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Общий баланс</p>
+                    <p className="text-lg font-semibold">{balance.toLocaleString('ru-RU')} ₽</p>
+                  </div>
+                  {processing > 0 && (
+                    <div>
+                      <div className="flex items-center gap-1 sm:justify-end">
+                        <Lock className="h-3 w-3 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">В обработке</p>
+                      </div>
+                      <p className="text-lg font-semibold text-muted-foreground">
+                        {processing.toLocaleString('ru-RU')} ₽
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Transactions */}
           {transactions.length === 0 ? (
@@ -263,28 +270,13 @@ export default function FinancePage() {
             </div>
           ) : (
             <Card>
-              <CardContent className="p-5 space-y-4">
+              <CardContent className="p-4 sm:p-5 space-y-4">
                 {/* Toolbar */}
                 <div className="flex flex-col gap-3">
-                  {/* Desktop: single row */}
-                  <div className="hidden sm:flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1 rounded-lg bg-muted p-1">
-                        {(['all', 'income', 'withdrawal'] as FilterType[]).map((f) => (
-                          <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={cn(
-                              'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
-                              filter === f
-                                ? 'bg-background text-foreground shadow-sm'
-                                : 'text-muted-foreground hover:text-foreground'
-                            )}
-                          >
-                            {f === 'all' ? 'Все' : f === 'income' ? 'Пополнения' : 'Списания'}
-                          </button>
-                        ))}
-                      </div>
+                  {/* Desktop */}
+                  <div className="hidden md:flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <FilterTabs filter={filter} onChange={setFilter} />
                       <DatePicker label="от" date={dateFrom} onChange={setDateFrom} />
                       <DatePicker label="до" date={dateTo} onChange={setDateTo} />
                       {(dateFrom || dateTo) && (
@@ -299,29 +291,32 @@ export default function FinancePage() {
                     </Button>
                   </div>
 
-                  {/* Mobile: stacked rows */}
-                  <div className="flex flex-col gap-2 sm:hidden">
-                    <div className="flex gap-1 rounded-lg bg-muted p-1">
-                      {(['all', 'income', 'withdrawal'] as FilterType[]).map((f) => (
-                        <button
-                          key={f}
-                          onClick={() => setFilter(f)}
-                          className={cn(
-                            'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors text-center',
-                            filter === f
-                              ? 'bg-background text-foreground shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
-                          )}
-                        >
-                          {f === 'all' ? 'Все' : f === 'income' ? 'Пополнения' : 'Списания'}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Tablet */}
+                  <div className="hidden sm:flex md:hidden flex-wrap items-center gap-2">
+                    <FilterTabs filter={filter} onChange={setFilter} />
                     <div className="flex items-center gap-2">
                       <DatePicker label="от" date={dateFrom} onChange={setDateFrom} />
                       <DatePicker label="до" date={dateTo} onChange={setDateTo} />
                       {(dateFrom || dateTo) && (
                         <Button variant="ghost" size="sm" className="px-2" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+                          ✕
+                        </Button>
+                      )}
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="ml-auto">
+                      <Download className="h-4 w-4 mr-1.5" />
+                      Выгрузить
+                    </Button>
+                  </div>
+
+                  {/* Mobile */}
+                  <div className="flex flex-col gap-2 sm:hidden">
+                    <FilterTabs filter={filter} onChange={setFilter} />
+                    <div className="flex items-center gap-2">
+                      <DatePicker label="от" date={dateFrom} onChange={setDateFrom} className="flex-1" />
+                      <DatePicker label="до" date={dateTo} onChange={setDateTo} className="flex-1" />
+                      {(dateFrom || dateTo) && (
+                        <Button variant="ghost" size="sm" className="px-2 shrink-0" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
                           ✕
                         </Button>
                       )}
@@ -334,14 +329,14 @@ export default function FinancePage() {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto -mx-4 sm:-mx-5">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Дата</TableHead>
+                        <TableHead className="pl-4 sm:pl-5">Дата</TableHead>
                         <TableHead>Описание</TableHead>
                         <TableHead className="text-right">Сумма</TableHead>
-                        <TableHead className="text-right">Статус</TableHead>
+                        <TableHead className="text-right pr-4 sm:pr-5">Статус</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -355,7 +350,7 @@ export default function FinancePage() {
                         const st = getStatusDisplay(t);
                         return (
                           <TableRow key={t.id}>
-                            <TableCell className="whitespace-nowrap text-muted-foreground">
+                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-muted-foreground">
                               {format(new Date(t.date), 'dd.MM.yyyy, HH:mm')}
                             </TableCell>
                             <TableCell>
@@ -376,11 +371,8 @@ export default function FinancePage() {
                             )}>
                               {t.type === 'income' ? '+' : '−'}{t.amount.toLocaleString('ru-RU')} ₽
                             </TableCell>
-                            <TableCell className="text-right">
-                              <span className={cn(
-                                'inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium',
-                                st.className
-                              )}>
+                            <TableCell className="text-right pr-4 sm:pr-5">
+                              <span className={st.className}>
                                 {st.label}
                               </span>
                             </TableCell>
@@ -438,19 +430,43 @@ export default function FinancePage() {
   );
 }
 
+// --- Filter Tabs ---
+
+function FilterTabs({ filter, onChange }: { filter: FilterType; onChange: (f: FilterType) => void }) {
+  return (
+    <div className="flex gap-1 rounded-lg bg-muted p-1">
+      {(['all', 'income', 'withdrawal'] as FilterType[]).map((f) => (
+        <button
+          key={f}
+          onClick={() => onChange(f)}
+          className={cn(
+            'px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap',
+            filter === f
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {f === 'all' ? 'Все' : f === 'income' ? 'Пополнения' : 'Списания'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // --- Date Picker ---
 
-function DatePicker({ label, date, onChange }: { label: string; date?: Date; onChange: (d: Date | undefined) => void }) {
+function DatePicker({ label, date, onChange, className }: { label: string; date?: Date; onChange: (d: Date | undefined) => void; className?: string }) {
   const [open, setOpen] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className={cn(
-          'justify-start text-left font-normal min-w-[130px]',
-          !date && 'text-muted-foreground'
+          'justify-start text-left font-normal',
+          !date && 'text-muted-foreground',
+          className
         )}>
-          <CalendarIcon className="h-4 w-4 mr-1.5" />
+          <CalendarIcon className="h-4 w-4 mr-1.5 shrink-0" />
           {date ? format(date, 'dd.MM.yyyy') : label}
         </Button>
       </PopoverTrigger>

@@ -756,16 +756,14 @@ function PeriodPicker({
         'w-full sm:w-auto'
       )}
     >
-      <span className="flex items-center justify-center h-full px-2.5 shrink-0 text-muted-foreground">
-        <CalendarIcon className="h-3.5 w-3.5" />
+      <span className={cn('flex items-center justify-center h-full px-3 basis-1/2 min-w-0', !dateFrom && 'text-muted-foreground')}>
+        <CalendarIcon className="h-3.5 w-3.5 mr-1.5 shrink-0 text-muted-foreground" />
+        <span className="truncate">{dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}</span>
       </span>
       <span className="w-px h-4 bg-border shrink-0" />
-      <span className={cn('flex items-center justify-center h-full min-w-[7rem] flex-1 sm:flex-none px-3', !dateFrom && 'text-muted-foreground')}>
-        {dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}
-      </span>
-      <span className="w-px h-4 bg-border shrink-0" />
-      <span className={cn('flex items-center justify-center h-full min-w-[7rem] flex-1 sm:flex-none px-3', !dateTo && 'text-muted-foreground')}>
-        {dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}
+      <span className={cn('flex items-center justify-center h-full px-3 basis-1/2 min-w-0', !dateTo && 'text-muted-foreground')}>
+        <CalendarIcon className="h-3.5 w-3.5 mr-1.5 shrink-0 text-muted-foreground" />
+        <span className="truncate">{dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}</span>
       </span>
     </button>
   );

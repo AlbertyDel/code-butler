@@ -425,8 +425,8 @@ export default function FinancePage() {
               <CardContent className="p-4 sm:p-5 space-y-4">
                 {/* Toolbar */}
                 <div className="flex flex-col gap-3">
-                  {/* Desktop: single row */}
-                  <div className="hidden md:flex items-center justify-between gap-3">
+                  {/* Desktop (lg+): single row */}
+                  <div className="hidden lg:flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <FilterTabs filter={filter} onChange={setFilter} />
                       <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
@@ -435,8 +435,8 @@ export default function FinancePage() {
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
                     </Button>
                   </div>
-                  {/* Tablet: 2 rows */}
-                  <div className="hidden sm:flex md:hidden flex-col gap-2">
+                  {/* Tablet (sm..lg): 2 rows */}
+                  <div className="hidden sm:flex lg:hidden flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <FilterTabs filter={filter} onChange={setFilter} />
                       <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
@@ -445,7 +445,7 @@ export default function FinancePage() {
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
                     </Button>
                   </div>
-                  {/* Mobile: stacked */}
+                  {/* Mobile (<sm): stacked */}
                   <div className="flex flex-col gap-2 sm:hidden">
                     <FilterTabs filter={filter} onChange={setFilter} mobile />
                     <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
@@ -460,10 +460,10 @@ export default function FinancePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="pl-4 sm:pl-5">Дата</TableHead>
-                        <TableHead>Описание</TableHead>
-                        <TableHead>Сумма</TableHead>
-                        <TableHead className="pr-4 sm:pr-5">Статус</TableHead>
+                        <TableHead className="pl-4 sm:pl-5 text-center">Дата</TableHead>
+                        <TableHead className="text-center">Описание</TableHead>
+                        <TableHead className="text-center">Сумма</TableHead>
+                        <TableHead className="text-center pr-4 sm:pr-5">Статус</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

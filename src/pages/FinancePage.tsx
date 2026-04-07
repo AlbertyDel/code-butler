@@ -753,7 +753,7 @@ function PeriodPicker({
       onClick={() => handleOpen(true)}
       className={cn(
         'inline-flex items-center h-9 rounded-md border border-input bg-background text-sm transition-colors hover:bg-accent/50',
-        'w-full sm:w-auto'
+        'w-full sm:w-auto lg:min-w-[280px]'
       )}
     >
       <span className={cn('flex items-center justify-center h-full px-3 basis-1/2 min-w-0', !dateFrom && 'text-muted-foreground')}>

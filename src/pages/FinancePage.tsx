@@ -435,12 +435,10 @@ export default function FinancePage() {
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
                     </Button>
                   </div>
-                  {/* Tablet (sm..lg): 2 rows */}
-                  <div className="hidden sm:flex lg:hidden flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <FilterTabs filter={filter} onChange={setFilter} />
-                      <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
-                    </div>
+                  {/* Tablet (sm..lg): 3 rows */}
+                  <div className="hidden sm:flex lg:hidden flex-col gap-3">
+                    <FilterTabs filter={filter} onChange={setFilter} />
+                    <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
                     <Button variant="outline" size="sm" className="w-fit" onClick={handleDownloadCsv}>
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
                     </Button>

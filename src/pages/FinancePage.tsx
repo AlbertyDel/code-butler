@@ -425,6 +425,7 @@ export default function FinancePage() {
               <CardContent className="p-4 sm:p-5 space-y-4">
                 {/* Toolbar */}
                 <div className="flex flex-col gap-3">
+                  {/* Desktop: single row */}
                   <div className="hidden md:flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <FilterTabs filter={filter} onChange={setFilter} />
@@ -434,15 +435,19 @@ export default function FinancePage() {
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
                     </Button>
                   </div>
-                  <div className="hidden sm:flex md:hidden flex-wrap items-center gap-2">
-                    <FilterTabs filter={filter} onChange={setFilter} />
-                    <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
-                    <Button variant="outline" size="sm" onClick={handleDownloadCsv} className="ml-auto">
+                  {/* Tablet: 2 rows */}
+                  <div className="hidden sm:flex md:hidden flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <FilterTabs filter={filter} onChange={setFilter} />
+                      <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
+                    </div>
+                    <Button variant="outline" size="sm" className="w-fit" onClick={handleDownloadCsv}>
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
                     </Button>
                   </div>
+                  {/* Mobile: stacked */}
                   <div className="flex flex-col gap-2 sm:hidden">
-                    <FilterTabs filter={filter} onChange={setFilter} />
+                    <FilterTabs filter={filter} onChange={setFilter} mobile />
                     <PeriodPicker dateFrom={dateFrom} dateTo={dateTo} onChangeFrom={setDateFrom} onChangeTo={setDateTo} />
                     <Button variant="outline" size="sm" className="w-full" onClick={handleDownloadCsv}>
                       <Download className="h-4 w-4 mr-1.5" />Выгрузить
@@ -455,10 +460,10 @@ export default function FinancePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="pl-4 sm:pl-5 text-left">Дата</TableHead>
-                        <TableHead className="text-left">Описание</TableHead>
-                        <TableHead className="text-right">Сумма</TableHead>
-                        <TableHead className="text-right pr-4 sm:pr-5">Статус</TableHead>
+                        <TableHead className="pl-4 sm:pl-5">Дата</TableHead>
+                        <TableHead>Описание</TableHead>
+                        <TableHead>Сумма</TableHead>
+                        <TableHead className="pr-4 sm:pr-5">Статус</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -548,15 +553,16 @@ export default function FinancePage() {
 
 // ─── Filter Tabs ───
 
-function FilterTabs({ filter, onChange }: { filter: FilterType; onChange: (f: FilterType) => void }) {
+function FilterTabs({ filter, onChange, mobile }: { filter: FilterType; onChange: (f: FilterType) => void; mobile?: boolean }) {
   return (
-    <div className="flex gap-1 rounded-lg bg-muted p-1">
+    <div className={cn('flex gap-1 rounded-lg bg-muted p-1', mobile && 'w-full')}>
       {(['all', 'income', 'withdrawal'] as FilterType[]).map((f) => (
         <button
           key={f}
           onClick={() => onChange(f)}
           className={cn(
-            'px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap',
+            'px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap text-center',
+            mobile && 'flex-1',
             filter === f ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
           )}
         >
@@ -750,13 +756,16 @@ function PeriodPicker({
         'w-full sm:w-auto'
       )}
     >
-      <span className={cn('flex items-center gap-1.5 h-full min-w-[7.5rem] justify-center px-3', !dateFrom && 'text-muted-foreground')}>
-        <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
-        <span>{dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}</span>
+      <span className="flex items-center justify-center h-full px-2.5 shrink-0 text-muted-foreground">
+        <CalendarIcon className="h-3.5 w-3.5" />
       </span>
       <span className="w-px h-4 bg-border shrink-0" />
-      <span className={cn('flex items-center justify-center h-full min-w-[7.5rem] px-3', !dateTo && 'text-muted-foreground')}>
-        <span>{dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}</span>
+      <span className={cn('flex items-center justify-center h-full min-w-[7rem] flex-1 sm:flex-none px-3', !dateFrom && 'text-muted-foreground')}>
+        {dateFrom ? format(dateFrom, 'dd.MM.yyyy') : 'От'}
+      </span>
+      <span className="w-px h-4 bg-border shrink-0" />
+      <span className={cn('flex items-center justify-center h-full min-w-[7rem] flex-1 sm:flex-none px-3', !dateTo && 'text-muted-foreground')}>
+        {dateTo ? format(dateTo, 'dd.MM.yyyy') : 'До'}
       </span>
     </button>
   );

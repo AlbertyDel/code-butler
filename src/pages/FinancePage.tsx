@@ -477,10 +477,10 @@ export default function FinancePage() {
                         const st = getStatusDisplay(t);
                         return (
                           <TableRow key={t.id}>
-                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-muted-foreground text-left">
+                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-muted-foreground">
                               {format(new Date(t.date), 'dd.MM.yyyy, HH:mm')}
                             </TableCell>
-                            <TableCell className="text-left">
+                            <TableCell>
                               <div className="flex items-center gap-2">
                                 {t.type === 'income' ? (
                                   <Zap className="h-4 w-4 text-primary shrink-0" />
@@ -492,10 +492,10 @@ export default function FinancePage() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className={cn('text-right font-medium whitespace-nowrap', t.type === 'income' && 'text-emerald-600')}>
+                            <TableCell className={cn('font-medium whitespace-nowrap', t.type === 'income' && 'text-emerald-600')}>
                               {t.type === 'income' ? '+' : '−'}{t.amount.toLocaleString('ru-RU')} ₽
                             </TableCell>
-                            <TableCell className="text-right pr-4 sm:pr-5">
+                            <TableCell className="pr-4 sm:pr-5">
                               <span className={st.className}>{st.label}</span>
                             </TableCell>
                           </TableRow>

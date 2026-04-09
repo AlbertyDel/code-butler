@@ -263,7 +263,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
-        <StatCard
+
+      {/* Статистика */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           title="Всего сессий"
           value={statistics.totalSessions}
           icon={Zap}

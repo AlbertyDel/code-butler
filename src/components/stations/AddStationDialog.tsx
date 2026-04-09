@@ -160,7 +160,7 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
                   </SelectTrigger>
                   <SelectContent position="popper" className="z-[200]">
                     <SelectItem value="__default__">
-                      По умолчанию — {defaultTariff?.name || '—'}
+                      Основной — {defaultTariff?.name || '—'}
                     </SelectItem>
                     {tariffs.filter(t => !t.isDefault).map(t => (
                       <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>

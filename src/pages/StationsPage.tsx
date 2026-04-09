@@ -115,7 +115,7 @@ const StationRow = memo(function StationRow({
               )} />
             </button>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                 <h3 className="font-semibold truncate">{station.name}</h3>
                 <StatusBadge status={station.status} />
               </div>
@@ -131,7 +131,7 @@ const StationRow = memo(function StationRow({
                 <p className="mt-1 text-xs text-muted-foreground">
                   Тариф: {effectiveTariff.name}
                   <span className="ml-1.5 opacity-60">
-                    · {effectiveTariff.isIndividual ? 'Индивидуальный' : 'По умолчанию'}
+                    · {effectiveTariff.isIndividual ? 'Индивидуальный' : 'Основной'}
                   </span>
                 </p>
               )}

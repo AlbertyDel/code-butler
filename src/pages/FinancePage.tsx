@@ -44,7 +44,7 @@ import { format, isAfter, isBefore, startOfDay, endOfDay, setMonth, setYear } fr
 import { ru } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import sbpLogo from '@/assets/sbp-logo.png';
+import sbpIcon from '@/assets/sbp-icon.svg';
 
 // ─── Types ───
 

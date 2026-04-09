@@ -44,7 +44,7 @@ import { format, isAfter, isBefore, startOfDay, endOfDay, setMonth, setYear } fr
 import { ru } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import sbpLogo from '@/assets/sbp-logo.png';
+import sbpIcon from '@/assets/sbp-icon.svg';
 
 // ─── Types ───
 
@@ -154,8 +154,8 @@ const METHODS_SINGLE: PaymentMethod[] = [
   {
     id: 'pm-1',
     type: 'sbp',
-    title: 'СБП · Т-Банк',
-    maskedDetails: '+7 999 *** ** 12 · Т-Банк',
+    title: 'СБП',
+    maskedDetails: '+7 999 *** ** 12',
     isDefault: true,
     data: { phone: '79991234512', bank_sbp_id: '100000000004' },
   },
@@ -165,15 +165,15 @@ const METHODS_MULTIPLE: PaymentMethod[] = [
   {
     id: 'pm-1',
     type: 'sbp',
-    title: 'СБП · Т-Банк',
-    maskedDetails: '+7 999 *** ** 12 · Т-Банк',
+    title: 'СБП',
+    maskedDetails: '+7 999 *** ** 12',
     isDefault: true,
     data: { phone: '79991234512', bank_sbp_id: '100000000004' },
   },
   {
     id: 'pm-2',
     type: 'card',
-    title: 'Карта · *1234',
+    title: 'Карта',
     maskedDetails: '**** **** **** 1234',
     isDefault: false,
     data: { cardNumber: '4276123456781234', holderName: 'IVAN PETROV' },
@@ -181,8 +181,8 @@ const METHODS_MULTIPLE: PaymentMethod[] = [
   {
     id: 'pm-3',
     type: 'account',
-    title: 'Счёт · Точка Банк',
-    maskedDetails: '40702************5220 · Точка Банк',
+    title: 'Расчётный счёт',
+    maskedDetails: '40702************5220',
     isDefault: false,
     data: { bik: '044525104', accountNumber: '40702810000000005220' },
   },
@@ -260,7 +260,7 @@ function fmtMoney(n: number) {
 
 function methodTypeIcon(type: PaymentMethodType) {
   switch (type) {
-    case 'sbp': return <img src={sbpLogo} alt="СБП" className="h-4 w-4 shrink-0 object-contain" loading="lazy" />;
+    case 'sbp': return <img src={sbpIcon} alt="СБП" className="h-4 w-4 shrink-0 object-contain" loading="lazy" />;
     case 'card': return <CreditCard className="h-4 w-4 shrink-0 text-muted-foreground" />;
     case 'account': return <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />;
   }
@@ -487,10 +487,10 @@ export default function FinancePage() {
         <EmptyNoData />
       ) : (
         <>
-          {/* Top blocks: Summary + Methods overview */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+          {/* Top blocks: Summary + Methods overview — 50/50 on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
             {/* Summary Block */}
-            <Card className="w-full sm:flex-1 sm:max-w-md">
+            <Card>
               <CardContent className="p-5 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-3">
@@ -525,7 +525,7 @@ export default function FinancePage() {
             <PayoutMethodsOverview
               methods={methods}
               onManage={() => setPageView('manage_methods')}
-              onAddFirst={() => setPageView('manage_methods')}
+              onAddMethod={handleAddMethod}
             />
           </div>
 
@@ -671,54 +671,82 @@ export default function FinancePage() {
 function PayoutMethodsOverview({
   methods,
   onManage,
-  onAddFirst,
+  onAddMethod,
 }: {
   methods: PaymentMethod[];
   onManage: () => void;
-  onAddFirst: () => void;
+  onAddMethod: (m: PaymentMethod) => void;
 }) {
+  const [addOpen, setAddOpen] = useState(false);
   const defaultMethod = methods.find(m => m.isDefault) ?? methods[0];
   const otherCount = methods.length - 1;
 
-  return (
-    <Card className="w-full sm:w-auto sm:min-w-[260px] sm:max-w-[320px]">
-      <CardContent className="p-4 sm:p-5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-medium text-muted-foreground">Способы вывода</p>
-          {methods.length > 0 && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 -mr-2" onClick={onManage}>
-              <Settings2 className="h-3.5 w-3.5" /> Управлять
-            </Button>
-          )}
-        </div>
+  const handleFirstAdd = (m: PaymentMethod) => {
+    onAddMethod(m);
+    setAddOpen(false);
+  };
 
-        {methods.length === 0 ? (
-          <div className="text-center py-3">
-            <p className="text-sm text-muted-foreground mb-3">Нет сохранённых способов</p>
-            <Button variant="outline" size="sm" onClick={onAddFirst}>
-              <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
-                {methodTypeIcon(defaultMethod.type)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{defaultMethod.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{defaultMethod.maskedDetails}</p>
-              </div>
-            </div>
-            {otherCount > 0 && (
-              <p className="text-xs text-muted-foreground">
-                Ещё {otherCount} {otherCount === 1 ? 'способ' : otherCount < 5 ? 'способа' : 'способов'}
-              </p>
+  return (
+    <>
+      <Card>
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-muted-foreground">Способы вывода</p>
+            {methods.length > 0 && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 -mr-2" onClick={onManage}>
+                <Settings2 className="h-3.5 w-3.5" /> Управлять
+              </Button>
             )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {methods.length === 0 ? (
+            <div className="flex flex-col items-center py-4 space-y-3">
+              <Wallet className="h-8 w-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Нет сохранённых способов</p>
+              <Button size="sm" onClick={() => setAddOpen(true)}>Добавить</Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
+                  {methodTypeIcon(defaultMethod.type)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium truncate">{methodTypeLabel(defaultMethod.type)}</p>
+                    {defaultMethod.isDefault && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                        <Star className="h-3 w-3 fill-primary" /> Основной
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{defaultMethod.maskedDetails}</p>
+                </div>
+              </div>
+              {otherCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Ещё {otherCount} {otherCount === 1 ? 'способ' : otherCount < 5 ? 'способа' : 'способов'}
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* First-add dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Новый способ вывода</DialogTitle>
+          </DialogHeader>
+          <MethodForm
+            initial={null}
+            onSave={handleFirstAdd}
+            onCancel={() => setAddOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -1336,6 +1364,7 @@ function InlineMethodForm({
   const [phone, setPhone] = useState('');
   const [bankId, setBankId] = useState('');
   const [bankSearch, setBankSearch] = useState('');
+  const [bankPopoverOpen, setBankPopoverOpen] = useState(false);
 
   // Card
   const [cardNumber, setCardNumber] = useState('');
@@ -1366,12 +1395,11 @@ function InlineMethodForm({
 
     if (type === 'sbp' && phone.length === 11 && bankId) {
       valid = true;
-      const bank = MOCK_SBP_BANKS.find(b => b.bank_sbp_id === bankId)!;
       method = {
         id: 'new',
         type: 'sbp',
-        title: `СБП · ${bank.name_rus}`,
-        maskedDetails: `${maskPhone(phone)} · ${bank.name_rus}`,
+        title: 'СБП',
+        maskedDetails: maskPhone(phone),
         isDefault: false,
         data: { phone, bank_sbp_id: bankId },
       };
@@ -1380,7 +1408,7 @@ function InlineMethodForm({
       method = {
         id: 'new',
         type: 'card',
-        title: `Карта · *${cardNumber.slice(-4)}`,
+        title: 'Карта',
         maskedDetails: maskCard(cardNumber),
         isDefault: false,
         data: { cardNumber, holderName },
@@ -1390,8 +1418,8 @@ function InlineMethodForm({
       method = {
         id: 'new',
         type: 'account',
-        title: `Счёт · ${bikResult.bankName}`,
-        maskedDetails: `${maskAccount(accountNumber)} · ${bikResult.bankName}`,
+        title: 'Расчётный счёт',
+        maskedDetails: maskAccount(accountNumber),
         isDefault: false,
         data: { bik, accountNumber },
       };
@@ -1414,7 +1442,7 @@ function InlineMethodForm({
       <Tabs value={type} onValueChange={(v) => setType(v as PaymentMethodType)}>
         <TabsList className="w-full">
           <TabsTrigger value="sbp" className="flex-1 text-xs sm:text-sm gap-1.5">
-            <img src={sbpLogo} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
+            <img src={sbpIcon} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
             СБП
           </TabsTrigger>
           <TabsTrigger value="card" className="flex-1 text-xs sm:text-sm gap-1.5">
@@ -1442,7 +1470,7 @@ function InlineMethodForm({
           </div>
           <div className="space-y-1.5">
             <Label>Банк получателя</Label>
-            <Popover>
+            <Popover open={bankPopoverOpen} onOpenChange={setBankPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -1450,7 +1478,7 @@ function InlineMethodForm({
                   className={cn('w-full justify-between font-normal', !bankId && 'text-muted-foreground')}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    {bankId && <img src={sbpLogo} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
+                    {bankId && <img src={sbpIcon} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
                     <span className="truncate">{selectedBank?.name_rus ?? 'Выберите банк'}</span>
                   </div>
                 </Button>
@@ -1474,13 +1502,13 @@ function InlineMethodForm({
                     ) : filteredBanks.map((b) => (
                       <button
                         key={b.bank_sbp_id}
-                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); }}
+                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); setBankPopoverOpen(false); }}
                         className={cn(
                           'w-full text-left px-2 py-1.5 text-sm rounded-sm transition-colors flex items-center gap-2',
                           bankId === b.bank_sbp_id ? 'bg-accent' : 'hover:bg-accent/50'
                         )}
                       >
-                        <img src={sbpLogo} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
+                        <img src={sbpIcon} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
                         {b.name_rus}
                       </button>
                     ))}
@@ -1570,7 +1598,7 @@ function MethodForm({
   const [phone, setPhone] = useState(initial?.data?.phone ?? '');
   const [bankId, setBankId] = useState(initial?.data?.bank_sbp_id ?? '');
   const [bankSearch, setBankSearch] = useState('');
-
+  const [bankPopoverOpen, setBankPopoverOpen] = useState(false);
   const [cardNumber, setCardNumber] = useState(initial?.data?.cardNumber ?? '');
   const [holderName, setHolderName] = useState(initial?.data?.holderName ?? '');
 
@@ -1624,17 +1652,16 @@ function MethodForm({
     let data: Record<string, string> = {};
 
     if (type === 'sbp') {
-      const bank = MOCK_SBP_BANKS.find(b => b.bank_sbp_id === bankId)!;
-      title = `СБП · ${bank.name_rus}`;
-      masked = `${maskPhone(phone)} · ${bank.name_rus}`;
+      title = 'СБП';
+      masked = maskPhone(phone);
       data = { phone, bank_sbp_id: bankId };
     } else if (type === 'card') {
-      title = `Карта · *${cardNumber.slice(-4)}`;
+      title = 'Карта';
       masked = maskCard(cardNumber);
       data = { cardNumber, holderName };
     } else {
-      title = `Счёт · ${bikResult!.bankName}`;
-      masked = `${maskAccount(accountNumber)} · ${bikResult!.bankName}`;
+      title = 'Расчётный счёт';
+      masked = maskAccount(accountNumber);
       data = { bik, accountNumber };
     }
 
@@ -1654,7 +1681,7 @@ function MethodForm({
         <Tabs value={type} onValueChange={(v) => { setType(v as PaymentMethodType); setErrors({}); }}>
           <TabsList className="w-full">
             <TabsTrigger value="sbp" className="flex-1 text-xs sm:text-sm gap-1.5">
-              <img src={sbpLogo} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
+              <img src={sbpIcon} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
               СБП
             </TabsTrigger>
             <TabsTrigger value="card" className="flex-1 text-xs sm:text-sm gap-1.5">
@@ -1691,7 +1718,7 @@ function MethodForm({
           </div>
           <div className="space-y-1.5">
             <Label>Банк получателя</Label>
-            <Popover>
+            <Popover open={bankPopoverOpen} onOpenChange={setBankPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -1699,7 +1726,7 @@ function MethodForm({
                   className={cn('w-full justify-between font-normal', !bankId && 'text-muted-foreground', errors.bank && 'border-destructive')}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    {bankId && <img src={sbpLogo} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
+                    {bankId && <img src={sbpIcon} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
                     <span className="truncate">{selectedBank?.name_rus ?? 'Выберите банк'}</span>
                   </div>
                 </Button>
@@ -1723,13 +1750,13 @@ function MethodForm({
                     ) : filteredBanks.map((b) => (
                       <button
                         key={b.bank_sbp_id}
-                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); }}
+                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); setBankPopoverOpen(false); }}
                         className={cn(
                           'w-full text-left px-2 py-1.5 text-sm rounded-sm transition-colors flex items-center gap-2',
                           bankId === b.bank_sbp_id ? 'bg-accent' : 'hover:bg-accent/50'
                         )}
                       >
-                        <img src={sbpLogo} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
+                        <img src={sbpIcon} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
                         {b.name_rus}
                       </button>
                     ))}

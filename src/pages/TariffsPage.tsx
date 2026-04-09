@@ -347,17 +347,16 @@ export default function TariffsPage() {
             return (
               <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
                 <CardContent className="p-5 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="text-base font-semibold truncate">{tariff.name}</h3>
+                  {/* Header: name + badge / actions */}
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-base font-semibold min-w-0 break-words">{tariff.name}</h3>
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {tariff.isDefault && (
-                        <Badge variant="secondary" className="shrink-0 gap-1">
+                        <Badge variant="secondary" className="gap-1">
                           <Star className="h-3 w-3" />
                           По умолчанию
                         </Badge>
                       )}
-                    </div>
-                    <div className="flex items-center gap-1 -mt-0.5 shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -406,7 +405,7 @@ export default function TariffsPage() {
                     </p>
                   </div>
 
-                  {!tariff.isDefault && !showMock && (
+                  {!tariff.isDefault && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -622,19 +621,23 @@ export default function TariffsPage() {
             <AlertDialogTitle>
               {isDeleteTargetDefault
                 ? 'Нельзя удалить тариф по умолчанию'
-                : `Удалить тариф «${deleteTarget?.name}»?`}
+                : isDeleteTargetInUse
+                  ? `Нельзя удалить тариф «${deleteTarget?.name}»`
+                  : `Удалить тариф «${deleteTarget?.name}»?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isDeleteTargetDefault
                 ? 'Сначала назначьте другой тариф по умолчанию.'
-                : 'Тариф будет удален и отвязан от всех станций.'}
+                : isDeleteTargetInUse
+                  ? `Тариф используется ${deleteTargetStations.length === 1 ? 'станцией' : 'станциями'} (${deleteTargetStations.length}). Переведите их на другой тариф или верните на тариф по умолчанию.`
+                  : 'Тариф будет удален из списка.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">
-              {isDeleteTargetDefault ? 'Понятно' : 'Отмена'}
+              {canDelete ? 'Отмена' : 'Понятно'}
             </AlertDialogCancel>
-            {!isDeleteTargetDefault && (
+            {canDelete && (
               <AlertDialogAction
                 onClick={handleDelete}
                 className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"

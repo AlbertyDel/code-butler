@@ -154,8 +154,8 @@ const METHODS_SINGLE: PaymentMethod[] = [
   {
     id: 'pm-1',
     type: 'sbp',
-    title: 'СБП · Т-Банк',
-    maskedDetails: '+7 999 *** ** 12 · Т-Банк',
+    title: 'СБП',
+    maskedDetails: '+7 999 *** ** 12',
     isDefault: true,
     data: { phone: '79991234512', bank_sbp_id: '100000000004' },
   },

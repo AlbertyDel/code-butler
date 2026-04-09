@@ -623,7 +623,7 @@ export default function TariffsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {isDeleteTargetDefault
-                ? 'Нельзя удалить тариф по умолчанию'
+                ? 'Нельзя удалить основной тариф'
                 : isDeleteTargetInUse
                   ? `Нельзя удалить тариф «${deleteTarget?.name}»`
                   : `Удалить тариф «${deleteTarget?.name}»?`}
@@ -632,7 +632,7 @@ export default function TariffsPage() {
               {isDeleteTargetDefault
                 ? 'Сначала назначьте другой тариф основным.'
                 : isDeleteTargetInUse
-                  ? `Тариф используется ${deleteTargetStations.length === 1 ? 'станцией' : 'станциями'} (${deleteTargetStations.length}). Переведите их на другой тариф или верните на тариф по умолчанию.`
+                  ? `Тариф используется ${deleteTargetStations.length === 1 ? 'станцией' : 'станциями'} (${deleteTargetStations.length}). Переведите их на другой тариф или верните на основной.`
                   : 'Тариф будет удален из списка.'}
             </AlertDialogDescription>
           </AlertDialogHeader>

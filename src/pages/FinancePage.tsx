@@ -491,25 +491,51 @@ export default function FinancePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
             {/* Summary Block */}
             <Card>
-              <CardContent className="p-5 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Доступно к выводу</p>
-                      <p className="text-3xl font-bold tracking-tight mt-0.5">{fmtMoney(available)} ₽</p>
-                    </div>
-                    {available > 0 && (
-                      <Button onClick={() => setWithdrawOpen(true)} size="sm">Запросить вывод</Button>
-                    )}
+              <CardContent className="p-5 sm:p-6 h-full">
+                {/* Mobile: stacked */}
+                <div className="flex flex-col gap-4 lg:hidden h-full">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Доступно к выводу</p>
+                    <p className="text-3xl font-bold tracking-tight">{fmtMoney(available)} ₽</p>
                   </div>
-                  <div className="flex flex-row sm:flex-col gap-4 sm:gap-3 sm:items-end pt-1 sm:pt-0 border-t sm:border-t-0 border-border sm:min-w-[120px]">
-                    <div className="sm:text-right">
+                  <div className="flex gap-4 pt-1 border-t border-border">
+                    <div>
                       <p className="text-xs text-muted-foreground">Баланс</p>
                       <p className="text-base font-semibold mt-0.5">{fmtMoney(balance)} ₽</p>
                     </div>
                     {processing > 0 && (
-                      <div className="sm:text-right">
-                        <div className="flex items-center gap-1 sm:justify-end">
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <Lock className="h-3 w-3 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">В обработке</p>
+                        </div>
+                        <p className="text-base font-semibold text-muted-foreground mt-0.5">{fmtMoney(processing)} ₽</p>
+                      </div>
+                    )}
+                  </div>
+                  {available > 0 && (
+                    <Button onClick={() => setWithdrawOpen(true)} size="sm" className="w-full sm:w-auto">Запросить вывод</Button>
+                  )}
+                </div>
+                {/* Desktop: 2 columns with button pinned to bottom-left */}
+                <div className="hidden lg:flex lg:h-full">
+                  <div className="flex flex-col justify-between flex-1 pr-5 border-r border-border">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Доступно к выводу</p>
+                      <p className="text-3xl font-bold tracking-tight">{fmtMoney(available)} ₽</p>
+                    </div>
+                    {available > 0 && (
+                      <Button onClick={() => setWithdrawOpen(true)} size="sm" className="mt-4 w-fit">Запросить вывод</Button>
+                    )}
+                  </div>
+                  <div className="flex flex-col justify-center gap-3 pl-5 min-w-[120px]">
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Баланс</p>
+                      <p className="text-base font-semibold mt-0.5">{fmtMoney(balance)} ₽</p>
+                    </div>
+                    {processing > 0 && (
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 justify-end">
                           <Lock className="h-3 w-3 text-muted-foreground" />
                           <p className="text-xs text-muted-foreground">В обработке</p>
                         </div>
@@ -700,10 +726,9 @@ function PayoutMethodsOverview({
           </div>
 
           {methods.length === 0 ? (
-            <div className="flex flex-col items-center py-4 space-y-3">
-              <Wallet className="h-8 w-8 text-muted-foreground" />
+            <div className="flex flex-col py-2 space-y-3">
               <p className="text-sm text-muted-foreground">Нет сохранённых способов</p>
-              <Button size="sm" onClick={() => setAddOpen(true)}>Добавить</Button>
+              <Button variant="outline" size="sm" className="w-fit" onClick={() => setAddOpen(true)}>Добавить</Button>
             </div>
           ) : (
             <div className="space-y-2">
@@ -791,8 +816,8 @@ function ManageMethodsView({
                 <div className="text-center py-4 space-y-3">
                   <Wallet className="h-10 w-10 text-muted-foreground mx-auto" />
                   <p className="text-sm text-muted-foreground">Нет сохранённых способов вывода</p>
-                  <Button onClick={() => { setEditingMethod(null); setStep('add'); }}>
-                    <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
+                   <Button variant="outline" onClick={() => { setEditingMethod(null); setStep('add'); }}>
+                    Добавить
                   </Button>
                 </div>
               </CardContent>
@@ -835,7 +860,7 @@ function ManageMethodsView({
                 ))}
               </div>
               <Button variant="outline" onClick={() => { setEditingMethod(null); setStep('add'); }}>
-                <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
+                Добавить
               </Button>
             </>
           )}
@@ -861,7 +886,7 @@ function ManageMethodsView({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Удалить способ вывода?</AlertDialogTitle>
-            <AlertDialogDescription>Сохранённые реквизиты будут удалены. Это действие нельзя отменить.</AlertDialogDescription>
+            <AlertDialogDescription>Сохранённые реквизиты будут удалены.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>

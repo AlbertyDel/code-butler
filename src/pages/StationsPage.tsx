@@ -58,7 +58,7 @@ const StatusBadge = memo(function StatusBadge({ status }: StatusBadgeProps) {
   const { label, className } = config[status];
 
   return (
-    <Badge variant="outline" className={cn('rounded-full font-medium', className)}>
+    <Badge variant="outline" className={cn('w-fit shrink-0 whitespace-nowrap rounded-full font-medium', className)}>
       {label}
     </Badge>
   );
@@ -116,7 +116,7 @@ const StationRow = memo(function StationRow({
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                <h3 className="font-semibold truncate">{station.name}</h3>
+                <h3 className="font-semibold line-clamp-2 break-words">{station.name}</h3>
                 <StatusBadge status={station.status} />
               </div>
               <p className="text-sm text-muted-foreground truncate">{station.address}</p>

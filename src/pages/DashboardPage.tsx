@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
+import { BusinessDashboard } from '@/components/dashboard/BusinessDashboard';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, 

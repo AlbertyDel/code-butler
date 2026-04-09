@@ -26,10 +26,9 @@ export function DeleteStationDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Удалить станцию?</AlertDialogTitle>
+          <AlertDialogTitle>Удалить станцию «{stationName}»?</AlertDialogTitle>
           <AlertDialogDescription>
-            Вы уверены, что хотите удалить станцию "{stationName}"? 
-            Это действие нельзя отменить.
+            Станция будет удалена из списка.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -346,18 +346,16 @@ export default function TariffsPage() {
           {displayTariffs.map((tariff) => {
             const validConditions = tariff.conditions.filter(isConditionComplete);
             return (
-              <Card key={tariff.id} className={cn(
-                "relative overflow-hidden animate-fade-in transition-all duration-300"
-              )}>
+              <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
                 <CardContent className="p-5 space-y-4">
                   {/* Header: actions top-right, title + badge stacked */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
                       <h3 className="text-base font-semibold break-words">{tariff.name}</h3>
                       {tariff.isDefault && (
-                        <Badge variant="secondary" className="gap-1 text-xs">
+                        <Badge className="gap-1 text-xs border-primary/30 bg-primary/10 text-primary hover:bg-primary/10">
                           <Star className="h-3 w-3" />
-                          По умолчанию
+                          Основной
                         </Badge>
                       )}
                     </div>
@@ -414,11 +412,11 @@ export default function TariffsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full gap-1.5"
+                      className="w-full gap-1.5 whitespace-nowrap"
                       onClick={() => handleSetDefault(tariff.id)}
                     >
                       <Star className="h-3.5 w-3.5" />
-                      Назначить по умолчанию
+                      Сделать основным
                     </Button>
                   )}
                 </CardContent>
@@ -632,7 +630,7 @@ export default function TariffsPage() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isDeleteTargetDefault
-                ? 'Сначала назначьте другой тариф по умолчанию.'
+                ? 'Сначала назначьте другой тариф основным.'
                 : isDeleteTargetInUse
                   ? `Тариф используется ${deleteTargetStations.length === 1 ? 'станцией' : 'станциями'} (${deleteTargetStations.length}). Переведите их на другой тариф или верните на тариф по умолчанию.`
                   : 'Тариф будет удален из списка.'}

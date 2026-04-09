@@ -246,12 +246,23 @@ export default function DashboardPage() {
     );
   }
 
+  // ── Business mode A dashboard ──
+  if (isBusiness) {
+    return (
+      <div className="space-y-6">
+        {mockToggle}
+        <BusinessDashboard
+          stations={stations}
+          activeSessions={activeSessions}
+          allSessions={sessions}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
-
-      {/* Статистика */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Всего сессий"
           value={statistics.totalSessions}

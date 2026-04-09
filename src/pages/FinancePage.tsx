@@ -1598,7 +1598,7 @@ function MethodForm({
   const [phone, setPhone] = useState(initial?.data?.phone ?? '');
   const [bankId, setBankId] = useState(initial?.data?.bank_sbp_id ?? '');
   const [bankSearch, setBankSearch] = useState('');
-
+  const [bankPopoverOpen, setBankPopoverOpen] = useState(false);
   const [cardNumber, setCardNumber] = useState(initial?.data?.cardNumber ?? '');
   const [holderName, setHolderName] = useState(initial?.data?.holderName ?? '');
 

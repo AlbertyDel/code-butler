@@ -1470,7 +1470,7 @@ function InlineMethodForm({
           </div>
           <div className="space-y-1.5">
             <Label>Банк получателя</Label>
-            <Popover>
+            <Popover open={bankPopoverOpen} onOpenChange={setBankPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -1502,7 +1502,7 @@ function InlineMethodForm({
                     ) : filteredBanks.map((b) => (
                       <button
                         key={b.bank_sbp_id}
-                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); }}
+                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); setBankPopoverOpen(false); }}
                         className={cn(
                           'w-full text-left px-2 py-1.5 text-sm rounded-sm transition-colors flex items-center gap-2',
                           bankId === b.bank_sbp_id ? 'bg-accent' : 'hover:bg-accent/50'

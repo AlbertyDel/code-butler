@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useSyncExternalStore } from 'react';
+import { useState, memo, useCallback, useEffect, useSyncExternalStore } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -183,6 +183,11 @@ export default function StationsPage() {
 
   const tariffs = useSyncExternalStore(subscribeToTariffs, getSharedTariffs);
   const stations: StationWithTariff[] = showMock ? mockLocalStations : realStations;
+
+  // Sync shared stations for tariff page access
+  useEffect(() => {
+    setSharedStations(stations);
+  }, [stations]);
 
   const handleAddStation = useCallback((stationData: Partial<Station> & { tariffId?: string }) => {
     if (showMock) {

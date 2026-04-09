@@ -1366,7 +1366,7 @@ function WithdrawDialog({ open, onOpenChange, available, savedMethods, onSuccess
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Отмена</Button>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}

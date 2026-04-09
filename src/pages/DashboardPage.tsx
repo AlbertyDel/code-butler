@@ -185,9 +185,11 @@ const StatCard = memo(function StatCard({
 export default function DashboardPage() {
   const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
   const { activeSessions: realActiveSessions, sessions: realSessions, stopSession, isLoading: sessionsLoading } = useSessions();
+  const { userRole } = useAuth();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showMock, setShowMock] = useMockToggle('dashboard_mock');
+  const isBusiness = userRole === 'business';
 
   const stations = showMock ? MOCK_STATIONS : realStations;
   const sessions = showMock ? [...MOCK_ACTIVE_SESSIONS, ...MOCK_COMPLETED_SESSIONS] : realSessions;

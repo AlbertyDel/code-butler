@@ -36,7 +36,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Wallet, Lock, Hourglass, Zap, ArrowDownToLine, Download, CalendarIcon,
-  ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Star, CreditCard, Building2, Loader2,
+  ChevronLeft, ChevronRight, Pencil, Trash2, Star, CreditCard, Building2, Loader2,
   Search, ArrowLeft, Settings2,
 } from 'lucide-react';
 import { useBusinessState } from '@/contexts/BusinessStateContext';

@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/pagination';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Wallet, Lock, Hourglass, Zap, ArrowDownToLine, Download, CalendarIcon,
+  Wallet, Lock, Hourglass, Zap, ArrowDownToLine, ArrowUpFromLine, Download, CalendarIcon,
   ChevronLeft, ChevronRight, Pencil, Trash2, Star, CreditCard, Building2, Loader2,
   Search, ArrowLeft, Settings2,
 } from 'lucide-react';
@@ -629,11 +629,11 @@ export default function FinancePage() {
                             <TableCell className="text-left">
                               <div className="flex items-center gap-2">
                                 {t.type === 'income' ? (
-                                  <ArrowDownLeft className="h-4 w-4 shrink-0 text-emerald-600" />
+                                  <ArrowDownToLine className="h-4 w-4 shrink-0 text-emerald-600" />
                                 ) : (
-                                  <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                  <ArrowUpFromLine className="h-4 w-4 shrink-0 text-muted-foreground" />
                                 )}
-                                <span className="truncate">{t.description}</span>
+                                <span className="truncate">{t.type === 'income' ? `Зарядка: ${t.stationName}` : 'Вывод средств'}</span>
                               </div>
                             </TableCell>
                             <TableCell className={cn('text-right font-medium whitespace-nowrap', t.type === 'income' && 'text-emerald-600')}>

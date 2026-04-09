@@ -294,6 +294,9 @@ export default function TariffsPage() {
 
   const isEditing = !!editingTariff;
   const isDeleteTargetDefault = deleteTarget?.isDefault === true;
+  const deleteTargetStations = deleteTarget ? getStationsUsingTariff(deleteTarget.id) : [];
+  const isDeleteTargetInUse = deleteTargetStations.length > 0;
+  const canDelete = !isDeleteTargetDefault && !isDeleteTargetInUse;
 
   if (isPageLoading) return <PageSkeleton cards={4} />;
 

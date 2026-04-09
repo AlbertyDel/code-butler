@@ -267,6 +267,7 @@ export default function DashboardPage() {
       {/* Статистика */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
+          title="Всего сессий"
           value={statistics.totalSessions}
           icon={Zap}
           trend={{ value: 12, label: 'за месяц' }}

@@ -1,4 +1,4 @@
-import { useState, memo, useCallback, useMemo } from 'react';
+import { useState, memo, useCallback, useSyncExternalStore } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,11 @@ import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { DeleteStationDialog } from '@/components/stations/DeleteStationDialog';
 import { StationDetailSheet } from '@/components/stations/StationDetailSheet';
 import type { Station, ChargerStatus } from '@/types';
+import { getSharedTariffs, subscribeToTariffs, type TariffLocal } from '@/pages/TariffsPage';
+
+interface StationWithTariff extends Station {
+  tariffId?: string;
+}
 
 interface StatusBadgeProps {
   status: ChargerStatus;
@@ -39,12 +44,24 @@ const StatusBadge = memo(function StatusBadge({ status }: StatusBadgeProps) {
   );
 });
 
+function getEffectiveTariff(station: StationWithTariff, tariffs: TariffLocal[]): { name: string; isIndividual: boolean } | null {
+  if (tariffs.length === 0) return null;
+  if (station.tariffId) {
+    const t = tariffs.find(tr => tr.id === station.tariffId);
+    if (t) return { name: t.name, isIndividual: true };
+  }
+  const def = tariffs.find(t => t.isDefault);
+  if (def) return { name: def.name, isIndividual: false };
+  return null;
+}
+
 interface StationRowProps {
-  station: Station;
-  onEdit: (station: Station) => void;
-  onDelete: (station: Station) => void;
+  station: StationWithTariff;
+  onEdit: (station: StationWithTariff) => void;
+  onDelete: (station: StationWithTariff) => void;
   onOpenMaps: (e: React.MouseEvent, station: Station) => void;
   onSelect: (station: Station) => void;
+  tariffs: TariffLocal[];
 }
 
 const StationRow = memo(function StationRow({ 
@@ -53,7 +70,10 @@ const StationRow = memo(function StationRow({
   onDelete, 
   onOpenMaps,
   onSelect,
+  tariffs,
 }: StationRowProps) {
+  const effectiveTariff = getEffectiveTariff(station, tariffs);
+
   return (
     <Card className="transition-shadow hover:shadow-md cursor-pointer" onClick={() => onSelect(station)}>
       <CardContent className="p-4">
@@ -87,6 +107,14 @@ const StationRow = memo(function StationRow({
                   </Badge>
                 ))}
               </div>
+              {effectiveTariff && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Тариф: {effectiveTariff.name}
+                  <span className="ml-1.5 opacity-60">
+                    · {effectiveTariff.isIndividual ? 'Индивидуальный' : 'По умолчанию'}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
           <div className="flex gap-2 justify-end shrink-0 items-center">
@@ -118,24 +146,27 @@ const StationRow = memo(function StationRow({
     prev.name === next.name &&
     prev.address === next.address &&
     prev.status === next.status &&
-    prev.connectors.length === next.connectors.length;
+    prev.connectors.length === next.connectors.length &&
+    (prev as StationWithTariff).tariffId === (next as StationWithTariff).tariffId &&
+    prevProps.tariffs === nextProps.tariffs;
 });
 
 export default function StationsPage() {
   const { stations: realStations, addStation: realAddStation, updateStation: realUpdateStation, deleteStation: realDeleteStation } = useStations();
   const [showMock, setShowMock] = useMockToggle('stations_mock');
-  const [mockLocalStations, setMockLocalStations] = useState<Station[]>(() => [...mockStations]);
+  const [mockLocalStations, setMockLocalStations] = useState<StationWithTariff[]>(() => [...mockStations]);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editStation, setEditStation] = useState<Station | null>(null);
+  const [editStation, setEditStation] = useState<StationWithTariff | null>(null);
   const [stationToDelete, setStationToDelete] = useState<Station | null>(null);
   const [detailStation, setDetailStation] = useState<Station | null>(null);
 
-  const stations = showMock ? mockLocalStations : realStations;
+  const tariffs = useSyncExternalStore(subscribeToTariffs, getSharedTariffs);
+  const stations: StationWithTariff[] = showMock ? mockLocalStations : realStations;
 
-  const handleAddStation = useCallback((stationData: Partial<Station>) => {
+  const handleAddStation = useCallback((stationData: Partial<Station> & { tariffId?: string }) => {
     if (showMock) {
-      const newStation: Station = {
+      const newStation: StationWithTariff = {
         id: `mock-new-${Date.now()}`,
         name: stationData.name || 'Новая станция',
         address: stationData.address || '',
@@ -148,6 +179,7 @@ export default function StationsPage() {
         electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
         temperature: { inputContacts: 30, port0: 30, port1: 30, internal: 30 },
         stats: { energyTodayKwh: 0, sessionsToday: 0, totalSessions: 0, totalEnergyKwh: 0, totalHours: 0 },
+        tariffId: stationData.tariffId,
       };
       setMockLocalStations(prev => [...prev, newStation]);
     } else {
@@ -155,11 +187,11 @@ export default function StationsPage() {
     }
   }, [showMock, realAddStation]);
 
-  const handleEditStation = useCallback((stationData: Partial<Station>) => {
+  const handleEditStation = useCallback((stationData: Partial<Station> & { tariffId?: string }) => {
     if (!editStation) return;
     if (showMock) {
       setMockLocalStations(prev => prev.map(s =>
-        s.id === editStation.id ? { ...s, ...stationData } : s
+        s.id === editStation.id ? { ...s, ...stationData, tariffId: stationData.tariffId } : s
       ));
     } else {
       realUpdateStation({ id: editStation.id, data: stationData });
@@ -177,15 +209,13 @@ export default function StationsPage() {
     setStationToDelete(null);
   }, [stationToDelete, showMock, realDeleteStation]);
 
-
-
   const openInYandexMaps = useCallback((e: React.MouseEvent, station: Station) => {
     e.stopPropagation();
     const url = `https://yandex.ru/maps/?pt=${station.longitude},${station.latitude}&z=17&l=map`;
     window.open(url, '_blank');
   }, []);
 
-  const handleEdit = useCallback((station: Station) => {
+  const handleEdit = useCallback((station: StationWithTariff) => {
     setEditStation(station);
   }, []);
 
@@ -228,6 +258,7 @@ export default function StationsPage() {
                 onDelete={handleDelete}
                 onOpenMaps={openInYandexMaps}
                 onSelect={handleSelect}
+                tariffs={tariffs}
               />
             ))}
             <div className="flex justify-center pt-4">

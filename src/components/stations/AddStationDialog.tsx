@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,17 +10,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { Station } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSharedTariffs, subscribeToTariffs } from '@/pages/TariffsPage';
 
 interface AddStationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (station: Partial<Station>) => void;
-  editStation?: Station | null;
+  onSubmit: (station: Partial<Station> & { tariffId?: string }) => void;
+  editStation?: (Station & { tariffId?: string }) | null;
 }
-
-
 
 export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: AddStationDialogProps) {
   const { user } = useAuth();
@@ -31,8 +37,11 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
   const [longitude, setLongitude] = useState('37.618423');
   const [portsCount, setPortsCount] = useState('2');
   const [powerKw, setPowerKw] = useState('22');
+  const [tariffId, setTariffId] = useState('__default__');
 
-  // Синхронизируем значения при изменении editStation или открытии
+  const tariffs = useSyncExternalStore(subscribeToTariffs, getSharedTariffs);
+  const defaultTariff = tariffs.find(t => t.isDefault);
+
   useEffect(() => {
     if (open) {
       if (editStation) {
@@ -43,6 +52,7 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
         setLongitude(editStation.longitude.toString());
         setPortsCount(editStation.connectors.length.toString());
         setPowerKw(editStation.connectors[0]?.powerKw?.toString() || '22');
+        setTariffId(editStation.tariffId || '__default__');
       } else {
         setStationId('');
         setName('');
@@ -51,6 +61,7 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
         setLongitude('37.618423');
         setPortsCount('2');
         setPowerKw('22');
+        setTariffId('__default__');
       }
     }
   }, [open, editStation]);
@@ -77,6 +88,7 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
       connectors,
       ownerId: user?.id,
       createdAt: editStation?.createdAt || new Date().toISOString(),
+      tariffId: tariffId === '__default__' ? undefined : tariffId,
     });
     onOpenChange(false);
   };
@@ -137,6 +149,26 @@ export function AddStationDialog({ open, onOpenChange, onSubmit, editStation }: 
                 <option value="Москва, Измайловское шоссе, 71" />
               </datalist>
             </div>
+
+            {/* Tariff select */}
+            {tariffs.length > 0 && (
+              <div className="space-y-2">
+                <Label>Тариф</Label>
+                <Select value={tariffId} onValueChange={setTariffId}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper" className="z-[200]">
+                    <SelectItem value="__default__">
+                      По умолчанию — {defaultTariff?.name || '—'}
+                    </SelectItem>
+                    {tariffs.filter(t => !t.isDefault).map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" className="w-full sm:w-auto h-11 sm:h-10" onClick={() => onOpenChange(false)}>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -29,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Banknote, Pencil, Trash2, Clock, Zap } from 'lucide-react';
+import { Banknote, Pencil, Trash2, Clock, Zap, Star } from 'lucide-react';
 
 interface SpecialCondition {
   id: string;
@@ -38,16 +39,17 @@ interface SpecialCondition {
   price: number;
 }
 
-interface Tariff {
+export interface TariffLocal {
   id: string;
   name: string;
   pricePerKwh: number;
   conditions: SpecialCondition[];
   maxTimeMin?: number;
   maxEnergyKwh?: number;
+  isDefault?: boolean;
 }
 
-const MOCK_TARIFFS: Tariff[] = [
+const MOCK_TARIFFS: TariffLocal[] = [
   {
     id: '1',
     name: 'Базовый',
@@ -57,6 +59,7 @@ const MOCK_TARIFFS: Tariff[] = [
     ],
     maxTimeMin: 120,
     maxEnergyKwh: 50,
+    isDefault: true,
   },
   {
     id: '2',
@@ -65,6 +68,7 @@ const MOCK_TARIFFS: Tariff[] = [
     conditions: [],
     maxTimeMin: 60,
     maxEnergyKwh: 30,
+    isDefault: false,
   },
 ];
 
@@ -104,19 +108,39 @@ function isConditionComplete(c: SpecialCondition): boolean {
   return !!c.timeFrom && !!c.timeTo && c.price > 0;
 }
 
+// Shared tariff state for cross-page access
+let _sharedTariffs: TariffLocal[] = [];
+let _sharedListeners: Array<() => void> = [];
+
+export function getSharedTariffs(): TariffLocal[] {
+  return _sharedTariffs;
+}
+
+export function subscribeToTariffs(listener: () => void): () => void {
+  _sharedListeners.push(listener);
+  return () => {
+    _sharedListeners = _sharedListeners.filter(l => l !== listener);
+  };
+}
+
+function setSharedTariffs(tariffs: TariffLocal[]) {
+  _sharedTariffs = tariffs;
+  _sharedListeners.forEach(l => l());
+}
+
 export default function TariffsPage() {
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [tariffs, setTariffs] = useState<Tariff[]>([]);
+  const [tariffs, setTariffs] = useState<TariffLocal[]>([]);
   const [showMock, setShowMock] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsPageLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTariff, setEditingTariff] = useState<Tariff | null>(null);
 
-  const [deleteTarget, setDeleteTarget] = useState<Tariff | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTariff, setEditingTariff] = useState<TariffLocal | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TariffLocal | null>(null);
 
   const [formName, setFormName] = useState('');
   const [formPrice, setFormPrice] = useState('');
@@ -127,6 +151,11 @@ export default function TariffsPage() {
   const [errors, setErrors] = useState<{ name?: string; price?: string; conditions?: string; maxTime?: string; maxEnergy?: string }>({});
 
   const displayTariffs = showMock ? MOCK_TARIFFS : tariffs;
+
+  // Sync shared tariffs for station page access
+  useEffect(() => {
+    setSharedTariffs(displayTariffs);
+  }, [displayTariffs]);
 
   const handleToggleMock = (checked: boolean) => {
     setShowMock(checked);
@@ -144,7 +173,7 @@ export default function TariffsPage() {
     setDialogOpen(true);
   };
 
-  const openEditDialog = (tariff: Tariff) => {
+  const openEditDialog = (tariff: TariffLocal) => {
     setEditingTariff(tariff);
     setFormName(tariff.name);
     setFormPrice(String(tariff.pricePerKwh));
@@ -182,12 +211,16 @@ export default function TariffsPage() {
     return false;
   };
 
+  const handleSetDefault = (tariffId: string) => {
+    if (showMock) return; // mock tariffs are read-only
+    setTariffs(prev => prev.map(t => ({ ...t, isDefault: t.id === tariffId })));
+  };
+
   const handleSave = () => {
     const newErrors: typeof errors = {};
     if (!formName.trim()) newErrors.name = 'Укажите название тарифа';
     if (!formPrice) newErrors.price = 'Укажите стоимость';
 
-    // Validate maxTime (required, 5–600)
     const maxTimeNum = Number(formMaxTime);
     if (!formMaxTime) {
       newErrors.maxTime = 'Укажите лимит времени';
@@ -197,7 +230,6 @@ export default function TariffsPage() {
       newErrors.maxTime = 'Максимум 600 минут';
     }
 
-    // Validate maxEnergy (required, 5–200)
     const maxEnergyNum = Number(formMaxEnergy);
     if (!formMaxEnergy) {
       newErrors.maxEnergy = 'Укажите лимит энергии';
@@ -230,7 +262,9 @@ export default function TariffsPage() {
         prev.map((t) => (t.id === editingTariff.id ? { ...t, ...tariffData } : t))
       );
     } else {
-      setTariffs((prev) => [...prev, { id: crypto.randomUUID(), ...tariffData }]);
+      // First tariff automatically becomes default
+      const isFirst = tariffs.length === 0;
+      setTariffs((prev) => [...prev, { id: crypto.randomUUID(), ...tariffData, isDefault: isFirst }]);
     }
     setShowMock(false);
     setDialogOpen(false);
@@ -244,6 +278,7 @@ export default function TariffsPage() {
   };
 
   const isEditing = !!editingTariff;
+  const isDeleteTargetDefault = deleteTarget?.isDefault === true;
 
   if (isPageLoading) return <PageSkeleton cards={4} />;
 
@@ -279,6 +314,13 @@ export default function TariffsPage() {
         </div>
       )}
 
+      {/* Explanation text */}
+      {displayTariffs.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          Тариф по умолчанию применяется ко всем станциям, у которых не выбран другой тариф.
+        </p>
+      )}
+
       {/* Tariff grid */}
       {displayTariffs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -288,8 +330,16 @@ export default function TariffsPage() {
               <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-start justify-between">
-                    <h3 className="text-base font-semibold">{tariff.name}</h3>
-                    <div className="flex items-center gap-1 -mt-0.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="text-base font-semibold truncate">{tariff.name}</h3>
+                      {tariff.isDefault && (
+                        <Badge variant="secondary" className="shrink-0 gap-1">
+                          <Star className="h-3 w-3" />
+                          По умолчанию
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 -mt-0.5 shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -337,6 +387,18 @@ export default function TariffsPage() {
                       Лимит энергии: {tariff.maxEnergyKwh} кВт·ч
                     </p>
                   </div>
+
+                  {!tariff.isDefault && !showMock && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-1.5"
+                      onClick={() => handleSetDefault(tariff.id)}
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                      Сделать по умолчанию
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -409,7 +471,6 @@ export default function TariffsPage() {
                     key={cond.id}
                     className="rounded-md bg-secondary p-3 space-y-2"
                   >
-                    {/* Row 1: Header */}
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Каждый день</span>
                       <Button
@@ -421,7 +482,6 @@ export default function TariffsPage() {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                    {/* Row 2: Time & Price */}
                     <div className="flex items-center gap-2">
                       <Select
                         value={cond.timeFrom || undefined}
@@ -541,19 +601,29 @@ export default function TariffsPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Удалить тариф "{deleteTarget?.name}"?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isDeleteTargetDefault
+                ? 'Нельзя удалить тариф по умолчанию'
+                : `Удалить тариф «${deleteTarget?.name}»?`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Тариф будет безвозвратно удален и отвязан от всех станций.
+              {isDeleteTargetDefault
+                ? 'Сначала назначьте другой тариф по умолчанию.'
+                : 'Тариф будет удален и отвязан от всех станций.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">Отмена</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Удалить
-            </AlertDialogAction>
+            <AlertDialogCancel className="w-full sm:w-auto h-11 sm:h-10">
+              {isDeleteTargetDefault ? 'Понятно' : 'Отмена'}
+            </AlertDialogCancel>
+            {!isDeleteTargetDefault && (
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="w-full sm:w-auto h-11 sm:h-10 font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Удалить
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

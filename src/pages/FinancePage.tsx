@@ -1394,12 +1394,11 @@ function InlineMethodForm({
 
     if (type === 'sbp' && phone.length === 11 && bankId) {
       valid = true;
-      const bank = MOCK_SBP_BANKS.find(b => b.bank_sbp_id === bankId)!;
       method = {
         id: 'new',
         type: 'sbp',
-        title: `СБП · ${bank.name_rus}`,
-        maskedDetails: `${maskPhone(phone)} · ${bank.name_rus}`,
+        title: 'СБП',
+        maskedDetails: maskPhone(phone),
         isDefault: false,
         data: { phone, bank_sbp_id: bankId },
       };
@@ -1408,7 +1407,7 @@ function InlineMethodForm({
       method = {
         id: 'new',
         type: 'card',
-        title: `Карта · *${cardNumber.slice(-4)}`,
+        title: 'Карта',
         maskedDetails: maskCard(cardNumber),
         isDefault: false,
         data: { cardNumber, holderName },
@@ -1418,8 +1417,8 @@ function InlineMethodForm({
       method = {
         id: 'new',
         type: 'account',
-        title: `Счёт · ${bikResult.bankName}`,
-        maskedDetails: `${maskAccount(accountNumber)} · ${bikResult.bankName}`,
+        title: 'Расчётный счёт',
+        maskedDetails: maskAccount(accountNumber),
         isDefault: false,
         data: { bik, accountNumber },
       };

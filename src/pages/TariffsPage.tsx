@@ -347,8 +347,7 @@ export default function TariffsPage() {
             const validConditions = tariff.conditions.filter(isConditionComplete);
             return (
               <Card key={tariff.id} className={cn(
-                "relative overflow-hidden animate-fade-in transition-all duration-300",
-                tariff.isDefault && "border-primary/30 bg-primary/[0.03]"
+                "relative overflow-hidden animate-fade-in transition-all duration-300"
               )}>
                 <CardContent className="p-5 space-y-4">
                   {/* Header: actions top-right, title + badge stacked */}
@@ -419,7 +418,7 @@ export default function TariffsPage() {
                       onClick={() => handleSetDefault(tariff.id)}
                     >
                       <Star className="h-3.5 w-3.5" />
-                      Сделать основным
+                      Назначить по умолчанию
                     </Button>
                   )}
                 </CardContent>

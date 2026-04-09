@@ -1364,6 +1364,7 @@ function InlineMethodForm({
   const [phone, setPhone] = useState('');
   const [bankId, setBankId] = useState('');
   const [bankSearch, setBankSearch] = useState('');
+  const [bankPopoverOpen, setBankPopoverOpen] = useState(false);
 
   // Card
   const [cardNumber, setCardNumber] = useState('');

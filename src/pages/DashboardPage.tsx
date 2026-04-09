@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { ActiveSessionCard } from '@/components/sessions/ActiveSessionCard';
 import { AddStationDialog } from '@/components/stations/AddStationDialog';
 import { QuickLaunchCard } from '@/components/dashboard/QuickLaunchCard';
+import { BusinessDashboard } from '@/components/dashboard/BusinessDashboard';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, 
@@ -183,9 +185,11 @@ const StatCard = memo(function StatCard({
 export default function DashboardPage() {
   const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
   const { activeSessions: realActiveSessions, sessions: realSessions, stopSession, isLoading: sessionsLoading } = useSessions();
+  const { userRole } = useAuth();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showMock, setShowMock] = useMockToggle('dashboard_mock');
+  const isBusiness = userRole === 'business';
 
   const stations = showMock ? MOCK_STATIONS : realStations;
   const sessions = showMock ? [...MOCK_ACTIVE_SESSIONS, ...MOCK_COMPLETED_SESSIONS] : realSessions;
@@ -238,6 +242,20 @@ export default function DashboardPage() {
             />
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // ── Business mode A dashboard ──
+  if (isBusiness) {
+    return (
+      <div className="space-y-6">
+        {mockToggle}
+        <BusinessDashboard
+          stations={stations}
+          activeSessions={activeSessions}
+          allSessions={sessions}
+        />
       </div>
     );
   }

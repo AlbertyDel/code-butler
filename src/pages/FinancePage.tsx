@@ -487,10 +487,10 @@ export default function FinancePage() {
         <EmptyNoData />
       ) : (
         <>
-          {/* Top blocks: Summary + Methods overview */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+          {/* Top blocks: Summary + Methods overview — 50/50 on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
             {/* Summary Block */}
-            <Card className="w-full sm:flex-1 sm:max-w-md">
+            <Card>
               <CardContent className="p-5 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-3">
@@ -525,7 +525,7 @@ export default function FinancePage() {
             <PayoutMethodsOverview
               methods={methods}
               onManage={() => setPageView('manage_methods')}
-              onAddFirst={() => setPageView('manage_methods')}
+              onAddMethod={handleAddMethod}
             />
           </div>
 

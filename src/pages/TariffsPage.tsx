@@ -158,6 +158,13 @@ export default function TariffsPage() {
     setSharedTariffs(displayTariffs);
   }, [displayTariffs]);
 
+  // Access shared stations for delete protection
+  const sharedStations = useSyncExternalStore(subscribeToStations, getSharedStations);
+
+  const getStationsUsingTariff = (tariffId: string) => {
+    return sharedStations.filter(s => s.tariffId === tariffId);
+  };
+
   const handleToggleMock = (checked: boolean) => {
     setShowMock(checked);
     if (!checked) setTariffs([]);

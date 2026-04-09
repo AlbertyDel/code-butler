@@ -1652,17 +1652,16 @@ function MethodForm({
     let data: Record<string, string> = {};
 
     if (type === 'sbp') {
-      const bank = MOCK_SBP_BANKS.find(b => b.bank_sbp_id === bankId)!;
-      title = `СБП · ${bank.name_rus}`;
-      masked = `${maskPhone(phone)} · ${bank.name_rus}`;
+      title = 'СБП';
+      masked = maskPhone(phone);
       data = { phone, bank_sbp_id: bankId };
     } else if (type === 'card') {
-      title = `Карта · *${cardNumber.slice(-4)}`;
+      title = 'Карта';
       masked = maskCard(cardNumber);
       data = { cardNumber, holderName };
     } else {
-      title = `Счёт · ${bikResult!.bankName}`;
-      masked = `${maskAccount(accountNumber)} · ${bikResult!.bankName}`;
+      title = 'Расчётный счёт';
+      masked = maskAccount(accountNumber);
       data = { bik, accountNumber };
     }
 

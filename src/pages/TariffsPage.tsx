@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Banknote, Pencil, Trash2, Clock, Zap, Star } from 'lucide-react';
+import { getSharedStations, subscribeToStations } from '@/pages/StationsPage';
 
 interface SpecialCondition {
   id: string;

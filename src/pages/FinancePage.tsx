@@ -671,54 +671,82 @@ export default function FinancePage() {
 function PayoutMethodsOverview({
   methods,
   onManage,
-  onAddFirst,
+  onAddMethod,
 }: {
   methods: PaymentMethod[];
   onManage: () => void;
-  onAddFirst: () => void;
+  onAddMethod: (m: PaymentMethod) => void;
 }) {
+  const [addOpen, setAddOpen] = useState(false);
   const defaultMethod = methods.find(m => m.isDefault) ?? methods[0];
   const otherCount = methods.length - 1;
 
-  return (
-    <Card className="w-full sm:w-auto sm:min-w-[260px] sm:max-w-[320px]">
-      <CardContent className="p-4 sm:p-5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-medium text-muted-foreground">Способы вывода</p>
-          {methods.length > 0 && (
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 -mr-2" onClick={onManage}>
-              <Settings2 className="h-3.5 w-3.5" /> Управлять
-            </Button>
-          )}
-        </div>
+  const handleFirstAdd = (m: PaymentMethod) => {
+    onAddMethod(m);
+    setAddOpen(false);
+  };
 
-        {methods.length === 0 ? (
-          <div className="text-center py-3">
-            <p className="text-sm text-muted-foreground mb-3">Нет сохранённых способов</p>
-            <Button variant="outline" size="sm" onClick={onAddFirst}>
-              <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
-                {methodTypeIcon(defaultMethod.type)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{defaultMethod.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{defaultMethod.maskedDetails}</p>
-              </div>
-            </div>
-            {otherCount > 0 && (
-              <p className="text-xs text-muted-foreground">
-                Ещё {otherCount} {otherCount === 1 ? 'способ' : otherCount < 5 ? 'способа' : 'способов'}
-              </p>
+  return (
+    <>
+      <Card>
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-muted-foreground">Способы вывода</p>
+            {methods.length > 0 && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 -mr-2" onClick={onManage}>
+                <Settings2 className="h-3.5 w-3.5" /> Управлять
+              </Button>
             )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {methods.length === 0 ? (
+            <div className="flex flex-col items-center py-4 space-y-3">
+              <Wallet className="h-8 w-8 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Нет сохранённых способов</p>
+              <Button size="sm" onClick={() => setAddOpen(true)}>Добавить</Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
+                  {methodTypeIcon(defaultMethod.type)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium truncate">{methodTypeLabel(defaultMethod.type)}</p>
+                    {defaultMethod.isDefault && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                        <Star className="h-3 w-3 fill-primary" /> Основной
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{defaultMethod.maskedDetails}</p>
+                </div>
+              </div>
+              {otherCount > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Ещё {otherCount} {otherCount === 1 ? 'способ' : otherCount < 5 ? 'способа' : 'способов'}
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* First-add dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Новый способ вывода</DialogTitle>
+          </DialogHeader>
+          <MethodForm
+            initial={null}
+            onSave={handleFirstAdd}
+            onCancel={() => setAddOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

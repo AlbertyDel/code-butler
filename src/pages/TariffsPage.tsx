@@ -336,7 +336,7 @@ export default function TariffsPage() {
       {/* Explanation text */}
       {displayTariffs.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          Тариф по умолчанию применяется ко всем станциям, у которых не выбран другой тариф.
+          Основной тариф применяется ко всем станциям, у которых не выбран другой тариф.
         </p>
       )}
 

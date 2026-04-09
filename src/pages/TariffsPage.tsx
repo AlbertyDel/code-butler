@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { Button } from '@/components/ui/button';
@@ -212,7 +212,14 @@ export default function TariffsPage() {
   };
 
   const handleSetDefault = (tariffId: string) => {
-    if (showMock) return; // mock tariffs are read-only
+    if (showMock) {
+      // Allow setting default even in mock mode for testing
+      const updated = MOCK_TARIFFS.map(t => ({ ...t, isDefault: t.id === tariffId }));
+      // We can't mutate MOCK_TARIFFS, so switch to real state with a copy
+      setTariffs(updated);
+      setShowMock(false);
+      return;
+    }
     setTariffs(prev => prev.map(t => ({ ...t, isDefault: t.id === tariffId })));
   };
 

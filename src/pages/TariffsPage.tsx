@@ -345,18 +345,23 @@ export default function TariffsPage() {
           {displayTariffs.map((tariff) => {
             const validConditions = tariff.conditions.filter(isConditionComplete);
             return (
-              <Card key={tariff.id} className="relative overflow-hidden animate-fade-in transition-all duration-300">
+              <Card key={tariff.id} className={cn(
+                "relative overflow-hidden animate-fade-in transition-all duration-300",
+                tariff.isDefault && "border-primary/30 bg-primary/[0.03]"
+              )}>
                 <CardContent className="p-5 space-y-4">
-                  {/* Header: name + badge / actions */}
+                  {/* Header: actions top-right, title + badge stacked */}
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-base font-semibold min-w-0 break-words">{tariff.name}</h3>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="min-w-0 space-y-1.5">
+                      <h3 className="text-base font-semibold break-words">{tariff.name}</h3>
                       {tariff.isDefault && (
-                        <Badge variant="secondary" className="gap-1">
+                        <Badge variant="secondary" className="gap-1 text-xs">
                           <Star className="h-3 w-3" />
                           По умолчанию
                         </Badge>
                       )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -413,7 +418,7 @@ export default function TariffsPage() {
                       onClick={() => handleSetDefault(tariff.id)}
                     >
                       <Star className="h-3.5 w-3.5" />
-                      Сделать по умолчанию
+                      Сделать основным
                     </Button>
                   )}
                 </CardContent>

@@ -260,7 +260,7 @@ function fmtMoney(n: number) {
 
 function methodTypeIcon(type: PaymentMethodType) {
   switch (type) {
-    case 'sbp': return <img src={sbpLogo} alt="СБП" className="h-4 w-4 shrink-0 object-contain" loading="lazy" />;
+    case 'sbp': return <img src={sbpIcon} alt="СБП" className="h-4 w-4 shrink-0 object-contain" loading="lazy" />;
     case 'card': return <CreditCard className="h-4 w-4 shrink-0 text-muted-foreground" />;
     case 'account': return <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />;
   }
@@ -1414,7 +1414,7 @@ function InlineMethodForm({
       <Tabs value={type} onValueChange={(v) => setType(v as PaymentMethodType)}>
         <TabsList className="w-full">
           <TabsTrigger value="sbp" className="flex-1 text-xs sm:text-sm gap-1.5">
-            <img src={sbpLogo} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
+            <img src={sbpIcon} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
             СБП
           </TabsTrigger>
           <TabsTrigger value="card" className="flex-1 text-xs sm:text-sm gap-1.5">
@@ -1450,7 +1450,7 @@ function InlineMethodForm({
                   className={cn('w-full justify-between font-normal', !bankId && 'text-muted-foreground')}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    {bankId && <img src={sbpLogo} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
+                    {bankId && <img src={sbpIcon} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
                     <span className="truncate">{selectedBank?.name_rus ?? 'Выберите банк'}</span>
                   </div>
                 </Button>
@@ -1480,7 +1480,7 @@ function InlineMethodForm({
                           bankId === b.bank_sbp_id ? 'bg-accent' : 'hover:bg-accent/50'
                         )}
                       >
-                        <img src={sbpLogo} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
+                        <img src={sbpIcon} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
                         {b.name_rus}
                       </button>
                     ))}
@@ -1654,7 +1654,7 @@ function MethodForm({
         <Tabs value={type} onValueChange={(v) => { setType(v as PaymentMethodType); setErrors({}); }}>
           <TabsList className="w-full">
             <TabsTrigger value="sbp" className="flex-1 text-xs sm:text-sm gap-1.5">
-              <img src={sbpLogo} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
+              <img src={sbpIcon} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
               СБП
             </TabsTrigger>
             <TabsTrigger value="card" className="flex-1 text-xs sm:text-sm gap-1.5">
@@ -1699,7 +1699,7 @@ function MethodForm({
                   className={cn('w-full justify-between font-normal', !bankId && 'text-muted-foreground', errors.bank && 'border-destructive')}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    {bankId && <img src={sbpLogo} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
+                    {bankId && <img src={sbpIcon} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
                     <span className="truncate">{selectedBank?.name_rus ?? 'Выберите банк'}</span>
                   </div>
                 </Button>
@@ -1729,7 +1729,7 @@ function MethodForm({
                           bankId === b.bank_sbp_id ? 'bg-accent' : 'hover:bg-accent/50'
                         )}
                       >
-                        <img src={sbpLogo} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
+                        <img src={sbpIcon} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
                         {b.name_rus}
                       </button>
                     ))}

@@ -19,8 +19,28 @@ import { StationDetailSheet } from '@/components/stations/StationDetailSheet';
 import type { Station, ChargerStatus } from '@/types';
 import { getSharedTariffs, subscribeToTariffs, type TariffLocal } from '@/pages/TariffsPage';
 
-interface StationWithTariff extends Station {
+export interface StationWithTariff extends Station {
   tariffId?: string;
+}
+
+// Shared station state for cross-page access (e.g. tariff deletion protection)
+let _sharedStations: StationWithTariff[] = [];
+let _stationListeners: Array<() => void> = [];
+
+export function getSharedStations(): StationWithTariff[] {
+  return _sharedStations;
+}
+
+export function subscribeToStations(listener: () => void): () => void {
+  _stationListeners.push(listener);
+  return () => {
+    _stationListeners = _stationListeners.filter(l => l !== listener);
+  };
+}
+
+function setSharedStations(stations: StationWithTariff[]) {
+  _sharedStations = stations;
+  _stationListeners.forEach(l => l());
 }
 
 interface StatusBadgeProps {

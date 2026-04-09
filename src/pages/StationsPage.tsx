@@ -115,7 +115,7 @@ const StationRow = memo(function StationRow({
               )} />
             </button>
             <div className="flex-1 min-w-0">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2">
                 <h3 className="font-semibold line-clamp-2 break-words">{station.name}</h3>
                 <StatusBadge status={station.status} />
               </div>

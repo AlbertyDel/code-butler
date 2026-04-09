@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/pagination';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Wallet, Lock, Hourglass, Zap, ArrowDownToLine, Download, CalendarIcon,
+  Wallet, Lock, Hourglass, Zap, ArrowDownToLine, ArrowUpFromLine, Download, CalendarIcon,
   ChevronLeft, ChevronRight, Pencil, Trash2, Star, CreditCard, Building2, Loader2,
   Search, ArrowLeft, Settings2,
 } from 'lucide-react';
@@ -597,13 +597,19 @@ export default function FinancePage() {
 
                 {/* Table */}
                 <div className="overflow-x-auto -mx-4 sm:-mx-5">
-                  <Table>
+                  <Table className="table-fixed">
+                    <colgroup>
+                      <col className="w-[140px] sm:w-[160px]" />
+                      <col />
+                      <col className="w-[100px] sm:w-[120px]" />
+                      <col className="w-[110px] sm:w-[130px]" />
+                    </colgroup>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="pl-4 sm:pl-5 text-center">Дата</TableHead>
-                        <TableHead className="text-center">Описание</TableHead>
-                        <TableHead className="text-center">Сумма</TableHead>
-                        <TableHead className="text-center pr-4 sm:pr-5">Статус</TableHead>
+                        <TableHead className="pl-4 sm:pl-5 text-left">Дата</TableHead>
+                        <TableHead className="text-left">Описание</TableHead>
+                        <TableHead className="text-right">Сумма</TableHead>
+                        <TableHead className="text-right pr-4 sm:pr-5">Статус</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -617,25 +623,23 @@ export default function FinancePage() {
                         const st = getStatusDisplay(t);
                         return (
                           <TableRow key={t.id}>
-                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-muted-foreground">
+                            <TableCell className="pl-4 sm:pl-5 whitespace-nowrap text-left text-muted-foreground">
                               {format(new Date(t.date), 'dd.MM.yyyy, HH:mm')}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-left">
                               <div className="flex items-center gap-2">
                                 {t.type === 'income' ? (
-                                  <Zap className="h-4 w-4 text-primary shrink-0" />
+                                  <ArrowDownToLine className="h-4 w-4 shrink-0 text-emerald-600" />
                                 ) : (
-                                  <ArrowDownToLine className="h-4 w-4 text-muted-foreground shrink-0" />
+                                  <ArrowUpFromLine className="h-4 w-4 shrink-0 text-muted-foreground" />
                                 )}
-                                <span className="truncate">
-                                  {t.type === 'income' ? `Зарядка: ${t.stationName}` : 'Вывод средств'}
-                                </span>
+                                <span className="truncate">{t.type === 'income' ? `Зарядка: ${t.stationName}` : 'Вывод средств'}</span>
                               </div>
                             </TableCell>
-                            <TableCell className={cn('font-medium whitespace-nowrap', t.type === 'income' && 'text-emerald-600')}>
+                            <TableCell className={cn('text-right font-medium whitespace-nowrap', t.type === 'income' && 'text-emerald-600')}>
                               {t.type === 'income' ? '+' : '−'}{t.amount.toLocaleString('ru-RU')} ₽
                             </TableCell>
-                            <TableCell className="pr-4 sm:pr-5">
+                            <TableCell className="text-right pr-4 sm:pr-5">
                               <span className={st.className}>{st.label}</span>
                             </TableCell>
                           </TableRow>

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { MockToggle } from '@/components/MockToggle';
 import { useMockToggle } from '@/hooks/useMockToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table';
@@ -27,7 +28,7 @@ import {
   Sheet, SheetContent,
 } from '@/components/ui/sheet';
 import { Calendar } from '@/components/ui/calendar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationNext, PaginationPrevious, PaginationEllipsis,
@@ -36,7 +37,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Wallet, Lock, Hourglass, Zap, ArrowDownToLine, Download, CalendarIcon,
   ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Star, CreditCard, Building2, Loader2,
-  Search,
+  Search, ArrowLeft, Settings2,
 } from 'lucide-react';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { format, isAfter, isBefore, startOfDay, endOfDay, setMonth, setYear } from 'date-fns';
@@ -69,11 +70,8 @@ interface PaymentMethod {
   title: string;
   maskedDetails: string;
   isDefault: boolean;
-  // raw data for edit
   data: Record<string, string>;
 }
-
-type UserType = 'individual' | 'self_employed' | 'ip';
 
 // ─── Mock SBP banks ───
 
@@ -150,7 +148,20 @@ const MOCK_SCENARIOS: Record<MockState, { balance: number; processing: number; t
   },
 };
 
-const INITIAL_METHODS: PaymentMethod[] = [
+const METHODS_EMPTY: PaymentMethod[] = [];
+
+const METHODS_SINGLE: PaymentMethod[] = [
+  {
+    id: 'pm-1',
+    type: 'sbp',
+    title: 'СБП · Т-Банк',
+    maskedDetails: '+7 999 *** ** 12 · Т-Банк',
+    isDefault: true,
+    data: { phone: '79991234512', bank_sbp_id: '100000000004' },
+  },
+];
+
+const METHODS_MULTIPLE: PaymentMethod[] = [
   {
     id: 'pm-1',
     type: 'sbp',
@@ -167,7 +178,17 @@ const INITIAL_METHODS: PaymentMethod[] = [
     isDefault: false,
     data: { cardNumber: '4276123456781234', holderName: 'IVAN PETROV' },
   },
+  {
+    id: 'pm-3',
+    type: 'account',
+    title: 'Счёт · Точка Банк',
+    maskedDetails: '40702************5220 · Точка Банк',
+    isDefault: false,
+    data: { bik: '044525104', accountNumber: '40702810000000005220' },
+  },
 ];
+
+type MethodsMockState = 'empty' | 'single' | 'multiple';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -175,8 +196,6 @@ const MONTHS_RU = [
   'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
   'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
 ];
-
-// ─── Mock server errors ───
 
 const MOCK_ERRORS = [
   'Недостаточно средств',
@@ -257,6 +276,8 @@ function methodTypeLabel(type: PaymentMethodType) {
 
 // ─── Main Component ───
 
+type PageView = 'main' | 'manage_methods';
+
 export default function FinancePage() {
   const { businessState } = useBusinessState();
   const [showMock, setShowMock] = useMockToggle('finance_mock');
@@ -267,6 +288,11 @@ export default function FinancePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [mockState, setMockState] = useState<MockState>('filled_with_processing');
+  const [methodsMockState, setMethodsMockState] = useState<MethodsMockState>('multiple');
+  const [pageView, setPageView] = useState<PageView>('main');
+
+  // Payment methods state
+  const [methods, setMethods] = useState<PaymentMethod[]>(METHODS_MULTIPLE);
 
   // Mutable mock finance state for live updates after withdrawal
   const [liveBalance, setLiveBalance] = useState<number | null>(null);
@@ -284,6 +310,15 @@ export default function FinancePage() {
     setLiveProcessing(null);
     setExtraTransactions([]);
   }, [mockState, showMock]);
+
+  // Sync methods with methods mock state
+  useEffect(() => {
+    switch (methodsMockState) {
+      case 'empty': setMethods([]); break;
+      case 'single': setMethods(METHODS_SINGLE.map(m => ({ ...m }))); break;
+      case 'multiple': setMethods(METHODS_MULTIPLE.map(m => ({ ...m }))); break;
+    }
+  }, [methodsMockState, showMock]);
 
   const hasMockData = showMock;
   const scenario = hasMockData ? MOCK_SCENARIOS[mockState] : null;
@@ -340,7 +375,7 @@ export default function FinancePage() {
     return pages;
   }, [totalPages, currentPage]);
 
-  const handleWithdrawSuccess = useCallback((amount: number) => {
+  const handleWithdrawSuccess = useCallback((amount: number, saveMethod?: PaymentMethod) => {
     setLiveBalance(prev => prev ?? balance);
     setLiveProcessing(prev => (prev ?? processing) + amount);
     const newTx: Transaction = {
@@ -351,28 +386,97 @@ export default function FinancePage() {
       status: 'processing',
     };
     setExtraTransactions(prev => [newTx, ...prev]);
+    if (saveMethod) {
+      setMethods(prev => {
+        const newM = { ...saveMethod, id: `pm-${Date.now()}` };
+        if (prev.length === 0) return [{ ...newM, isDefault: true }];
+        return [...prev, newM];
+      });
+    }
   }, [balance, processing]);
+
+  // Method management handlers
+  const handleAddMethod = useCallback((method: PaymentMethod) => {
+    const newM = { ...method, id: `pm-${Date.now()}` };
+    setMethods(prev => {
+      if (prev.length === 0) return [{ ...newM, isDefault: true }];
+      return [...prev, newM];
+    });
+  }, []);
+
+  const handleEditMethod = useCallback((method: PaymentMethod) => {
+    setMethods(prev => prev.map(m => m.id === method.id ? method : m));
+  }, []);
+
+  const handleDeleteMethod = useCallback((id: string) => {
+    setMethods(prev => {
+      const next = prev.filter(m => m.id !== id);
+      if (next.length > 0 && !next.some(m => m.isDefault)) {
+        next[0].isDefault = true;
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSetDefault = useCallback((id: string) => {
+    setMethods(prev => prev.map(m => ({ ...m, isDefault: m.id === id })));
+  }, []);
 
   if (isPageLoading) return <PageSkeleton cards={4} />;
 
   const isPending = businessState === 'pending';
 
+  // ─── Manage Methods View ───
+  if (pageView === 'manage_methods') {
+    return (
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setPageView('main')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-lg font-semibold">Способы вывода</h2>
+        </div>
+
+        <ManageMethodsView
+          methods={methods}
+          onAdd={handleAddMethod}
+          onEdit={handleEditMethod}
+          onDelete={handleDeleteMethod}
+          onSetDefault={handleSetDefault}
+        />
+      </div>
+    );
+  }
+
+  // ─── Main Finance View ───
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Mock controls */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <MockToggle checked={showMock} onCheckedChange={setShowMock} />
         {showMock && (
-          <Select value={mockState} onValueChange={(v) => setMockState(v as MockState)}>
-            <SelectTrigger className="w-full sm:w-[260px] h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="empty">Пустое состояние</SelectItem>
-              <SelectItem value="filled_no_processing">Баланс есть, вывод = 0</SelectItem>
-              <SelectItem value="filled_with_processing">Баланс + в обработке</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Select value={mockState} onValueChange={(v) => setMockState(v as MockState)}>
+              <SelectTrigger className="w-full sm:w-[220px] h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="empty">Пустое состояние</SelectItem>
+                <SelectItem value="filled_no_processing">Баланс, вывод = 0</SelectItem>
+                <SelectItem value="filled_with_processing">Баланс + обработка</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={methodsMockState} onValueChange={(v) => setMethodsMockState(v as MethodsMockState)}>
+              <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="empty">Нет способов вывода</SelectItem>
+                <SelectItem value="single">1 способ вывода</SelectItem>
+                <SelectItem value="multiple">Несколько способов</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </div>
 
@@ -383,37 +487,47 @@ export default function FinancePage() {
         <EmptyNoData />
       ) : (
         <>
-          {/* Summary Block */}
-          <Card className="max-w-xl">
-            <CardContent className="p-5 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Доступно к выводу</p>
-                    <p className="text-3xl font-bold tracking-tight mt-0.5">{fmtMoney(available)} ₽</p>
-                  </div>
-                  {available > 0 && (
-                    <Button onClick={() => setWithdrawOpen(true)} size="sm">Запросить вывод</Button>
-                  )}
-                </div>
-                <div className="flex flex-row sm:flex-col gap-4 sm:gap-3 sm:items-end pt-1 sm:pt-0 border-t sm:border-t-0 border-border sm:min-w-[120px]">
-                  <div className="sm:text-right">
-                    <p className="text-xs text-muted-foreground">Баланс</p>
-                    <p className="text-base font-semibold mt-0.5">{fmtMoney(balance)} ₽</p>
-                  </div>
-                  {processing > 0 && (
-                    <div className="sm:text-right">
-                      <div className="flex items-center gap-1 sm:justify-end">
-                        <Lock className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">В обработке</p>
-                      </div>
-                      <p className="text-base font-semibold text-muted-foreground mt-0.5">{fmtMoney(processing)} ₽</p>
+          {/* Top blocks: Summary + Methods overview */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+            {/* Summary Block */}
+            <Card className="w-full sm:flex-1 sm:max-w-md">
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Доступно к выводу</p>
+                      <p className="text-3xl font-bold tracking-tight mt-0.5">{fmtMoney(available)} ₽</p>
                     </div>
-                  )}
+                    {available > 0 && (
+                      <Button onClick={() => setWithdrawOpen(true)} size="sm">Запросить вывод</Button>
+                    )}
+                  </div>
+                  <div className="flex flex-row sm:flex-col gap-4 sm:gap-3 sm:items-end pt-1 sm:pt-0 border-t sm:border-t-0 border-border sm:min-w-[120px]">
+                    <div className="sm:text-right">
+                      <p className="text-xs text-muted-foreground">Баланс</p>
+                      <p className="text-base font-semibold mt-0.5">{fmtMoney(balance)} ₽</p>
+                    </div>
+                    {processing > 0 && (
+                      <div className="sm:text-right">
+                        <div className="flex items-center gap-1 sm:justify-end">
+                          <Lock className="h-3 w-3 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">В обработке</p>
+                        </div>
+                        <p className="text-base font-semibold text-muted-foreground mt-0.5">{fmtMoney(processing)} ₽</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Payout Methods Overview */}
+            <PayoutMethodsOverview
+              methods={methods}
+              onManage={() => setPageView('manage_methods')}
+              onAddFirst={() => setPageView('manage_methods')}
+            />
+          </div>
 
           {/* Transactions */}
           {transactions.length === 0 ? (
@@ -545,9 +659,194 @@ export default function FinancePage() {
         open={withdrawOpen}
         onOpenChange={setWithdrawOpen}
         available={available}
+        savedMethods={methods}
         onSuccess={handleWithdrawSuccess}
       />
     </div>
+  );
+}
+
+// ─── Payout Methods Overview (compact card) ───
+
+function PayoutMethodsOverview({
+  methods,
+  onManage,
+  onAddFirst,
+}: {
+  methods: PaymentMethod[];
+  onManage: () => void;
+  onAddFirst: () => void;
+}) {
+  const defaultMethod = methods.find(m => m.isDefault) ?? methods[0];
+  const otherCount = methods.length - 1;
+
+  return (
+    <Card className="w-full sm:w-auto sm:min-w-[260px] sm:max-w-[320px]">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-muted-foreground">Способы вывода</p>
+          {methods.length > 0 && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 -mr-2" onClick={onManage}>
+              <Settings2 className="h-3.5 w-3.5" /> Управлять
+            </Button>
+          )}
+        </div>
+
+        {methods.length === 0 ? (
+          <div className="text-center py-3">
+            <p className="text-sm text-muted-foreground mb-3">Нет сохранённых способов</p>
+            <Button variant="outline" size="sm" onClick={onAddFirst}>
+              <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
+                {methodTypeIcon(defaultMethod.type)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{defaultMethod.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{defaultMethod.maskedDetails}</p>
+              </div>
+            </div>
+            {otherCount > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Ещё {otherCount} {otherCount === 1 ? 'способ' : otherCount < 5 ? 'способа' : 'способов'}
+              </p>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Manage Methods View (full inline screen) ───
+
+type ManageStep = 'list' | 'add' | 'edit';
+
+function ManageMethodsView({
+  methods,
+  onAdd,
+  onEdit,
+  onDelete,
+  onSetDefault,
+}: {
+  methods: PaymentMethod[];
+  onAdd: (m: PaymentMethod) => void;
+  onEdit: (m: PaymentMethod) => void;
+  onDelete: (id: string) => void;
+  onSetDefault: (id: string) => void;
+}) {
+  const [step, setStep] = useState<ManageStep>('list');
+  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const handleSave = (method: PaymentMethod) => {
+    if (step === 'edit' && editingMethod) {
+      onEdit({ ...method, id: editingMethod.id, isDefault: editingMethod.isDefault });
+    } else {
+      onAdd(method);
+    }
+    setStep('list');
+    setEditingMethod(null);
+  };
+
+  return (
+    <>
+      {step === 'list' ? (
+        <div className="space-y-4 max-w-lg">
+          {methods.length === 0 ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center py-4 space-y-3">
+                  <Wallet className="h-10 w-10 text-muted-foreground mx-auto" />
+                  <p className="text-sm text-muted-foreground">Нет сохранённых способов вывода</p>
+                  <Button onClick={() => { setEditingMethod(null); setStep('add'); }}>
+                    <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {methods.map((m) => (
+                  <Card key={m.id}>
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-muted shrink-0">
+                        {methodTypeIcon(m.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium truncate">{methodTypeLabel(m.type)}</span>
+                          {m.isDefault && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                              <Star className="h-3 w-3 fill-primary" /> Основной
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{m.maskedDetails}</p>
+                      </div>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {!m.isDefault && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onSetDefault(m.id)} title="Сделать основным">
+                            <Star className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingMethod(m); setStep('edit'); }} title="Изменить">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(m.id)} title="Удалить">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Button variant="outline" onClick={() => { setEditingMethod(null); setStep('add'); }}>
+                <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
+              </Button>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="max-w-lg">
+          <Card>
+            <CardContent className="p-5 sm:p-6">
+              <h3 className="text-base font-semibold mb-4">
+                {step === 'edit' ? 'Редактирование способа' : 'Новый способ вывода'}
+              </h3>
+              <MethodForm
+                initial={step === 'edit' ? editingMethod : null}
+                onSave={handleSave}
+                onCancel={() => { setStep('list'); setEditingMethod(null); }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(v) => { if (!v) setDeleteConfirmId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить способ вывода?</AlertDialogTitle>
+            <AlertDialogDescription>Сохранённые реквизиты будут удалены. Это действие нельзя отменить.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (deleteConfirmId) { onDelete(deleteConfirmId); setDeleteConfirmId(null); } }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -626,7 +925,6 @@ function CalendarBody({
   return (
     <div className="flex flex-col">
       <div className="p-3 pointer-events-auto flex-1 overflow-y-auto">
-        {/* Month/Year header */}
         <div className="flex items-center justify-between mb-3">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalMonth(prev => setMonth(prev, prev.getMonth() - 1))}>
             <ChevronLeft className="h-4 w-4" />
@@ -639,7 +937,6 @@ function CalendarBody({
           </Button>
         </div>
 
-        {/* Selection indicator */}
         <div className="flex gap-1 mb-3">
           <button
             onClick={() => setSelectingField('from')}
@@ -710,7 +1007,6 @@ function CalendarBody({
         )}
       </div>
 
-      {/* Sticky footer */}
       {!showMonthSelect && (
         <div className="flex items-center justify-between p-3 border-t border-border bg-background sticky bottom-0">
           <Button variant="ghost" size="sm" onClick={handleReset} disabled={!localFrom && !localTo && !dateFrom && !dateTo} className="text-xs">
@@ -737,7 +1033,6 @@ function PeriodPicker({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [placement, setPlacement] = useState<'bottom' | 'top'>('bottom');
 
-  // Compute placement once on open
   const handleOpen = useCallback((nextOpen: boolean) => {
     if (nextOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
@@ -821,302 +1116,444 @@ function EmptyNoData() {
   );
 }
 
-// ─── Withdraw Dialog ───
+// ─── Withdraw Dialog (restructured) ───
 
-type WithdrawStep = 'main' | 'add_method' | 'edit_method';
+type WithdrawMode = 'saved' | 'new';
 
 interface WithdrawDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   available: number;
-  onSuccess: (amount: number) => void;
+  savedMethods: PaymentMethod[];
+  onSuccess: (amount: number, saveMethod?: PaymentMethod) => void;
 }
 
-function WithdrawDialog({ open, onOpenChange, available, onSuccess }: WithdrawDialogProps) {
-  const [methods, setMethods] = useState<PaymentMethod[]>(INITIAL_METHODS);
+function WithdrawDialog({ open, onOpenChange, available, savedMethods, onSuccess }: WithdrawDialogProps) {
+  const [mode, setMode] = useState<WithdrawMode>(savedMethods.length > 0 ? 'saved' : 'new');
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
-  const [step, setStep] = useState<WithdrawStep>('main');
-  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [saveForFuture, setSaveForFuture] = useState(false);
 
-  // Auto-select default method
+  // New method form state
+  const [newMethodData, setNewMethodData] = useState<PaymentMethod | null>(null);
+  const [newMethodValid, setNewMethodValid] = useState(false);
+
   useEffect(() => {
-    if (!selectedMethodId || !methods.find(m => m.id === selectedMethodId)) {
-      const def = methods.find(m => m.isDefault) ?? methods[0];
-      setSelectedMethodId(def?.id ?? null);
+    if (open) {
+      setMode(savedMethods.length > 0 ? 'saved' : 'new');
+      setSelectedMethodId(savedMethods.find(m => m.isDefault)?.id ?? savedMethods[0]?.id ?? null);
+      setAmount('');
+      setErrors({});
+      setSubmitError(null);
+      setSubmitting(false);
+      setSaveForFuture(false);
+      setNewMethodData(null);
+      setNewMethodValid(false);
     }
-  }, [methods, selectedMethodId]);
-
-  const resetAll = () => {
-    setAmount('');
-    setStep('main');
-    setEditingMethod(null);
-    setSubmitting(false);
-    setSubmitError(null);
-    setErrors({});
-    setDeleteConfirmId(null);
-  };
-
-  const handleClose = (v: boolean) => {
-    if (!v) resetAll();
-    onOpenChange(v);
-  };
+  }, [open, savedMethods]);
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
-    const num = Number(amount);
-    if (!amount || num <= 0) e.amount = 'Введите сумму';
-    else if (num > available) e.amount = 'Сумма превышает доступную к выводу';
-    if (!selectedMethodId) e.method = 'Выберите способ вывода';
+    const numAmount = parseInt(amount, 10);
+    if (!amount || numAmount <= 0) e.amount = 'Введите сумму';
+    else if (numAmount > available) e.amount = `Максимум ${fmtMoney(available)} ₽`;
+
+    if (mode === 'saved' && !selectedMethodId) e.method = 'Выберите способ вывода';
+    if (mode === 'new' && !newMethodValid) e.method = 'Заполните реквизиты';
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async () => {
-    setSubmitError(null);
     if (!validate()) return;
     setSubmitting(true);
-    // Simulate server call
+    setSubmitError(null);
+
     await new Promise(r => setTimeout(r, 1500));
-    // 20% chance of mock error
-    if (Math.random() < 0.2) {
-      const err = MOCK_ERRORS[Math.floor(Math.random() * MOCK_ERRORS.length)];
-      setSubmitError(err);
+
+    if (Math.random() < 0.15) {
+      setSubmitError(MOCK_ERRORS[Math.floor(Math.random() * MOCK_ERRORS.length)]);
       setSubmitting(false);
       return;
     }
-    const num = Number(amount);
-    onSuccess(num);
-    setSubmitting(false);
-    handleClose(false);
-    toast.success(`Заявка на вывод ${fmtMoney(num)} ₽ создана`);
-  };
 
-  const handleSetDefault = (id: string) => {
-    setMethods(prev => prev.map(m => ({ ...m, isDefault: m.id === id })));
-  };
-
-  const handleDeleteMethod = (id: string) => {
-    setMethods(prev => {
-      const next = prev.filter(m => m.id !== id);
-      if (next.length > 0 && !next.some(m => m.isDefault)) {
-        next[0].isDefault = true;
-      }
-      return next;
-    });
-    if (selectedMethodId === id) {
-      setSelectedMethodId(null);
-    }
-    setDeleteConfirmId(null);
-  };
-
-  const handleSaveMethod = (method: PaymentMethod) => {
-    if (step === 'edit_method' && editingMethod) {
-      setMethods(prev => prev.map(m => m.id === editingMethod.id ? { ...method, id: editingMethod.id, isDefault: editingMethod.isDefault } : m));
-    } else {
-      const newMethod = { ...method, id: `pm-${Date.now()}` };
-      setMethods(prev => {
-        if (prev.length === 0) return [{ ...newMethod, isDefault: true }];
-        return [...prev, newMethod];
-      });
-      setSelectedMethodId(method.id === 'new' ? `pm-${Date.now()}` : method.id);
-    }
-    setStep('main');
-    setEditingMethod(null);
+    const numAmount = parseInt(amount, 10);
+    const methodToSave = mode === 'new' && saveForFuture && newMethodData ? newMethodData : undefined;
+    onSuccess(numAmount, methodToSave);
+    toast.success(`Заявка на вывод ${fmtMoney(numAmount)} ₽ создана`);
+    onOpenChange(false);
   };
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>
-              {step === 'main' ? 'Вывод средств' : step === 'add_method' ? 'Новый способ вывода' : 'Редактирование способа'}
-            </DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Вывод средств</DialogTitle>
+        </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto space-y-4 px-0.5">
-            {step === 'main' ? (
-              <WithdrawMainStep
-                methods={methods}
-                selectedMethodId={selectedMethodId}
-                onSelectMethod={setSelectedMethodId}
-                amount={amount}
-                onAmountChange={setAmount}
-                available={available}
-                errors={errors}
-                submitError={submitError}
-                onAddMethod={() => { setEditingMethod(null); setStep('add_method'); }}
-                onEditMethod={(m) => { setEditingMethod(m); setStep('edit_method'); }}
-                onDeleteMethod={(id) => setDeleteConfirmId(id)}
-                onSetDefault={handleSetDefault}
+        <div className="flex-1 overflow-y-auto space-y-5 px-0.5">
+          {/* Amount */}
+          <div className="space-y-1.5">
+            <Label>Сумма вывода</Label>
+            <div className="relative">
+              <Input
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={amount}
+                onChange={(e) => setAmount(cleanDigits(e.target.value))}
+                className={cn('pr-8', errors.amount && 'border-destructive')}
               />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">₽</span>
+            </div>
+            <div className="flex items-baseline gap-1 text-xs text-muted-foreground">
+              <span>Доступно: {fmtMoney(available)} ₽</span>
+              <span>·</span>
+              <button
+                type="button"
+                onClick={() => setAmount(String(available))}
+                className="text-primary hover:underline"
+              >
+                Вывести всю сумму
+              </button>
+            </div>
+            {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+          </div>
+
+          {/* Mode selector */}
+          <div className="space-y-3">
+            <Label>Реквизиты</Label>
+            {savedMethods.length > 0 && (
+              <div className="flex gap-1 rounded-lg bg-muted p-1">
+                <button
+                  onClick={() => setMode('saved')}
+                  className={cn(
+                    'flex-1 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors text-center',
+                    mode === 'saved' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Сохранённый способ
+                </button>
+                <button
+                  onClick={() => setMode('new')}
+                  className={cn(
+                    'flex-1 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors text-center',
+                    mode === 'new' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Новые реквизиты
+                </button>
+              </div>
+            )}
+
+            {mode === 'saved' ? (
+              <div className="space-y-1.5">
+                {savedMethods.map((m) => (
+                  <div
+                    key={m.id}
+                    onClick={() => setSelectedMethodId(m.id)}
+                    className={cn(
+                      'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                      selectedMethodId === m.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/30'
+                    )}
+                  >
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
+                      {methodTypeIcon(m.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium truncate">{methodTypeLabel(m.type)}</span>
+                        {m.isDefault && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                            <Star className="h-3 w-3 fill-primary" /> Основной
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">{m.maskedDetails}</p>
+                    </div>
+                  </div>
+                ))}
+                {errors.method && <p className="text-xs text-destructive">{errors.method}</p>}
+              </div>
             ) : (
-              <MethodForm
-                initial={step === 'edit_method' ? editingMethod : null}
-                onSave={handleSaveMethod}
-                onCancel={() => { setStep('main'); setEditingMethod(null); }}
-              />
+              <div className="space-y-4">
+                <InlineMethodForm
+                  onValidChange={setNewMethodValid}
+                  onDataChange={setNewMethodData}
+                />
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="save-for-future"
+                    checked={saveForFuture}
+                    onCheckedChange={(v) => setSaveForFuture(v === true)}
+                  />
+                  <label htmlFor="save-for-future" className="text-sm text-muted-foreground cursor-pointer select-none">
+                    Сохранить для будущих выплат
+                  </label>
+                </div>
+                {errors.method && <p className="text-xs text-destructive">{errors.method}</p>}
+              </div>
             )}
           </div>
 
-          {step === 'main' && (
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button variant="outline" onClick={() => handleClose(false)}>Отмена</Button>
-              <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-                Вывести
-              </Button>
-            </DialogFooter>
+          {submitError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              <p className="text-sm text-destructive">{submitError}</p>
+            </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
 
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={(v) => { if (!v) setDeleteConfirmId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Удалить способ вывода?</AlertDialogTitle>
-            <AlertDialogDescription>Сохранённые реквизиты будут удалены. Это действие нельзя отменить.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteConfirmId && handleDeleteMethod(deleteConfirmId)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Удалить
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Отмена</Button>
+          <Button onClick={handleSubmit} disabled={submitting}>
+            {submitting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+            Вывести
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// ─── Withdraw Main Step ───
+// ─── Inline Method Form (for withdraw dialog "new" mode) ───
 
-function WithdrawMainStep({
-  methods, selectedMethodId, onSelectMethod,
-  amount, onAmountChange, available, errors, submitError,
-  onAddMethod, onEditMethod, onDeleteMethod, onSetDefault,
+function InlineMethodForm({
+  onValidChange,
+  onDataChange,
 }: {
-  methods: PaymentMethod[];
-  selectedMethodId: string | null;
-  onSelectMethod: (id: string) => void;
-  amount: string;
-  onAmountChange: (v: string) => void;
-  available: number;
-  errors: Record<string, string>;
-  submitError: string | null;
-  onAddMethod: () => void;
-  onEditMethod: (m: PaymentMethod) => void;
-  onDeleteMethod: (id: string) => void;
-  onSetDefault: (id: string) => void;
+  onValidChange: (valid: boolean) => void;
+  onDataChange: (data: PaymentMethod | null) => void;
 }) {
+  const [type, setType] = useState<PaymentMethodType>('sbp');
+
+  // SBP
+  const [phone, setPhone] = useState('');
+  const [bankId, setBankId] = useState('');
+  const [bankSearch, setBankSearch] = useState('');
+
+  // Card
+  const [cardNumber, setCardNumber] = useState('');
+  const [holderName, setHolderName] = useState('');
+
+  // Account
+  const [bik, setBik] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [bikResult, setBikResult] = useState<{ found: boolean; bankName?: string } | null>(null);
+
+  useEffect(() => {
+    if (bik.length === 9) setBikResult(lookupBik(bik));
+    else setBikResult(null);
+  }, [bik]);
+
+  const filteredBanks = useMemo(() => {
+    if (!bankSearch) return MOCK_SBP_BANKS;
+    const q = bankSearch.toLowerCase();
+    return MOCK_SBP_BANKS.filter(b => b.name_rus.toLowerCase().includes(q));
+  }, [bankSearch]);
+
+  const selectedBank = MOCK_SBP_BANKS.find(b => b.bank_sbp_id === bankId);
+
+  // Validate and propagate
+  useEffect(() => {
+    let valid = false;
+    let method: PaymentMethod | null = null;
+
+    if (type === 'sbp' && phone.length === 11 && bankId) {
+      valid = true;
+      const bank = MOCK_SBP_BANKS.find(b => b.bank_sbp_id === bankId)!;
+      method = {
+        id: 'new',
+        type: 'sbp',
+        title: `СБП · ${bank.name_rus}`,
+        maskedDetails: `${maskPhone(phone)} · ${bank.name_rus}`,
+        isDefault: false,
+        data: { phone, bank_sbp_id: bankId },
+      };
+    } else if (type === 'card' && cardNumber.length >= 13 && holderName.trim()) {
+      valid = true;
+      method = {
+        id: 'new',
+        type: 'card',
+        title: `Карта · *${cardNumber.slice(-4)}`,
+        maskedDetails: maskCard(cardNumber),
+        isDefault: false,
+        data: { cardNumber, holderName },
+      };
+    } else if (type === 'account' && bik.length === 9 && bikResult?.found && accountNumber.length === 20) {
+      valid = true;
+      method = {
+        id: 'new',
+        type: 'account',
+        title: `Счёт · ${bikResult.bankName}`,
+        maskedDetails: `${maskAccount(accountNumber)} · ${bikResult.bankName}`,
+        isDefault: false,
+        data: { bik, accountNumber },
+      };
+    }
+
+    onValidChange(valid);
+    onDataChange(method);
+  }, [type, phone, bankId, cardNumber, holderName, bik, accountNumber, bikResult, onValidChange, onDataChange]);
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let digits = cleanDigits(e.target.value);
+    if (digits.length > 0 && digits[0] === '8') digits = '7' + digits.slice(1);
+    if (digits.length === 0) { setPhone(''); return; }
+    if (digits[0] !== '7') digits = '7' + digits;
+    setPhone(digits.slice(0, 11));
+  };
+
   return (
-    <div className="space-y-5">
-      {/* Amount */}
-      <div className="space-y-1.5">
-        <Label>Сумма вывода</Label>
-        <div className="relative">
-          <Input
-            type="text"
-            inputMode="numeric"
-            placeholder="0"
-            value={amount}
-            onChange={(e) => onAmountChange(cleanDigits(e.target.value))}
-            className={cn('pr-8', errors.amount && 'border-destructive')}
-          />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">₽</span>
-        </div>
-        <div className="flex items-baseline gap-1 text-xs text-muted-foreground">
-          <span>Доступно к выводу: {fmtMoney(available)} ₽</span>
-          <span>·</span>
-          <button
-            type="button"
-            onClick={() => onAmountChange(String(available))}
-            className="text-primary hover:underline"
-          >
-            Вывести всю сумму
-          </button>
-        </div>
-        {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
-      </div>
+    <div className="space-y-3">
+      <Tabs value={type} onValueChange={(v) => setType(v as PaymentMethodType)}>
+        <TabsList className="w-full">
+          <TabsTrigger value="sbp" className="flex-1 text-xs sm:text-sm gap-1.5">
+            <img src={sbpLogo} alt="СБП" className="h-4 w-4 object-contain" loading="lazy" />
+            СБП
+          </TabsTrigger>
+          <TabsTrigger value="card" className="flex-1 text-xs sm:text-sm gap-1.5">
+            <CreditCard className="h-3.5 w-3.5" />
+            Карта
+          </TabsTrigger>
+          <TabsTrigger value="account" className="flex-1 text-xs sm:text-sm gap-1.5">
+            <Building2 className="h-3.5 w-3.5" />
+            Счёт
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-      {/* Payment methods */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>Способ вывода</Label>
-          <Button variant="ghost" size="sm" onClick={onAddMethod} className="h-7 text-xs gap-1">
-            <Plus className="h-3.5 w-3.5" /> Добавить
-          </Button>
-        </div>
-
-        {methods.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-6 text-center">
-            <p className="text-sm text-muted-foreground mb-3">Нет сохранённых способов вывода</p>
-            <Button variant="outline" size="sm" onClick={onAddMethod}>
-              <Plus className="h-4 w-4 mr-1.5" /> Добавить способ
-            </Button>
-          </div>
-        ) : (
+      {type === 'sbp' && (
+        <div className="space-y-3">
           <div className="space-y-1.5">
-            {methods.map((m) => (
-              <div
-                key={m.id}
-                onClick={() => onSelectMethod(m.id)}
-                className={cn(
-                  'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
-                  selectedMethodId === m.id
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/30'
-                )}
-              >
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
-                  {methodTypeIcon(m.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium truncate">{methodTypeLabel(m.type)}</span>
-                    {m.isDefault && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
-                        <Star className="h-3 w-3 fill-primary" /> Основной
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">{m.maskedDetails}</p>
-                </div>
-                <div className="flex items-center gap-0.5 shrink-0">
-                  {!m.isDefault && (
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onSetDefault(m.id); }} title="Сделать основным">
-                      <Star className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onEditMethod(m); }} title="Изменить">
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDeleteMethod(m.id); }} title="Удалить">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+            <Label>Телефон</Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="+7 900 000 00 00"
+              value={phone ? formatPhone(phone) : ''}
+              onChange={handlePhoneChange}
+            />
           </div>
-        )}
-        {errors.method && <p className="text-xs text-destructive">{errors.method}</p>}
-      </div>
+          <div className="space-y-1.5">
+            <Label>Банк получателя</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn('w-full justify-between font-normal', !bankId && 'text-muted-foreground')}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    {bankId && <img src={sbpLogo} alt="" className="h-4 w-4 object-contain shrink-0" loading="lazy" />}
+                    <span className="truncate">{selectedBank?.name_rus ?? 'Выберите банк'}</span>
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <div className="p-2 border-b border-border">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Поиск банка..."
+                      value={bankSearch}
+                      onChange={(e) => setBankSearch(e.target.value)}
+                      className="pl-8 h-8 text-sm"
+                    />
+                  </div>
+                </div>
+                <ScrollArea className="max-h-[200px]">
+                  <div className="p-1">
+                    {filteredBanks.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">Банк СБП не найден</p>
+                    ) : filteredBanks.map((b) => (
+                      <button
+                        key={b.bank_sbp_id}
+                        onClick={() => { setBankId(b.bank_sbp_id); setBankSearch(''); }}
+                        className={cn(
+                          'w-full text-left px-2 py-1.5 text-sm rounded-sm transition-colors flex items-center gap-2',
+                          bankId === b.bank_sbp_id ? 'bg-accent' : 'hover:bg-accent/50'
+                        )}
+                      >
+                        <img src={sbpLogo} alt="" className="h-3.5 w-3.5 object-contain shrink-0" loading="lazy" />
+                        {b.name_rus}
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      )}
 
-      {submitError && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-          <p className="text-sm text-destructive">{submitError}</p>
+      {type === 'card' && (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>Номер карты</Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="0000 0000 0000 0000"
+              maxLength={19}
+              value={formatCard(cardNumber)}
+              onChange={(e) => setCardNumber(cleanDigits(e.target.value).slice(0, 16))}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>ФИО получателя</Label>
+            <Input
+              placeholder="Иванов Иван Иванович"
+              value={holderName}
+              onChange={(e) => setHolderName(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
+      {type === 'account' && (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>БИК</Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="044525104"
+              maxLength={9}
+              value={bik}
+              onChange={(e) => setBik(cleanDigits(e.target.value).slice(0, 9))}
+            />
+            {bik.length === 9 && bikResult && (
+              bikResult.found ? (
+                <p className="text-xs text-emerald-600">{bikResult.bankName}</p>
+              ) : (
+                <p className="text-xs text-destructive">Банк с таким БИК не найден</p>
+              )
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>Номер счёта</Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              placeholder="40702810000000005220"
+              maxLength={20}
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(cleanDigits(e.target.value).slice(0, 20))}
+            />
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-// ─── Method Form (Add / Edit) ───
+// ─── Method Form (for manage methods: add/edit) ───
 
 function MethodForm({
   initial,
@@ -1130,27 +1567,20 @@ function MethodForm({
   const [type, setType] = useState<PaymentMethodType>(initial?.type ?? 'sbp');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // SBP fields
   const [phone, setPhone] = useState(initial?.data?.phone ?? '');
   const [bankId, setBankId] = useState(initial?.data?.bank_sbp_id ?? '');
   const [bankSearch, setBankSearch] = useState('');
 
-  // Card fields
   const [cardNumber, setCardNumber] = useState(initial?.data?.cardNumber ?? '');
   const [holderName, setHolderName] = useState(initial?.data?.holderName ?? '');
 
-  // Account fields
   const [bik, setBik] = useState(initial?.data?.bik ?? '');
   const [accountNumber, setAccountNumber] = useState(initial?.data?.accountNumber ?? '');
   const [bikResult, setBikResult] = useState<{ found: boolean; bankName?: string } | null>(null);
 
-  // BIK lookup
   useEffect(() => {
-    if (bik.length === 9) {
-      setBikResult(lookupBik(bik));
-    } else {
-      setBikResult(null);
-    }
+    if (bik.length === 9) setBikResult(lookupBik(bik));
+    else setBikResult(null);
   }, [bik]);
 
   const filteredBanks = useMemo(() => {
@@ -1220,7 +1650,6 @@ function MethodForm({
 
   return (
     <div className="space-y-4">
-      {/* Type selector */}
       {!initial && (
         <Tabs value={type} onValueChange={(v) => { setType(v as PaymentMethodType); setErrors({}); }}>
           <TabsList className="w-full">
@@ -1240,14 +1669,12 @@ function MethodForm({
         </Tabs>
       )}
 
-      {/* Type label when editing */}
       {initial && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {methodTypeIcon(type)} {methodTypeLabel(type)}
         </div>
       )}
 
-      {/* Fields per type */}
       {type === 'sbp' && (
         <div className="space-y-3">
           <div className="space-y-1.5">
@@ -1381,7 +1808,6 @@ function MethodForm({
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex gap-2 pt-2">
         <Button variant="outline" onClick={onCancel} className="flex-1">Отмена</Button>
         <Button onClick={handleSave} className="flex-1">Сохранить</Button>

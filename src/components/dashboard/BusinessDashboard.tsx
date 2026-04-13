@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   ChartContainer,
   ChartTooltip,
@@ -23,8 +29,13 @@ import {
   ChevronRight,
   Clock,
   BatteryCharging,
+  CalendarIcon,
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import type { Station, ChargingSession } from '@/types';
+import type { DateRange } from 'react-day-picker';
 
 // --- Period filter ---
 type PeriodKey = 'today' | '7d' | '30d' | 'custom';
@@ -38,7 +49,7 @@ const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
 // --- Mock aggregated data per period ---
 interface AggregatedData {
   revenue: number;
-  revenueDelta: number; // percent vs previous period
+  revenueDelta: number;
   energyKwh: number;
   sessionsCount: number;
   chartData: { label: string; revenue: number; energy: number }[];
@@ -90,6 +101,19 @@ const MOCK_AGGREGATED: Record<Exclude<PeriodKey, 'custom'>, AggregatedData> = {
   },
 };
 
+const MOCK_CUSTOM_AGGREGATED: AggregatedData = {
+  revenue: 156_800,
+  revenueDelta: 7,
+  energyKwh: 11_200,
+  sessionsCount: 580,
+  chartData: [
+    { label: 'Нед 1', revenue: 38000, energy: 2714 },
+    { label: 'Нед 2', revenue: 42000, energy: 3000 },
+    { label: 'Нед 3', revenue: 39800, energy: 2843 },
+    { label: 'Нед 4', revenue: 37000, energy: 2643 },
+  ],
+};
+
 // --- Chart config ---
 const revenueChartConfig: ChartConfig = {
   revenue: { label: 'Выручка, ₽', color: 'hsl(var(--primary))' },
@@ -132,17 +156,10 @@ export const BusinessDashboard = memo(function BusinessDashboard({
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [chartMetric, setChartMetric] = useState<ChartMetric>('revenue');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const agg = MOCK_AGGREGATED[period === 'custom' ? 'today' : period];
-
-  const deltaLabel = useMemo(() => {
-    switch (period) {
-      case 'today': return 'к вчера';
-      case '7d': return 'к прошлым 7 дням';
-      case '30d': return 'к прошлым 30 дням';
-      case 'custom': return 'к прошлому периоду';
-    }
-  }, [period]);
+  const agg = period === 'custom' ? MOCK_CUSTOM_AGGREGATED : MOCK_AGGREGATED[period];
 
   // --- Live metrics ---
   const onlineCount = stations.filter(
@@ -154,62 +171,110 @@ export const BusinessDashboard = memo(function BusinessDashboard({
   const problemStations = [...offlineStations, ...errorStations];
   const hasProblems = problemStations.length > 0;
 
-  // Active sessions limited to 5
   const visibleSessions = activeSessions.slice(0, 5);
-
-  // Problem stations limited to 5
   const visibleProblems = problemStations.slice(0, 5);
+
+  const handlePeriodClick = (key: PeriodKey) => {
+    if (key === 'custom') {
+      setPeriod('custom');
+      setCalendarOpen(true);
+    } else {
+      setPeriod(key);
+      setDateRange(undefined);
+    }
+  };
+
+  const customLabel = useMemo(() => {
+    if (dateRange?.from && dateRange?.to) {
+      return `${format(dateRange.from, 'd MMM', { locale: ru })} – ${format(dateRange.to, 'd MMM', { locale: ru })}`;
+    }
+    return 'Свой период';
+  }, [dateRange]);
 
   return (
     <div className="space-y-6">
       {/* ── Period filter ── */}
       <div className="flex flex-wrap items-center gap-2">
         {PERIOD_OPTIONS.map((opt) => (
-          <Button
-            key={opt.key}
-            size="sm"
-            variant={period === opt.key ? 'default' : 'outline'}
-            onClick={() => setPeriod(opt.key)}
-            className="whitespace-nowrap"
-          >
-            {opt.label}
-          </Button>
+          opt.key === 'custom' ? (
+            <Popover key={opt.key} open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant={period === 'custom' ? 'default' : 'outline'}
+                  onClick={() => handlePeriodClick('custom')}
+                  className="whitespace-nowrap gap-1.5"
+                >
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {period === 'custom' ? customLabel : opt.label}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={(range) => {
+                    setDateRange(range);
+                    if (range?.from && range?.to) {
+                      setCalendarOpen(false);
+                    }
+                  }}
+                  numberOfMonths={1}
+                  disabled={(date) => date > new Date()}
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <Button
+              key={opt.key}
+              size="sm"
+              variant={period === opt.key ? 'default' : 'outline'}
+              onClick={() => handlePeriodClick(opt.key)}
+              className="whitespace-nowrap"
+            >
+              {opt.label}
+            </Button>
+          )
         ))}
       </div>
 
       {/* ── KPI ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {/* Revenue — hero */}
-        <Card className="sm:col-span-2 lg:col-span-1">
-          <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Выручка</p>
-            <p className="mt-1 text-2xl font-bold">{formatRub(agg.revenue)}</p>
-            <DeltaBadge value={agg.revenueDelta} label={deltaLabel} />
-          </CardContent>
-        </Card>
+      <div className="space-y-1.5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {/* Revenue — hero */}
+          <Card className="sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Выручка</p>
+              <p className="mt-1 text-2xl font-bold">{formatRub(agg.revenue)}</p>
+              <DeltaBadge value={agg.revenueDelta} />
+            </CardContent>
+          </Card>
 
-        <KpiCard
-          label="Продано энергии"
-          value={formatKwh(agg.energyKwh)}
-          icon={Zap}
-        />
-        <KpiCard
-          label="Сессий за период"
-          value={agg.sessionsCount.toLocaleString('ru-RU')}
-          icon={Activity}
-        />
-        <KpiCard
-          label="Активные сессии"
-          value={String(activeSessions.length)}
-          icon={BatteryCharging}
-          onClick={() => navigate('/sessions')}
-        />
-        <KpiCard
-          label="В сети / всего"
-          value={`${onlineCount} / ${totalCount}`}
-          icon={Radio}
-          onClick={() => navigate('/stations')}
-        />
+          <KpiCard
+            label="Продано энергии"
+            value={formatKwh(agg.energyKwh)}
+            icon={Zap}
+          />
+          <KpiCard
+            label="Сессий за период"
+            value={agg.sessionsCount.toLocaleString('ru-RU')}
+            icon={Activity}
+          />
+          <KpiCard
+            label="Активные сессии"
+            value={String(activeSessions.length)}
+            icon={BatteryCharging}
+            onClick={() => navigate('/sessions')}
+          />
+          <KpiCard
+            label="В сети / всего"
+            value={`${onlineCount} / ${totalCount}`}
+            icon={Radio}
+            onClick={() => navigate('/stations')}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground px-1">Сравнение с предыдущим периодом</p>
       </div>
 
       {/* ── Attention ── */}
@@ -291,7 +356,6 @@ export const BusinessDashboard = memo(function BusinessDashboard({
 
       {/* ── Bottom: Active Sessions + Problem Stations ── */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Active sessions */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -346,7 +410,6 @@ export const BusinessDashboard = memo(function BusinessDashboard({
           </CardContent>
         </Card>
 
-        {/* Problem stations */}
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -442,7 +505,7 @@ function KpiCard({
   );
 }
 
-function DeltaBadge({ value, label }: { value: number; label: string }) {
+function DeltaBadge({ value }: { value: number }) {
   const positive = value >= 0;
   return (
     <div className="mt-1.5 flex items-center gap-1 text-xs">
@@ -455,7 +518,6 @@ function DeltaBadge({ value, label }: { value: number; label: string }) {
         {positive ? '+' : ''}
         {value}%
       </span>
-      <span className="text-muted-foreground">{label}</span>
     </div>
   );
 }

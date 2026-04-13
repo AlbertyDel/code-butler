@@ -406,14 +406,14 @@ export default function DashboardPage() {
           title="Всего сессий"
           value={statistics.totalSessions}
           icon={Zap}
-          trend={{ value: 12, label: 'за месяц' }}
+          trend={{ value: 12, label: 'к прошлому месяцу' }}
         />
         <StatCard
           title="Энергии получено"
           value={statistics.totalEnergyKwh}
           unit="кВт·ч"
           icon={TrendingUp}
-          trend={{ value: 8, label: 'за месяц' }}
+          trend={{ value: 8, label: 'к прошлому месяцу' }}
         />
         <StatCard
           title="Всего станций"

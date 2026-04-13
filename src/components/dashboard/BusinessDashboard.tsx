@@ -135,6 +135,15 @@ export const BusinessDashboard = memo(function BusinessDashboard({
 
   const agg = MOCK_AGGREGATED[period === 'custom' ? 'today' : period];
 
+  const deltaLabel = useMemo(() => {
+    switch (period) {
+      case 'today': return 'к вчера';
+      case '7d': return 'к прошлым 7 дням';
+      case '30d': return 'к прошлым 30 дням';
+      case 'custom': return 'к прошлому периоду';
+    }
+  }, [period]);
+
   // --- Live metrics ---
   const onlineCount = stations.filter(
     (s) => s.status === 'available' || s.status === 'charging'
@@ -175,7 +184,7 @@ export const BusinessDashboard = memo(function BusinessDashboard({
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Выручка</p>
             <p className="mt-1 text-2xl font-bold">{formatRub(agg.revenue)}</p>
-            <DeltaBadge value={agg.revenueDelta} />
+            <DeltaBadge value={agg.revenueDelta} label={deltaLabel} />
           </CardContent>
         </Card>
 
@@ -433,7 +442,7 @@ function KpiCard({
   );
 }
 
-function DeltaBadge({ value }: { value: number }) {
+function DeltaBadge({ value, label }: { value: number; label: string }) {
   const positive = value >= 0;
   return (
     <div className="mt-1.5 flex items-center gap-1 text-xs">
@@ -446,7 +455,7 @@ function DeltaBadge({ value }: { value: number }) {
         {positive ? '+' : ''}
         {value}%
       </span>
-      <span className="text-muted-foreground">к пред. периоду</span>
+      <span className="text-muted-foreground">{label}</span>
     </div>
   );
 }

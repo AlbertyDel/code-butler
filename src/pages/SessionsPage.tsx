@@ -141,25 +141,30 @@ const ActiveSessionRowCard = memo(function ActiveSessionRowCard({
             {station && (
               <p className="text-sm text-muted-foreground truncate">{station.address}</p>
             )}
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {formatDuration(session.startTime)}
-              </span>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-0">
                 <BatteryCharging className="h-3 w-3 mr-1" />
                 Активна
               </Badge>
             </div>
           </div>
-          <div className="text-right shrink-0 space-y-1">
-            <p className="text-lg font-semibold flex items-center gap-1">
-              <Zap className="h-4 w-4 text-primary" />
-              {Number(session.energyKwh).toFixed(1)} кВт·ч
-            </p>
-            {session.currentKw != null && (
-              <p className="text-xs text-muted-foreground">{session.currentKw} кВт</p>
-            )}
+          <div className="text-right shrink-0">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-xs text-muted-foreground">Время</p>
+                <p className="text-sm font-semibold">{formatDuration(session.startTime)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Энергия</p>
+                <p className="text-sm font-semibold">{Number(session.energyKwh).toFixed(1)} кВт·ч</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Мощность</p>
+                <p className="text-sm font-semibold">
+                  {session.currentKw != null ? `${session.currentKw} кВт` : '—'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>

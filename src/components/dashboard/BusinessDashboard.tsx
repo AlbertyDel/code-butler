@@ -23,11 +23,8 @@ import {
   Radio,
   AlertTriangle,
   WifiOff,
-  ArrowRight,
   TrendingUp,
   TrendingDown,
-  ChevronRight,
-  Clock,
   BatteryCharging,
   CalendarIcon,
 } from 'lucide-react';
@@ -131,13 +128,6 @@ function formatRub(v: number) {
 function formatKwh(v: number) {
   return v.toLocaleString('ru-RU') + ' кВт·ч';
 }
-function durationSince(iso: string) {
-  const ms = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(ms / 60000);
-  const h = Math.floor(m / 60);
-  if (h > 0) return `${h} ч ${m % 60} мин`;
-  return `${m} мин`;
-}
 
 // ============================================================
 // Component
@@ -171,9 +161,6 @@ export const BusinessDashboard = memo(function BusinessDashboard({
   const problemStations = [...offlineStations, ...errorStations];
   const hasProblems = problemStations.length > 0;
 
-  const visibleSessions = activeSessions.slice(0, 5);
-  const visibleProblems = problemStations.slice(0, 5);
-
   const handlePeriodClick = (key: PeriodKey) => {
     if (key === 'custom') {
       setPeriod('custom');
@@ -190,6 +177,10 @@ export const BusinessDashboard = memo(function BusinessDashboard({
     }
     return 'Свой период';
   }, [dateRange]);
+
+  // Preview of problem station names (max 3)
+  const problemPreviewNames = problemStations.slice(0, 3).map((s) => s.name);
+  const problemRemaining = problemStations.length - problemPreviewNames.length;
 
   return (
     <div className="space-y-6">
@@ -240,41 +231,40 @@ export const BusinessDashboard = memo(function BusinessDashboard({
       </div>
 
       {/* ── KPI ── */}
-      <div className="space-y-1.5">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {/* Revenue — hero */}
-          <Card className="sm:col-span-2 lg:col-span-1">
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Выручка</p>
-              <p className="mt-1 text-2xl font-bold">{formatRub(agg.revenue)}</p>
-              <DeltaBadge value={agg.revenueDelta} />
-            </CardContent>
-          </Card>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Revenue — hero */}
+        <Card className="sm:col-span-2 lg:col-span-1">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Выручка</p>
+            <p className="mt-1 text-2xl font-bold">{formatRub(agg.revenue)}</p>
+            <DeltaBadge value={agg.revenueDelta} />
+          </CardContent>
+        </Card>
 
-          <KpiCard
-            label="Продано энергии"
-            value={formatKwh(agg.energyKwh)}
-            icon={Zap}
-          />
-          <KpiCard
-            label="Сессий за период"
-            value={agg.sessionsCount.toLocaleString('ru-RU')}
-            icon={Activity}
-          />
-          <KpiCard
-            label="Активные сессии"
-            value={String(activeSessions.length)}
-            icon={BatteryCharging}
-            onClick={() => navigate('/sessions')}
-          />
-          <KpiCard
-            label="В сети / всего"
-            value={`${onlineCount} / ${totalCount}`}
-            icon={Radio}
-            onClick={() => navigate('/stations')}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground px-1">Сравнение с предыдущим периодом</p>
+        <KpiCard
+          label="Продано энергии"
+          value={formatKwh(agg.energyKwh)}
+          icon={Zap}
+        />
+        <KpiCard
+          label="Сессий за период"
+          value={agg.sessionsCount.toLocaleString('ru-RU')}
+          icon={Activity}
+        />
+        <KpiCard
+          label="Активные сессии"
+          value={String(activeSessions.length)}
+          icon={BatteryCharging}
+          onClick={() => navigate('/sessions')}
+          ctaText="Открыть сессии"
+        />
+        <KpiCard
+          label="В сети / всего"
+          value={`${onlineCount} / ${totalCount}`}
+          icon={Radio}
+          onClick={() => navigate('/stations')}
+          ctaText="Открыть станции"
+        />
       </div>
 
       {/* ── Attention ── */}
@@ -288,22 +278,39 @@ export const BusinessDashboard = memo(function BusinessDashboard({
               Проблем нет
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm font-medium">Требует внимания</p>
-              {offlineStations.length > 0 && (
-                <AttentionRow
-                  icon={WifiOff}
-                  text={`${offlineStations.length} ${pluralStations(offlineStations.length)} не в сети`}
-                  onClick={() => navigate('/stations')}
-                />
-              )}
-              {errorStations.length > 0 && (
-                <AttentionRow
-                  icon={AlertTriangle}
-                  text={`${errorStations.length} ${pluralStations(errorStations.length)} с ошибкой`}
-                  onClick={() => navigate('/stations')}
-                />
-              )}
+
+              {/* Summary lines */}
+              <div className="space-y-1">
+                {offlineStations.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <WifiOff className="h-4 w-4 text-destructive shrink-0" />
+                    <span>{offlineStations.length} {pluralStations(offlineStations.length)} не в сети</span>
+                  </div>
+                )}
+                {errorStations.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                    <span>{errorStations.length} {pluralStations(errorStations.length)} с ошибкой</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Preview names */}
+              <p className="text-xs text-muted-foreground">
+                {problemPreviewNames.join(', ')}
+                {problemRemaining > 0 && ` +${problemRemaining} ещё`}
+              </p>
+
+              {/* Single CTA */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/stations')}
+              >
+                Открыть станции
+              </Button>
             </div>
           )}
         </CardContent>
@@ -353,116 +360,6 @@ export const BusinessDashboard = memo(function BusinessDashboard({
           </ChartContainer>
         </CardContent>
       </Card>
-
-      {/* ── Bottom: Active Sessions + Problem Stations ── */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Активные сессии</CardTitle>
-              {activeSessions.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 text-xs"
-                  onClick={() => navigate('/sessions')}
-                >
-                  Все
-                  <ArrowRight className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {activeSessions.length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Нет активных сессий
-              </p>
-            ) : (
-              <div className="divide-y">
-                {visibleSessions.map((s) => {
-                  const station = stations.find((st) => st.id === s.stationId);
-                  return (
-                    <div key={s.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {station?.name || s.stationId}
-                        </p>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {durationSince(s.startTime)}
-                          </span>
-                          <span>{Number(s.energyKwh).toFixed(1)} кВт·ч</span>
-                          {s.currentKw != null && (
-                            <span>{s.currentKw} кВт</span>
-                          )}
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-sm font-medium">
-                        {formatRub(s.cost)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Проблемные станции</CardTitle>
-              {problemStations.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1 text-xs"
-                  onClick={() => navigate('/stations')}
-                >
-                  Все
-                  <ArrowRight className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {problemStations.length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Все станции работают
-              </p>
-            ) : (
-              <div className="divide-y">
-                {visibleProblems.map((st) => (
-                  <div
-                    key={st.id}
-                    className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0 cursor-pointer hover:bg-accent/50 -mx-2 px-2 rounded-lg transition-colors"
-                    onClick={() => navigate('/stations')}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{st.name}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground truncate">
-                        {st.address}
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={
-                        st.status === 'offline'
-                          ? 'border-destructive/30 bg-destructive/10 text-destructive'
-                          : 'border-orange-300 bg-orange-50 text-orange-700'
-                      }
-                    >
-                      {st.status === 'offline' ? 'Не в сети' : 'Ошибка'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 });
@@ -474,11 +371,13 @@ function KpiCard({
   value,
   icon: Icon,
   onClick,
+  ctaText,
 }: {
   label: string;
   value: string;
   icon: React.ElementType;
   onClick?: () => void;
+  ctaText?: string;
 }) {
   return (
     <Card
@@ -495,10 +394,8 @@ function KpiCard({
             <Icon className="h-4 w-4 text-primary" />
           </div>
         </div>
-        {onClick && (
-          <div className="mt-2 flex items-center gap-0.5 text-xs text-primary">
-            Подробнее <ChevronRight className="h-3 w-3" />
-          </div>
+        {onClick && ctaText && (
+          <p className="mt-2 text-xs text-primary">{ctaText}</p>
         )}
       </CardContent>
     </Card>
@@ -519,27 +416,6 @@ function DeltaBadge({ value }: { value: number }) {
         {value}%
       </span>
     </div>
-  );
-}
-
-function AttentionRow({
-  icon: Icon,
-  text,
-  onClick,
-}: {
-  icon: React.ElementType;
-  text: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-left hover:bg-accent/50 transition-colors"
-      onClick={onClick}
-    >
-      <Icon className="h-4 w-4 text-destructive shrink-0" />
-      <span className="flex-1">{text}</span>
-      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-    </button>
   );
 }
 

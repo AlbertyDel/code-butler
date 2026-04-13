@@ -10,6 +10,7 @@ import { useMockToggle } from '@/hooks/useMockToggle';
 import { useStations } from '@/hooks/useStations';
 import { useSessions } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, 
@@ -139,6 +140,133 @@ const MOCK_COMPLETED_SESSIONS: ChargingSession[] = [
   },
 ];
 
+// ── Business mock data (mode A) ──
+const MOCK_BUSINESS_STATIONS: Station[] = [
+  {
+    id: 'biz-station-1',
+    name: 'ТЦ Мега Парковка B2',
+    address: 'ул. Ленина, 42',
+    latitude: 55.75,
+    longitude: 37.62,
+    status: 'charging',
+    connectors: [{ id: 'bc1', stationId: 'biz-station-1', type: 'CCS', powerKw: 150, status: 'charging' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 35, port0: 40, port1: 38, internal: 42 },
+    stats: { energyTodayKwh: 120, sessionsToday: 5, totalSessions: 342, totalEnergyKwh: 8500, totalHours: 1200 },
+  },
+  {
+    id: 'biz-station-2',
+    name: 'Офис Центральный',
+    address: 'пр. Мира, 15',
+    latitude: 55.76,
+    longitude: 37.63,
+    status: 'available',
+    connectors: [{ id: 'bc2', stationId: 'biz-station-2', type: 'Type2', powerKw: 22, status: 'available' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 30, port0: 35, port1: 33, internal: 37 },
+    stats: { energyTodayKwh: 45, sessionsToday: 3, totalSessions: 156, totalEnergyKwh: 3200, totalHours: 600 },
+  },
+  {
+    id: 'biz-station-3',
+    name: 'АЗС Лукойл #47',
+    address: 'Каширское шоссе, 61',
+    latitude: 55.65,
+    longitude: 37.64,
+    status: 'offline',
+    connectors: [{ id: 'bc3', stationId: 'biz-station-3', type: 'CHAdeMO', powerKw: 50, status: 'available' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 28, port0: 32, port1: 30, internal: 34 },
+    stats: { energyTodayKwh: 0, sessionsToday: 0, totalSessions: 210, totalEnergyKwh: 5100, totalHours: 900 },
+  },
+  {
+    id: 'biz-station-4',
+    name: 'Парковка Сити Молл',
+    address: 'ул. Профсоюзная, 22',
+    latitude: 55.68,
+    longitude: 37.57,
+    status: 'maintenance',
+    connectors: [{ id: 'bc4', stationId: 'biz-station-4', type: 'CCS', powerKw: 100, status: 'available' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 55, port0: 60, port1: 58, internal: 62 },
+    stats: { energyTodayKwh: 12, sessionsToday: 1, totalSessions: 89, totalEnergyKwh: 2100, totalHours: 400 },
+  },
+  {
+    id: 'biz-station-5',
+    name: 'ЖК Солнечный',
+    address: 'Бульвар Дмитрия Донского, 8',
+    latitude: 55.59,
+    longitude: 37.58,
+    status: 'available',
+    connectors: [{ id: 'bc5', stationId: 'biz-station-5', type: 'Type2', powerKw: 22, status: 'available' }],
+    ownerId: 'user-1',
+    createdAt: new Date().toISOString(),
+    electrical: { voltagePhase1: 230, voltagePhase2: 230, voltagePhase3: 230, phases: 3, maxCurrentA: 32, relayState: 'on' },
+    temperature: { inputContacts: 25, port0: 28, port1: 26, internal: 30 },
+    stats: { energyTodayKwh: 67, sessionsToday: 4, totalSessions: 178, totalEnergyKwh: 4200, totalHours: 750 },
+  },
+];
+
+const MOCK_BUSINESS_ACTIVE_SESSIONS: ChargingSession[] = [
+  {
+    id: 'biz-session-1',
+    stationId: 'biz-station-1',
+    connectorId: 'bc1',
+    userId: 'user-ext-1',
+    startTime: new Date(Date.now() - 45 * 60000).toISOString(),
+    energyKwh: 32.4,
+    cost: 486,
+    status: 'active',
+    currentAmps: 32,
+    currentKw: 22.1,
+  },
+  {
+    id: 'biz-session-2',
+    stationId: 'biz-station-2',
+    connectorId: 'bc2',
+    userId: 'user-ext-2',
+    startTime: new Date(Date.now() - 120 * 60000).toISOString(),
+    energyKwh: 18.7,
+    cost: 280.5,
+    status: 'active',
+    currentAmps: 16,
+    currentKw: 7.4,
+  },
+];
+
+const MOCK_BUSINESS_ALL_SESSIONS: ChargingSession[] = [
+  ...MOCK_BUSINESS_ACTIVE_SESSIONS,
+  {
+    id: 'biz-session-c1',
+    stationId: 'biz-station-1',
+    connectorId: 'bc1',
+    userId: 'user-ext-3',
+    startTime: new Date(Date.now() - 5 * 3600000).toISOString(),
+    endTime: new Date(Date.now() - 4 * 3600000).toISOString(),
+    energyKwh: 42.0,
+    cost: 630,
+    status: 'completed',
+  },
+  {
+    id: 'biz-session-c2',
+    stationId: 'biz-station-5',
+    connectorId: 'bc5',
+    userId: 'user-ext-4',
+    startTime: new Date(Date.now() - 24 * 3600000).toISOString(),
+    endTime: new Date(Date.now() - 23 * 3600000).toISOString(),
+    energyKwh: 19.5,
+    cost: 292.5,
+    status: 'completed',
+  },
+];
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -186,14 +314,22 @@ export default function DashboardPage() {
   const { stations: realStations, addStation, startCharging, isLoading: stationsLoading } = useStations();
   const { activeSessions: realActiveSessions, sessions: realSessions, stopSession, isLoading: sessionsLoading } = useSessions();
   const { userRole } = useAuth();
+  const { businessState } = useBusinessState();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showMock, setShowMock] = useMockToggle('dashboard_mock');
-  const isBusiness = userRole === 'business';
+  const isBusiness = userRole === 'business' || businessState === 'active';
 
-  const stations = showMock ? MOCK_STATIONS : realStations;
-  const sessions = showMock ? [...MOCK_ACTIVE_SESSIONS, ...MOCK_COMPLETED_SESSIONS] : realSessions;
-  const activeSessions = showMock ? MOCK_ACTIVE_SESSIONS : realActiveSessions;
+  // Use separate mock data sets for business vs consumer
+  const stations = showMock
+    ? (isBusiness ? MOCK_BUSINESS_STATIONS : MOCK_STATIONS)
+    : realStations;
+  const sessions = showMock
+    ? (isBusiness ? MOCK_BUSINESS_ALL_SESSIONS : [...MOCK_ACTIVE_SESSIONS, ...MOCK_COMPLETED_SESSIONS])
+    : realSessions;
+  const activeSessions = showMock
+    ? (isBusiness ? MOCK_BUSINESS_ACTIVE_SESSIONS : MOCK_ACTIVE_SESSIONS)
+    : realActiveSessions;
 
   // Calculate statistics from real data
   const statistics = useMemo(() => ({

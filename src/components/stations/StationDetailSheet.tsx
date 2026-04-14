@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ interface StationDetailSheetProps {
   station: Station | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialTab?: 'overview' | 'monitoring' | 'performance';
 }
 
 const statusConfig: Record<ChargerStatus, { label: string; className: string }> = {
@@ -145,7 +146,14 @@ export const StationDetailSheet = memo(function StationDetailSheet({
   station,
   open,
   onOpenChange,
+  initialTab = 'overview',
 }: StationDetailSheetProps) {
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    if (open) setActiveTab(initialTab);
+  }, [open, initialTab]);
+
   if (!station) return null;
 
   return (
@@ -155,7 +163,7 @@ export const StationDetailSheet = memo(function StationDetailSheet({
           <SheetTitle className="text-lg">{station.name} • Детали</SheetTitle>
         </SheetHeader>
 
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="overview" className="flex-1">Обзор</TabsTrigger>
             <TabsTrigger value="monitoring" className="flex-1">Мониторинг</TabsTrigger>

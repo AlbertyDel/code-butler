@@ -97,6 +97,7 @@ export const mockStations: Station[] = [
     electrical: { ...defaultElectrical, relayState: 'off' },
     temperature: { ...defaultTemperature, inputContacts: 22, port0: 20, internal: 23 },
     stats: { ...defaultStats, energyTodayKwh: 0, sessionsToday: 0, totalSessions: 540 },
+    errorBits: 0b00000000010, // bit 2: Низкое напряжение
   },
   {
     id: 'st-4',
@@ -179,6 +180,7 @@ export const mockStations: Station[] = [
     electrical: { ...defaultElectrical, relayState: 'off' },
     temperature: { ...defaultTemperature, inputContacts: 21, internal: 22 },
     stats: { ...defaultStats, energyTodayKwh: 0, sessionsToday: 0, totalSessions: 320 },
+    errorBits: 0b10000100000, // bit 6: RCD fault + bit 12: Fire Alarm
   },
   {
     id: 'st-9',

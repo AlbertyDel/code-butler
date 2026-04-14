@@ -115,7 +115,7 @@
   }
 
   html {
-    scrollbar-gutter: stable !important;
+    scrollbar-gutter: auto;
   }
 
   body {

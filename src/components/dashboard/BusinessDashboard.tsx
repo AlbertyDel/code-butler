@@ -69,6 +69,21 @@ function aggregateBuckets(
   return result;
 }
 
+/** Shorten aggregated labels for mobile screens */
+function mobileLabel(label: string, period: PeriodKey): string {
+  if (period === 'today') {
+    // "00:00–03:00" → "00–03", "09:00" → "09"
+    return label.replace(/(\d{2}):\d{2}/g, '$1');
+  }
+  if (period === '7d') {
+    // "07.04–08.04" → "07–08", "07.04" → "07"
+    const parts = label.split('–');
+    const dayOnly = (s: string) => s.trim().split('.')[0];
+    return parts.length === 1 ? dayOnly(parts[0]) : `${dayOnly(parts[0])}–${dayOnly(parts[1])}`;
+  }
+  return label;
+}
+
 // --- Period filter ---
 type PeriodKey = 'today' | '7d' | '30d' | 'custom';
 const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
@@ -433,6 +448,7 @@ export const BusinessDashboard = memo(function BusinessDashboard({
                 axisLine={false}
                 fontSize={11}
                 interval={0}
+                tickFormatter={isMobile ? (v: string) => mobileLabel(v, period) : undefined}
               />
               <YAxis tickLine={false} axisLine={false} fontSize={12} width={48} />
               <Tooltip content={<ChartCustomTooltip chartMetric={chartMetric} />} />

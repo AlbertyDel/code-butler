@@ -19,7 +19,7 @@ export function AppLayout() {
     return (
       <div className="h-[100dvh] flex flex-col overflow-hidden bg-background">
         <TopBar isLoading={isInitialLoading} />
-        <main className="flex-1 overflow-y-auto pt-20 pb-24 px-4 sm:pt-24">
+        <main className="flex-1 overflow-y-auto pt-20 pb-24 px-4 sm:pt-24 scrollbar-thin">
           {isInitialLoading ? <PageSkeleton cards={4} /> : <Outlet />}
         </main>
         <MobileNavigation />
@@ -31,7 +31,7 @@ export function AppLayout() {
     <div className="h-screen flex overflow-hidden bg-slate-50">
       <TopBar isLoading={isInitialLoading} />
       <DesktopSidebar />
-      <main className="flex-1 overflow-y-auto pt-24 px-6 pb-6 md:ml-64">
+      <main className="flex-1 overflow-y-auto pt-24 px-6 pb-6 md:ml-64 scrollbar-thin">
         {isInitialLoading ? <PageSkeleton cards={6} /> : <Outlet />}
       </main>
     </div>

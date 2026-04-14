@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/popover';
 import {
   ChartContainer,
-  ChartTooltip,
   type ChartConfig,
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
@@ -20,17 +19,17 @@ import {
   Activity,
   Radio,
   AlertTriangle,
-  WifiOff,
   TrendingUp,
   TrendingDown,
   BatteryCharging,
   CalendarIcon,
 } from 'lucide-react';
-import { format, differenceInDays, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { Station, ChargingSession } from '@/types';
 import type { DateRange } from 'react-day-picker';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // --- Period filter ---
 type PeriodKey = 'today' | '7d' | '30d' | 'custom';
@@ -96,13 +95,10 @@ const MOCK_AGGREGATED: Record<Exclude<PeriodKey, 'custom'>, AggregatedData> = {
     sessionsCount: 1_285,
     sessionsDelta: -2,
     chartData: [
-      { label: '15.03–18.03', revenue: 42000, energy: 3000 },
-      { label: '19.03–22.03', revenue: 44000, energy: 3143 },
-      { label: '23.03–26.03', revenue: 46500, energy: 3321 },
-      { label: '27.03–30.03', revenue: 43200, energy: 3086 },
-      { label: '31.03–03.04', revenue: 45100, energy: 3221 },
-      { label: '04.04–07.04', revenue: 41000, energy: 2929 },
-      { label: '08.04–11.04', revenue: 44400, energy: 3171 },
+      { label: '15.03–21.03', revenue: 86000, energy: 6143 },
+      { label: '22.03–28.03', revenue: 89700, energy: 6407 },
+      { label: '29.03–04.04', revenue: 88300, energy: 6307 },
+      { label: '05.04–11.04', revenue: 85600, energy: 6100 },
       { label: '12.04–14.04', revenue: 41000, energy: 2929 },
     ],
   },
@@ -116,17 +112,16 @@ const MOCK_CUSTOM_AGGREGATED: AggregatedData = {
   sessionsCount: 580,
   sessionsDelta: 3,
   chartData: [
-    { label: '01.03–04.03', revenue: 26000, energy: 1857 },
-    { label: '05.03–08.03', revenue: 28000, energy: 2000 },
-    { label: '09.03–12.03', revenue: 27500, energy: 1964 },
-    { label: '13.03–16.03', revenue: 25800, energy: 1843 },
-    { label: '17.03–20.03', revenue: 26200, energy: 1871 },
-    { label: '21.03–24.03', revenue: 23300, energy: 1665 },
+    { label: '01.03–05.03', revenue: 32000, energy: 2286 },
+    { label: '06.03–10.03', revenue: 34500, energy: 2464 },
+    { label: '11.03–15.03', revenue: 31800, energy: 2271 },
+    { label: '16.03–20.03', revenue: 30200, energy: 2157 },
+    { label: '21.03–24.03', revenue: 28300, energy: 2022 },
   ],
 };
 
 // --- Chart config ---
-const ENERGY_COLOR = 'hsl(217 91% 60%)'; // blue-500
+const ENERGY_COLOR = 'hsl(217 91% 60%)';
 
 const revenueChartConfig: ChartConfig = {
   revenue: { label: 'Выручка', color: 'hsl(var(--primary))' },
@@ -153,8 +148,13 @@ function formatCompact(v: number, unit: string): string {
 function formatRub(v: number) {
   return formatCompact(v, '₽');
 }
-function formatKwh(v: number) {
-  return formatCompact(v, 'кВт·ч');
+
+function formatEnergy(v: number): string {
+  if (v >= 10_000) {
+    const k = v / 1_000;
+    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1).replace('.', ',')} тыс`;
+  }
+  return `${v.toLocaleString('ru-RU')} кВт·ч`;
 }
 
 function pluralProblems(n: number): string {
@@ -165,25 +165,19 @@ function pluralProblems(n: number): string {
   return 'проблем';
 }
 
-function pluralStations(n: number): string {
-  const mod = n % 10;
-  const mod100 = n % 100;
-  if (mod === 1 && mod100 !== 11) return 'станция';
-  if (mod >= 2 && mod <= 4 && (mod100 < 12 || mod100 > 14)) return 'станции';
-  return 'станций';
-}
-
-// Custom tooltip for the chart
+// Custom tooltip
 function ChartCustomTooltip({ active, payload, chartMetric }: any) {
   if (!active || !payload?.length) return null;
   const item = payload[0];
   const value = item.value as number;
+  const label = item.payload?.label || '';
   const formatted = chartMetric === 'revenue'
     ? `${value.toLocaleString('ru-RU')} ₽`
     : `${value.toLocaleString('ru-RU')} кВт·ч`;
 
   return (
     <div className="rounded-lg border border-border/50 bg-background px-3 py-1.5 text-xs shadow-xl">
+      {label && <p className="mb-1 text-muted-foreground">{label}</p>}
       <div className="flex items-center gap-2">
         <div
           className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
@@ -210,12 +204,34 @@ export const BusinessDashboard = memo(function BusinessDashboard({
   allSessions,
 }: BusinessDashboardProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [chartMetric, setChartMetric] = useState<ChartMetric>('revenue');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const agg = period === 'custom' ? MOCK_CUSTOM_AGGREGATED : MOCK_AGGREGATED[period];
+
+  // Limit chart buckets for mobile
+  const chartData = useMemo(() => {
+    if (!isMobile) return agg.chartData;
+    if (period === 'today' || period === '7d') return agg.chartData;
+    // For 30d and custom on mobile, limit to 4 buckets
+    const data = agg.chartData;
+    if (data.length <= 4) return data;
+    // Take evenly spaced 4 items
+    const step = (data.length - 1) / 3;
+    return [0, 1, 2, 3].map(i => data[Math.round(i * step)]);
+  }, [agg.chartData, isMobile, period]);
+
+  // Shorten X labels on mobile: use first date only from range
+  const displayChartData = useMemo(() => {
+    if (!isMobile) return chartData;
+    return chartData.map(d => ({
+      ...d,
+      shortLabel: d.label.includes('–') ? d.label.split('–')[0] : d.label,
+    }));
+  }, [chartData, isMobile]);
 
   // --- Live metrics ---
   const onlineCount = stations.filter(
@@ -245,13 +261,13 @@ export const BusinessDashboard = memo(function BusinessDashboard({
     return 'Свой период';
   }, [dateRange]);
 
-  const problemPreviewNames = problemStations.slice(0, 3).map((s) => s.name);
+  const problemPreviewNames = problemStations.slice(0, 2).map((s) => s.name);
   const problemRemaining = problemStations.length - problemPreviewNames.length;
 
-  // Build summary parts
-  const summaryParts: string[] = [];
-  if (offlineStations.length > 0) summaryParts.push(`${offlineStations.length} не в сети`);
-  if (errorStations.length > 0) summaryParts.push(`${errorStations.length} с ошибкой`);
+  // Build summary chips
+  const summaryChips: string[] = [];
+  if (offlineStations.length > 0) summaryChips.push(`${offlineStations.length} офлайн`);
+  if (errorStations.length > 0) summaryChips.push(`${errorStations.length} ошибка`);
 
   return (
     <div className="space-y-6">
@@ -304,55 +320,54 @@ export const BusinessDashboard = memo(function BusinessDashboard({
       {/* ── KPI ── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KpiCard label="Выручка" value={formatRub(agg.revenue)} icon={Wallet} delta={agg.revenueDelta} />
-        <KpiCard label="Энергия" value={formatKwh(agg.energyKwh)} icon={Zap} delta={agg.energyDelta} />
+        <KpiCard label="Энергия" value={formatEnergy(agg.energyKwh)} icon={Zap} delta={agg.energyDelta} />
         <KpiCard label="Сессии" value={agg.sessionsCount.toLocaleString('ru-RU')} icon={Activity} delta={agg.sessionsDelta} />
-        <KpiCard label="Активные" value={String(activeSessions.length)} icon={BatteryCharging} />
-        <KpiCard label="Станции онлайн" value={`${onlineCount} / ${totalCount}`} icon={Radio} />
+        <KpiCard
+          label="Сессии сейчас"
+          value={String(activeSessions.length)}
+          icon={BatteryCharging}
+          cta="К сессиям"
+          onCtaClick={() => navigate('/sessions')}
+        />
+        <KpiCard
+          label="ЭЗС онлайн"
+          value={`${onlineCount} / ${totalCount}`}
+          icon={Radio}
+          cta="К станциям"
+          onCtaClick={() => navigate('/stations')}
+        />
       </div>
 
-      {/* ── Attention ── */}
-      {hasProblems ? (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-              </div>
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">Требует внимания</p>
-                  <span className="rounded-md bg-destructive/10 px-1.5 py-0.5 text-xs font-medium text-destructive">
-                    {problemCount} {pluralProblems(problemCount)}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">{summaryParts.join(' · ')}</p>
-                <p className="text-xs text-muted-foreground">
-                  {problemPreviewNames.join(', ')}
-                  {problemRemaining > 0 && ` +${problemRemaining} ещё`}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-1"
-                  onClick={() => navigate('/stations')}
-                >
-                  Открыть станции
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                <Activity className="h-3.5 w-3.5 text-primary" />
-              </div>
-              Все станции работают
-            </div>
-          </CardContent>
-        </Card>
+      {/* ── Attention strip ── */}
+      {hasProblems && (
+        <div className="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="font-medium">
+              {problemCount} {pluralProblems(problemCount)}
+            </span>
+            {summaryChips.map((chip) => (
+              <span
+                key={chip}
+                className="rounded-md bg-destructive/10 px-1.5 py-0.5 text-xs font-medium text-destructive"
+              >
+                {chip}
+              </span>
+            ))}
+            <span className="text-xs text-muted-foreground">
+              {problemPreviewNames.join(', ')}
+              {problemRemaining > 0 && ` +${problemRemaining} ещё`}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 whitespace-nowrap"
+            onClick={() => navigate('/stations')}
+          >
+            К станциям
+          </Button>
+        </div>
       )}
 
       {/* ── Chart ── */}
@@ -385,9 +400,15 @@ export const BusinessDashboard = memo(function BusinessDashboard({
             config={chartMetric === 'revenue' ? revenueChartConfig : energyChartConfig}
             className="h-[220px] w-full"
           >
-            <BarChart data={agg.chartData} margin={{ left: 0, right: 0 }}>
+            <BarChart data={displayChartData} margin={{ left: 0, right: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} interval={0} />
+              <XAxis
+                dataKey={isMobile ? 'shortLabel' : 'label'}
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                interval={0}
+              />
               <YAxis tickLine={false} axisLine={false} fontSize={12} width={48} />
               <Tooltip content={<ChartCustomTooltip chartMetric={chartMetric} />} />
               <Bar
@@ -410,20 +431,32 @@ function KpiCard({
   value,
   icon: Icon,
   delta,
+  cta,
+  onCtaClick,
 }: {
   label: string;
   value: string;
   icon: React.ElementType;
   delta?: number;
+  cta?: string;
+  onCtaClick?: () => void;
 }) {
   return (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="min-w-0 space-y-1">
-            <p className="truncate text-sm text-muted-foreground whitespace-nowrap">{label}</p>
+            <p className="text-sm text-muted-foreground whitespace-nowrap">{label}</p>
             <p className="text-xl font-bold tabular-nums leading-tight">{value}</p>
             {delta !== undefined && <DeltaBadge value={delta} />}
+            {cta && onCtaClick && (
+              <button
+                onClick={onCtaClick}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                {cta}
+              </button>
+            )}
           </div>
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
             <Icon className="h-4 w-4 text-primary" />

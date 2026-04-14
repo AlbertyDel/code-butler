@@ -406,7 +406,8 @@ export const BusinessDashboard = memo(function BusinessDashboard({
                 tickLine={false}
                 axisLine={false}
                 fontSize={11}
-                interval={0}
+                interval="preserveStartEnd"
+                minTickGap={isMobile ? 40 : 20}
               />
               <YAxis tickLine={false} axisLine={false} fontSize={12} width={48} />
               <Tooltip content={<ChartCustomTooltip chartMetric={chartMetric} />} />

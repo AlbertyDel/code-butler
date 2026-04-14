@@ -8,7 +8,7 @@ import { useSessions } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { mockSessions, mockStations } from '@/lib/mock-data';
-import { Clock, Zap, History, BatteryCharging } from 'lucide-react';
+import { Clock, Zap, History, BatteryCharging, Gauge } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
@@ -64,72 +64,22 @@ const MOCK_BIZ_ACTIVE_SESSIONS: ChargingSession[] = [
 
 type BizFilter = 'all' | 'active' | 'completed';
 
-interface CompletedSessionCardProps {
+// ── Unified session card for both active and completed ──
+interface UnifiedSessionCardProps {
   session: ChargingSession;
   station: Station | undefined;
   connector: Connector | undefined;
   formatDuration: (startTime: string, endTime?: string) => string;
 }
 
-const CompletedSessionCard = memo(function CompletedSessionCard({
+const UnifiedSessionCard = memo(function UnifiedSessionCard({
   session,
   station,
   connector,
   formatDuration,
-}: CompletedSessionCardProps) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            {station && (
-              <p className="font-medium truncate">
-                {station.name}
-              </p>
-            )}
-            {station && (
-              <p className="text-sm text-muted-foreground truncate">
-                {station.address}
-              </p>
-            )}
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {formatDuration(session.startTime, session.endTime)}
-              </span>
-              {connector && (
-                <Badge variant="secondary" className="text-xs">
-                  {connector.type} · {connector.powerKw} кВт
-                </Badge>
-              )}
-            </div>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-lg font-semibold flex items-center gap-1">
-              <Zap className="h-4 w-4 text-primary" />
-              {session.energyKwh} кВт·ч
-            </p>
-            <p className="text-xs text-muted-foreground">Заряжено</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}, (prevProps, nextProps) => {
-  return prevProps.session.id === nextProps.session.id &&
-    prevProps.station?.id === nextProps.station?.id;
-});
+}: UnifiedSessionCardProps) {
+  const isActive = session.status === 'active';
 
-// ── Active session card (read-only, no controls) ──
-const ActiveSessionRowCard = memo(function ActiveSessionRowCard({
-  session,
-  station,
-  formatDuration,
-}: {
-  session: ChargingSession;
-  station: Station | undefined;
-  formatDuration: (startTime: string, endTime?: string) => string;
-}) {
   return (
     <Card>
       <CardContent className="p-4">
@@ -141,35 +91,49 @@ const ActiveSessionRowCard = memo(function ActiveSessionRowCard({
             {station && (
               <p className="text-sm text-muted-foreground truncate">{station.address}</p>
             )}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-0">
-                <BatteryCharging className="h-3 w-3 mr-1" />
-                Активна
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <Badge
+                variant="secondary"
+                className={isActive
+                  ? 'text-xs bg-primary/10 text-primary border-0'
+                  : 'text-xs'}
+              >
+                {isActive && <BatteryCharging className="h-3 w-3 mr-1" />}
+                {isActive ? 'Активна' : 'Завершена'}
               </Badge>
+              <span className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                {formatDuration(session.startTime, session.endTime)}
+              </span>
+              {connector && (
+                <Badge variant="secondary" className="text-xs">
+                  {connector.type} · {connector.powerKw} кВт
+                </Badge>
+              )}
             </div>
           </div>
-          <div className="text-right shrink-0">
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="text-xs text-muted-foreground">Время</p>
-                <p className="text-sm font-semibold">{formatDuration(session.startTime)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Энергия</p>
-                <p className="text-sm font-semibold">{Number(session.energyKwh).toFixed(1)} кВт·ч</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Мощность</p>
-                <p className="text-sm font-semibold">
-                  {session.currentKw != null ? `${session.currentKw} кВт` : '—'}
-                </p>
-              </div>
-            </div>
+          <div className="text-right shrink-0 space-y-1">
+            <p className="text-lg font-semibold flex items-center gap-1 justify-end">
+              <Zap className="h-4 w-4 text-primary" />
+              {Number(session.energyKwh).toFixed(1)} кВт·ч
+            </p>
+            {isActive && session.currentKw != null && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
+                <Gauge className="h-3 w-3" />
+                {session.currentKw} кВт
+              </p>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
   );
+}, (prevProps, nextProps) => {
+  return prevProps.session.id === nextProps.session.id &&
+    prevProps.session.status === nextProps.session.status &&
+    prevProps.session.energyKwh === nextProps.session.energyKwh &&
+    prevProps.session.currentKw === nextProps.session.currentKw &&
+    prevProps.station?.id === nextProps.station?.id;
 });
 
 interface SessionGroupProps {
@@ -195,7 +159,7 @@ const SessionGroup = memo(function SessionGroup({
           const station = getStation(session.stationId);
           const connector = station?.connectors[0];
           return (
-            <CompletedSessionCard
+            <UnifiedSessionCard
               key={session.id}
               session={session}
               station={station}
@@ -222,7 +186,7 @@ function EmptyHistoryState() {
   );
 }
 
-function buildGroupedSessions(completedSessions: ChargingSession[]) {
+function buildGroupedSessions(sessions: ChargingSession[]) {
   const groups: { label: string; sessions: ChargingSession[] }[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -232,7 +196,7 @@ function buildGroupedSessions(completedSessions: ChargingSession[]) {
 
   const sessionsByDate = new Map<string, ChargingSession[]>();
 
-  completedSessions.forEach(session => {
+  sessions.forEach(session => {
     const date = new Date(session.startTime);
     date.setHours(0, 0, 0, 0);
     const key = date.toISOString();
@@ -318,33 +282,43 @@ export default function SessionsPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  // ── Business: filter logic ──
-  const displayedCompleted = useMemo(() => {
-    if (!isBusiness || bizFilter === 'active') return [];
+  // ── Business: build unified list for "all" tab ──
+  const allSessionsSorted = useMemo(() => {
+    if (!isBusiness || bizFilter !== 'all') return [];
+    return [...activeSessions, ...completedSessions].sort(
+      (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
+  }, [isBusiness, bizFilter, activeSessions, completedSessions]);
+
+  // Sessions source for pagination
+  const sessionsForPagination = useMemo(() => {
+    if (!isBusiness) return completedSessions;
+    if (bizFilter === 'all') return allSessionsSorted;
+    if (bizFilter === 'active') return activeSessions;
     return completedSessions;
-  }, [isBusiness, bizFilter, completedSessions]);
-
-  const displayedActive = useMemo(() => {
-    if (!isBusiness) return [];
-    if (bizFilter === 'completed') return [];
-    return activeSessions;
-  }, [isBusiness, bizFilter, activeSessions]);
-
-  // For consumer mode or business completed view
-  const sessionsForPagination = isBusiness
-    ? (bizFilter === 'active' ? [] : completedSessions)
-    : completedSessions;
+  }, [isBusiness, bizFilter, allSessionsSorted, activeSessions, completedSessions]);
 
   const totalPages = Math.ceil(sessionsForPagination.length / ITEMS_PER_PAGE);
 
+  // Build grouped pages for display
   const paginatedGroups = useMemo(() => {
-    if (isBusiness && bizFilter === 'active') return [];
-    const source = isBusiness ? buildGroupedSessions(displayedCompleted) : groupedSessions;
-    const allCompleted = source.flatMap(g =>
+    const source = sessionsForPagination;
+    if (source.length === 0) return [];
+
+    // For business "active" tab, no date grouping needed — flat list
+    if (isBusiness && bizFilter === 'active') {
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageItems = source.slice(start, start + ITEMS_PER_PAGE);
+      if (pageItems.length === 0) return [];
+      return [{ label: '', sessions: pageItems }];
+    }
+
+    const grouped = buildGroupedSessions(source);
+    const allFlat = grouped.flatMap(g =>
       g.sessions.map(s => ({ ...s, _groupLabel: g.label }))
     );
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    const pageItems = allCompleted.slice(start, start + ITEMS_PER_PAGE);
+    const pageItems = allFlat.slice(start, start + ITEMS_PER_PAGE);
 
     const groups: { label: string; sessions: ChargingSession[] }[] = [];
     pageItems.forEach(item => {
@@ -356,7 +330,7 @@ export default function SessionsPage() {
       }
     });
     return groups;
-  }, [isBusiness, bizFilter, displayedCompleted, groupedSessions, currentPage]);
+  }, [sessionsForPagination, isBusiness, bizFilter, currentPage]);
 
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
@@ -382,7 +356,7 @@ export default function SessionsPage() {
 
       <div className="space-y-4">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          {isBusiness ? 'Зарядные сессии' : 'История зарядных сессий'}
+          {isBusiness ? 'Зарядные сессии' : 'История зарядок'}
         </h1>
 
         {/* Business filter tabs */}
@@ -391,7 +365,7 @@ export default function SessionsPage() {
             {([
               { key: 'all' as BizFilter, label: 'Все' },
               { key: 'active' as BizFilter, label: 'Активные' },
-              { key: 'completed' as BizFilter, label: 'Завершенные' },
+              { key: 'completed' as BizFilter, label: 'Завершённые' },
             ]).map((tab) => (
               <Button
                 key={tab.key}
@@ -411,99 +385,86 @@ export default function SessionsPage() {
           </div>
         )}
 
-        {/* Active sessions list (business only) */}
-        {isBusiness && (bizFilter === 'all' || bizFilter === 'active') && displayedActive.length > 0 && (
-          <div className="space-y-2">
-            {bizFilter === 'all' && (
-              <h2 className="text-sm font-medium text-muted-foreground px-1">Активные</h2>
-            )}
-            <div className="space-y-2">
-              {displayedActive.map((session) => {
-                const station = getStation(session.stationId);
-                return (
-                  <ActiveSessionRowCard
-                    key={session.id}
-                    session={session}
-                    station={station}
-                    formatDuration={formatDuration}
-                  />
-                );
-              })}
+        {/* Unified session list */}
+        {paginatedGroups.length === 0 ? (
+          bizFilter === 'active' ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="flex flex-col items-center text-center max-w-sm">
+                <BatteryCharging className="h-16 w-16 text-muted-foreground/40" />
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Нет активных сессий
+                </p>
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* Completed sessions (both modes) */}
-        {(!isBusiness || bizFilter !== 'active') && (
+          ) : (
+            <EmptyHistoryState />
+          )
+        ) : (
           <>
-            {isBusiness && bizFilter === 'all' && paginatedGroups.length > 0 && (
-              <h2 className="text-sm font-medium text-muted-foreground px-1">Завершенные</h2>
-            )}
+            {paginatedGroups.map((group, gi) => (
+              group.label ? (
+                <SessionGroup
+                  key={group.label}
+                  label={group.label}
+                  sessions={group.sessions}
+                  getStation={getStation}
+                  formatDuration={formatDuration}
+                />
+              ) : (
+                <div key={`flat-${gi}`} className="space-y-2">
+                  {group.sessions.map((session) => {
+                    const station = getStation(session.stationId);
+                    const connector = station?.connectors[0];
+                    return (
+                      <UnifiedSessionCard
+                        key={session.id}
+                        session={session}
+                        station={station}
+                        connector={connector}
+                        formatDuration={formatDuration}
+                      />
+                    );
+                  })}
+                </div>
+              )
+            ))}
 
-            {paginatedGroups.length === 0 && (!isBusiness || bizFilter !== 'all' || displayedActive.length === 0) ? (
-              <EmptyHistoryState />
-            ) : (
-              <>
-                {paginatedGroups.map((group) => (
-                  <SessionGroup
-                    key={group.label}
-                    label={group.label}
-                    sessions={group.sessions}
-                    getStation={getStation}
-                    formatDuration={formatDuration}
-                  />
-                ))}
-
-                {totalPages > 1 && (
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {getPageNumbers().map((page, i) =>
+                    page === 'ellipsis' ? (
+                      <PaginationItem key={`e-${i}`}>
+                        <PaginationEllipsis />
                       </PaginationItem>
-                      {getPageNumbers().map((page, i) =>
-                        page === 'ellipsis' ? (
-                          <PaginationItem key={`e-${i}`}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={page}>
-                            <PaginationLink
-                              isActive={currentPage === page}
-                              onClick={() => setCurrentPage(page)}
-                              className="cursor-pointer"
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
+                    ) : (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          isActive={currentPage === page}
+                          onClick={() => setCurrentPage(page)}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
                       </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                )}
-              </>
+                    )
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             )}
           </>
-        )}
-
-        {/* Business active-only empty state */}
-        {isBusiness && bizFilter === 'active' && displayedActive.length === 0 && (
-          <div className="flex items-center justify-center py-16">
-            <div className="flex flex-col items-center text-center max-w-sm">
-              <BatteryCharging className="h-16 w-16 text-muted-foreground/40" />
-              <p className="mt-4 text-sm text-muted-foreground">
-                Нет активных сессий
-              </p>
-            </div>
-          </div>
         )}
       </div>
     </div>

@@ -83,6 +83,7 @@ interface StationRowProps {
   onDelete: (station: StationWithTariff) => void;
   onOpenMaps: (e: React.MouseEvent, station: Station) => void;
   onSelect: (station: Station) => void;
+  onErrorClick: (e: React.MouseEvent, station: Station) => void;
   tariffs: TariffLocal[];
 }
 
@@ -92,6 +93,7 @@ const StationRow = memo(function StationRow({
   onDelete, 
   onOpenMaps,
   onSelect,
+  onErrorClick,
   tariffs,
 }: StationRowProps) {
   const effectiveTariff = getEffectiveTariff(station, tariffs);
@@ -121,7 +123,13 @@ const StationRow = memo(function StationRow({
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-semibold line-clamp-2 break-words">{station.name}</h3>
                   {hasErrors(station.errorBits) && (
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" aria-label="Есть ошибки" />
+                    <button
+                      onClick={(e) => onErrorClick(e, station)}
+                      className="shrink-0"
+                      aria-label="Показать ошибки"
+                    >
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                    </button>
                   )}
                 </div>
                 <StatusBadge status={station.status} />
@@ -188,6 +196,7 @@ export default function StationsPage() {
   const [editStation, setEditStation] = useState<StationWithTariff | null>(null);
   const [stationToDelete, setStationToDelete] = useState<Station | null>(null);
   const [detailStation, setDetailStation] = useState<Station | null>(null);
+  const [detailInitialTab, setDetailInitialTab] = useState<'overview' | 'monitoring'>('overview');
 
   const tariffs = useSyncExternalStore(subscribeToTariffs, getSharedTariffs);
   const stations: StationWithTariff[] = showMock ? mockLocalStations : realStations;
@@ -257,6 +266,13 @@ export default function StationsPage() {
   }, []);
 
   const handleSelect = useCallback((station: Station) => {
+    setDetailInitialTab('overview');
+    setDetailStation(station);
+  }, []);
+
+  const handleErrorClick = useCallback((e: React.MouseEvent, station: Station) => {
+    e.stopPropagation();
+    setDetailInitialTab('monitoring');
     setDetailStation(station);
   }, []);
 
@@ -297,6 +313,7 @@ export default function StationsPage() {
               onDelete={handleDelete}
               onOpenMaps={openInYandexMaps}
               onSelect={handleSelect}
+              onErrorClick={handleErrorClick}
               tariffs={tariffs}
             />
           ))
@@ -327,6 +344,7 @@ export default function StationsPage() {
         station={detailStation}
         open={!!detailStation}
         onOpenChange={(open) => !open && setDetailStation(null)}
+        initialTab={detailInitialTab}
       />
     </div>
   );

@@ -16,6 +16,7 @@ import {
   Zap, 
   MapPin, 
   TrendingUp, 
+  TrendingDown,
   BatteryCharging,
   Activity
 } from 'lucide-react';
@@ -272,7 +273,7 @@ interface StatCardProps {
   value: string | number;
   unit?: string;
   icon: React.ElementType;
-  trend?: { value: number; label: string };
+  delta?: number;
 }
 
 const StatCard = memo(function StatCard({ 
@@ -280,30 +281,35 @@ const StatCard = memo(function StatCard({
   value, 
   unit, 
   icon: Icon, 
-  trend 
+  delta,
 }: StatCardProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="text-xs text-muted-foreground whitespace-nowrap">{title}</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold">{value}</span>
+              <span className="text-xl font-bold tabular-nums">{value}</span>
               {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
             </div>
+            {delta !== undefined && (
+              <div className="flex items-center gap-1 text-xs">
+                {delta >= 0 ? (
+                  <TrendingUp className="h-3 w-3 text-primary" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-destructive" />
+                )}
+                <span className={delta >= 0 ? 'text-primary' : 'text-destructive'}>
+                  {delta >= 0 ? '+' : ''}{delta}%
+                </span>
+              </div>
+            )}
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Icon className="h-3.5 w-3.5 text-primary" />
           </div>
         </div>
-        {trend && (
-          <div className="mt-2 flex items-center gap-1 text-xs">
-            <TrendingUp className="h-3 w-3 text-primary" />
-            <span className="text-primary">+{trend.value}%</span>
-            <span className="text-muted-foreground">{trend.label}</span>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
@@ -402,18 +408,18 @@ export default function DashboardPage() {
 
       {/* Статистика */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
+        <StatCard
           title="Сессий"
           value={statistics.totalSessions}
           icon={Zap}
-          trend={{ value: 12, label: 'к прошлому месяцу' }}
+          delta={12}
         />
         <StatCard
           title="Энергия"
           value={statistics.totalEnergyKwh}
           unit="кВт·ч"
           icon={TrendingUp}
-          trend={{ value: 8, label: 'к прошлому месяцу' }}
+          delta={8}
         />
         <StatCard
           title="Станций"
@@ -421,7 +427,7 @@ export default function DashboardPage() {
           icon={MapPin}
         />
         <StatCard
-          title="Активных"
+          title="Активных сессий"
           value={activeSessions.length}
           icon={BatteryCharging}
         />

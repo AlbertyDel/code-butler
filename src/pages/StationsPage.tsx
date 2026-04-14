@@ -266,7 +266,14 @@ export default function StationsPage() {
     <div className="space-y-6 sm:space-y-8">
       {mockToggle}
 
-      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Станции</h1>
+        {stations.length > 0 && (
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            Добавить
+          </Button>
+        )}
+      </div>
 
       <div className="space-y-3">
         {stations.length === 0 ? (
@@ -282,24 +289,17 @@ export default function StationsPage() {
             </div>
           </div>
         ) : (
-          <>
-            {stations.map((station) => (
-              <StationRow
-                key={station.id}
-                station={station}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onOpenMaps={openInYandexMaps}
-                onSelect={handleSelect}
-                tariffs={tariffs}
-              />
-            ))}
-            <div className="flex justify-center pt-4">
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                Добавить
-              </Button>
-            </div>
-          </>
+          stations.map((station) => (
+            <StationRow
+              key={station.id}
+              station={station}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onOpenMaps={openInYandexMaps}
+              onSelect={handleSelect}
+              tariffs={tariffs}
+            />
+          ))
         )}
       </div>
 

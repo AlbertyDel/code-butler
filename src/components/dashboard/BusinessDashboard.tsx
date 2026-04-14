@@ -230,14 +230,22 @@ export const BusinessDashboard = memo(function BusinessDashboard({
     return [0, 1, 2, 3].map(i => data[Math.round(i * step)]);
   }, [agg.chartData, isMobile, period]);
 
+  // Build mobile ticks: pick evenly-spaced indices so axis looks continuous
+  const mobileTickIndices = useMemo(() => {
+    const len = chartData.length;
+    if (len <= 4) return chartData.map((_, i) => i);
+    const maxTicks = 4;
+    const step = (len - 1) / (maxTicks - 1);
+    return Array.from({ length: maxTicks }, (_, i) => Math.round(i * step));
+  }, [chartData]);
+
   // Shorten X labels on mobile
   const displayChartData = useMemo(() => {
-    if (!isMobile) return chartData;
     return chartData.map(d => ({
       ...d,
       shortLabel: d.label.includes('–') ? d.label.split('–')[0] : d.label,
     }));
-  }, [chartData, isMobile]);
+  }, [chartData]);
 
   // --- Live metrics ---
   const onlineCount = stations.filter(
@@ -406,8 +414,9 @@ export const BusinessDashboard = memo(function BusinessDashboard({
                 tickLine={false}
                 axisLine={false}
                 fontSize={11}
-                interval="preserveStartEnd"
-                minTickGap={isMobile ? 40 : 20}
+                ticks={isMobile ? mobileTickIndices.map(i => displayChartData[i]?.[isMobile ? 'shortLabel' : 'label']).filter(Boolean) : undefined}
+                interval={isMobile ? undefined : 'preserveStartEnd'}
+                minTickGap={isMobile ? undefined : 20}
               />
               <YAxis tickLine={false} axisLine={false} fontSize={12} width={48} />
               <Tooltip content={<ChartCustomTooltip chartMetric={chartMetric} />} />

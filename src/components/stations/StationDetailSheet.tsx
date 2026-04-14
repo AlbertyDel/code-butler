@@ -10,7 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getActiveErrors } from '@/lib/station-errors';
 import type { Station, ChargerStatus } from '@/types';
@@ -83,17 +83,12 @@ function MonitoringTab({ station }: { station: Station }) {
 
   return (
     <div className="space-y-4">
-      {/* Errors first */}
-      <Card className="rounded-xl">
-        <CardContent className="p-4">
-          <h4 className="text-sm font-semibold mb-2">Ошибки</h4>
-          <Separator className="mb-2" />
-          {activeErrors.length === 0 ? (
-            <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              Ошибок нет
-            </div>
-          ) : (
+      {/* Errors — only when present */}
+      {activeErrors.length > 0 && (
+        <Card className="rounded-xl border-destructive/30">
+          <CardContent className="p-4">
+            <h4 className="text-sm font-semibold mb-2">Ошибки</h4>
+            <Separator className="mb-2" />
             <Accordion type="multiple" className="w-full">
               {activeErrors.map((err) => (
                 <AccordionItem key={err.bit} value={`err-${err.bit}`} className="border-b-0">
@@ -109,9 +104,9 @@ function MonitoringTab({ station }: { station: Station }) {
                 </AccordionItem>
               ))}
             </Accordion>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <SectionCard title="Электрические параметры">
         <InfoRow label="Напряжение Фаза 1" value={`${electrical.voltagePhase1} В`} />

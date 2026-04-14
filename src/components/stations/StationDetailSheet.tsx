@@ -83,23 +83,7 @@ function MonitoringTab({ station }: { station: Station }) {
 
   return (
     <div className="space-y-4">
-      <SectionCard title="Электрические параметры">
-        <InfoRow label="Напряжение Фаза 1" value={`${electrical.voltagePhase1} В`} />
-        <InfoRow label="Напряжение Фаза 2" value={`${electrical.voltagePhase2} В`} />
-        <InfoRow label="Напряжение Фаза 3" value={`${electrical.voltagePhase3} В`} />
-        <InfoRow label="Кол-во фаз" value={electrical.phases} />
-        <InfoRow label="Макс. ток порта" value={`${electrical.maxCurrentA} А`} />
-        <InfoRow label="Состояние реле" value={electrical.relayState === 'on' ? 'Вкл' : 'Выкл'} />
-      </SectionCard>
-
-      <SectionCard title="Температурные параметры">
-        <InfoRow label="Темп. контактов на входе" value={`${temperature.inputContacts} °C`} />
-        <InfoRow label="Темп. порта 0" value={`${temperature.port0} °C`} />
-        <InfoRow label="Темп. порта 1" value={`${temperature.port1} °C`} />
-        <InfoRow label="Темп. внутри ЗУ" value={`${temperature.internal} °C`} />
-      </SectionCard>
-
-      {/* Error block */}
+      {/* Errors first */}
       <Card className="rounded-xl">
         <CardContent className="p-4">
           <h4 className="text-sm font-semibold mb-2">Ошибки</h4>
@@ -128,6 +112,22 @@ function MonitoringTab({ station }: { station: Station }) {
           )}
         </CardContent>
       </Card>
+
+      <SectionCard title="Электрические параметры">
+        <InfoRow label="Напряжение Фаза 1" value={`${electrical.voltagePhase1} В`} />
+        <InfoRow label="Напряжение Фаза 2" value={`${electrical.voltagePhase2} В`} />
+        <InfoRow label="Напряжение Фаза 3" value={`${electrical.voltagePhase3} В`} />
+        <InfoRow label="Кол-во фаз" value={electrical.phases} />
+        <InfoRow label="Макс. ток порта" value={`${electrical.maxCurrentA} А`} />
+        <InfoRow label="Состояние реле" value={electrical.relayState === 'on' ? 'Вкл' : 'Выкл'} />
+      </SectionCard>
+
+      <SectionCard title="Температурные параметры">
+        <InfoRow label="Темп. контактов на входе" value={`${temperature.inputContacts} °C`} />
+        <InfoRow label="Темп. порта 0" value={`${temperature.port0} °C`} />
+        <InfoRow label="Темп. порта 1" value={`${temperature.port1} °C`} />
+        <InfoRow label="Темп. внутри ЗУ" value={`${temperature.internal} °C`} />
+      </SectionCard>
     </div>
   );
 }

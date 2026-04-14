@@ -121,7 +121,7 @@ const StationRow = memo(function StationRow({
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-semibold line-clamp-2 break-words">{station.name}</h3>
                   {hasErrors(station.errorBits) && (
-                    <span title="Есть ошибки"><AlertTriangle className="h-4 w-4 shrink-0 text-destructive" /></span>
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" aria-label="Есть ошибки" />
                   )}
                 </div>
                 <StatusBadge status={station.status} />

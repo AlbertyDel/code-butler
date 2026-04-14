@@ -402,26 +402,26 @@ export default function DashboardPage() {
 
       {/* Статистика */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Всего сессий"
+          <StatCard
+          title="Сессий"
           value={statistics.totalSessions}
           icon={Zap}
           trend={{ value: 12, label: 'к прошлому месяцу' }}
         />
         <StatCard
-          title="Энергии получено"
+          title="Энергия"
           value={statistics.totalEnergyKwh}
           unit="кВт·ч"
           icon={TrendingUp}
           trend={{ value: 8, label: 'к прошлому месяцу' }}
         />
         <StatCard
-          title="Всего станций"
+          title="Станций"
           value={stations.length}
           icon={MapPin}
         />
         <StatCard
-          title="Активных сессий"
+          title="Активных"
           value={activeSessions.length}
           icon={BatteryCharging}
         />

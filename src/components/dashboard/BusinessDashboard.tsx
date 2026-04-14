@@ -251,6 +251,7 @@ export const BusinessDashboard = memo(function BusinessDashboard({
 }: BusinessDashboardProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [chartMetric, setChartMetric] = useState<ChartMetric>('revenue');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -258,32 +259,11 @@ export const BusinessDashboard = memo(function BusinessDashboard({
 
   const agg = period === 'custom' ? MOCK_CUSTOM_AGGREGATED : MOCK_AGGREGATED[period];
 
-  // Limit chart buckets for mobile
-  const chartData = useMemo(() => {
-    if (!isMobile) return agg.chartData;
-    if (period === 'today' || period === '7d') return agg.chartData;
-    const data = agg.chartData;
-    if (data.length <= 4) return data;
-    const step = (data.length - 1) / 3;
-    return [0, 1, 2, 3].map(i => data[Math.round(i * step)]);
-  }, [agg.chartData, isMobile, period]);
-
-  // Build mobile ticks: pick evenly-spaced indices so axis looks continuous
-  const mobileTickIndices = useMemo(() => {
-    const len = chartData.length;
-    if (len <= 4) return chartData.map((_, i) => i);
-    const maxTicks = 4;
-    const step = (len - 1) / (maxTicks - 1);
-    return Array.from({ length: maxTicks }, (_, i) => Math.round(i * step));
-  }, [chartData]);
-
-  // Shorten X labels on mobile
+  // Responsive chart data: aggregate buckets for smaller screens
   const displayChartData = useMemo(() => {
-    return chartData.map(d => ({
-      ...d,
-      shortLabel: d.label.includes('–') ? d.label.split('–')[0] : d.label,
-    }));
-  }, [chartData]);
+    const maxBuckets = isMobile ? 4 : isTablet ? 5 : 999;
+    return aggregateBuckets(agg.chartData, maxBuckets);
+  }, [agg.chartData, isMobile, isTablet]);
 
   // --- Live metrics ---
   const onlineCount = stations.filter(

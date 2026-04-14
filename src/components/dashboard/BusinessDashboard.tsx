@@ -428,13 +428,11 @@ export const BusinessDashboard = memo(function BusinessDashboard({
             <BarChart data={displayChartData} margin={{ left: 0, right: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey={isMobile ? 'shortLabel' : 'label'}
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 fontSize={11}
-                ticks={isMobile ? mobileTickIndices.map(i => displayChartData[i]?.[isMobile ? 'shortLabel' : 'label']).filter(Boolean) : undefined}
-                interval={isMobile ? undefined : 'preserveStartEnd'}
-                minTickGap={isMobile ? undefined : 20}
+                interval={0}
               />
               <YAxis tickLine={false} axisLine={false} fontSize={12} width={48} />
               <Tooltip content={<ChartCustomTooltip chartMetric={chartMetric} />} />

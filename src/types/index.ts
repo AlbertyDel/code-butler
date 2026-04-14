@@ -63,6 +63,8 @@ export interface Station {
   electrical: StationElectrical;
   temperature: StationTemperature;
   stats: StationStats;
+  /** Bitmask of active faults (bits 1–12). Optional, 0 = no errors */
+  errorBits?: number;
 }
 
 export interface Connector {

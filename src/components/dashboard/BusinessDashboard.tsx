@@ -151,8 +151,16 @@ function formatRub(v: number) {
 
 function formatEnergy(v: number): string {
   if (v >= 10_000) {
-    const k = v / 1_000;
-    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1).replace('.', ',')} тыс`;
+    const mwh = v / 1_000;
+    return `${mwh % 1 === 0 ? mwh.toFixed(0) : mwh.toFixed(1).replace('.', ',')} МВт·ч`;
+  }
+  return `${v.toLocaleString('ru-RU')} кВт·ч`;
+}
+
+function formatEnergyTooltip(v: number): string {
+  if (v >= 10_000) {
+    const mwh = v / 1_000;
+    return `${mwh % 1 === 0 ? mwh.toFixed(0) : mwh.toFixed(1).replace('.', ',')} МВт·ч`;
   }
   return `${v.toLocaleString('ru-RU')} кВт·ч`;
 }
@@ -173,7 +181,7 @@ function ChartCustomTooltip({ active, payload, chartMetric }: any) {
   const label = item.payload?.label || '';
   const formatted = chartMetric === 'revenue'
     ? `${value.toLocaleString('ru-RU')} ₽`
-    : `${value.toLocaleString('ru-RU')} кВт·ч`;
+    : formatEnergyTooltip(value);
 
   return (
     <div className="rounded-lg border border-border/50 bg-background px-3 py-1.5 text-xs shadow-xl">
@@ -216,15 +224,13 @@ export const BusinessDashboard = memo(function BusinessDashboard({
   const chartData = useMemo(() => {
     if (!isMobile) return agg.chartData;
     if (period === 'today' || period === '7d') return agg.chartData;
-    // For 30d and custom on mobile, limit to 4 buckets
     const data = agg.chartData;
     if (data.length <= 4) return data;
-    // Take evenly spaced 4 items
     const step = (data.length - 1) / 3;
     return [0, 1, 2, 3].map(i => data[Math.round(i * step)]);
   }, [agg.chartData, isMobile, period]);
 
-  // Shorten X labels on mobile: use first date only from range
+  // Shorten X labels on mobile
   const displayChartData = useMemo(() => {
     if (!isMobile) return chartData;
     return chartData.map(d => ({
@@ -260,9 +266,6 @@ export const BusinessDashboard = memo(function BusinessDashboard({
     }
     return 'Свой период';
   }, [dateRange]);
-
-  const problemPreviewNames = problemStations.slice(0, 2).map((s) => s.name);
-  const problemRemaining = problemStations.length - problemPreviewNames.length;
 
   // Build summary chips
   const summaryChips: string[] = [];
@@ -321,16 +324,16 @@ export const BusinessDashboard = memo(function BusinessDashboard({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KpiCard label="Выручка" value={formatRub(agg.revenue)} icon={Wallet} delta={agg.revenueDelta} />
         <KpiCard label="Энергия" value={formatEnergy(agg.energyKwh)} icon={Zap} delta={agg.energyDelta} />
-        <KpiCard label="Сессии" value={agg.sessionsCount.toLocaleString('ru-RU')} icon={Activity} delta={agg.sessionsDelta} />
+        <KpiCard label="Сессий всего" value={agg.sessionsCount.toLocaleString('ru-RU')} icon={Activity} delta={agg.sessionsDelta} />
         <KpiCard
-          label="Сессии сейчас"
+          label="Активных сессий"
           value={String(activeSessions.length)}
           icon={BatteryCharging}
           cta="К сессиям"
           onCtaClick={() => navigate('/sessions')}
         />
         <KpiCard
-          label="ЭЗС онлайн"
+          label="ЗС онлайн"
           value={`${onlineCount} / ${totalCount}`}
           icon={Radio}
           cta="К станциям"
@@ -354,10 +357,6 @@ export const BusinessDashboard = memo(function BusinessDashboard({
                 {chip}
               </span>
             ))}
-            <span className="text-xs text-muted-foreground">
-              {problemPreviewNames.join(', ')}
-              {problemRemaining > 0 && ` +${problemRemaining} ещё`}
-            </span>
           </div>
           <Button
             variant="outline"
@@ -444,10 +443,10 @@ function KpiCard({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="min-w-0 space-y-1">
-            <p className="text-sm text-muted-foreground whitespace-nowrap">{label}</p>
-            <p className="text-xl font-bold tabular-nums leading-tight">{value}</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="text-xs text-muted-foreground whitespace-nowrap">{label}</p>
+            <p className="text-xl font-bold tabular-nums leading-tight truncate">{value}</p>
             {delta !== undefined && <DeltaBadge value={delta} />}
             {cta && onCtaClick && (
               <button
@@ -458,8 +457,8 @@ function KpiCard({
               </button>
             )}
           </div>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <Icon className="h-4 w-4 text-primary" />
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Icon className="h-3.5 w-3.5 text-primary" />
           </div>
         </div>
       </CardContent>

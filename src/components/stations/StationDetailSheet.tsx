@@ -4,7 +4,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getActiveErrors } from '@/lib/station-errors';
 import type { Station, ChargerStatus } from '@/types';
 
 interface StationDetailSheetProps {
@@ -71,6 +79,7 @@ function OverviewTab({ station }: { station: Station }) {
 
 function MonitoringTab({ station }: { station: Station }) {
   const { electrical, temperature } = station;
+  const activeErrors = getActiveErrors(station.errorBits);
 
   return (
     <div className="space-y-4">
@@ -89,6 +98,36 @@ function MonitoringTab({ station }: { station: Station }) {
         <InfoRow label="Темп. порта 1" value={`${temperature.port1} °C`} />
         <InfoRow label="Темп. внутри ЗУ" value={`${temperature.internal} °C`} />
       </SectionCard>
+
+      {/* Error block */}
+      <Card className="rounded-xl">
+        <CardContent className="p-4">
+          <h4 className="text-sm font-semibold mb-2">Ошибки</h4>
+          <Separator className="mb-2" />
+          {activeErrors.length === 0 ? (
+            <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              Ошибок нет
+            </div>
+          ) : (
+            <Accordion type="multiple" className="w-full">
+              {activeErrors.map((err) => (
+                <AccordionItem key={err.bit} value={`err-${err.bit}`} className="border-b-0">
+                  <AccordionTrigger className="py-2 text-sm hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-destructive" />
+                      <span className="text-left">{err.label}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 pl-6 text-xs text-muted-foreground">
+                    {err.description}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

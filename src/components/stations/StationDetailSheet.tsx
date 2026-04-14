@@ -19,6 +19,7 @@ interface StationDetailSheetProps {
   station: Station | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialTab?: 'overview' | 'monitoring' | 'performance';
 }
 
 const statusConfig: Record<ChargerStatus, { label: string; className: string }> = {

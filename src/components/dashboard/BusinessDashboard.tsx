@@ -31,6 +31,44 @@ import type { Station, ChargingSession } from '@/types';
 import type { DateRange } from 'react-day-picker';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// --- Responsive helpers ---
+function useIsTablet() {
+  const [isTablet, setIsTablet] = React.useState(false);
+  React.useEffect(() => {
+    const check = () => {
+      const w = window.innerWidth;
+      setIsTablet(w >= 768 && w < 1024);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isTablet;
+}
+
+import * as React from 'react';
+
+/** Aggregate chart data into maxBuckets by summing adjacent points */
+function aggregateBuckets(
+  data: { label: string; revenue: number; energy: number }[],
+  maxBuckets: number,
+): { label: string; revenue: number; energy: number }[] {
+  if (data.length <= maxBuckets) return data;
+  const bucketSize = Math.ceil(data.length / maxBuckets);
+  const result: { label: string; revenue: number; energy: number }[] = [];
+  for (let i = 0; i < data.length; i += bucketSize) {
+    const slice = data.slice(i, i + bucketSize);
+    const revenue = slice.reduce((s, d) => s + d.revenue, 0);
+    const energy = slice.reduce((s, d) => s + d.energy, 0);
+    // Build compact label from first–last in slice
+    const first = slice[0].label;
+    const last = slice[slice.length - 1].label;
+    const label = slice.length === 1 ? first : `${first.split('–')[0]}–${last.includes('–') ? last.split('–')[1] : last}`;
+    result.push({ label, revenue, energy });
+  }
+  return result;
+}
+
 // --- Period filter ---
 type PeriodKey = 'today' | '7d' | '30d' | 'custom';
 const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
@@ -213,6 +251,7 @@ export const BusinessDashboard = memo(function BusinessDashboard({
 }: BusinessDashboardProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const [period, setPeriod] = useState<PeriodKey>('today');
   const [chartMetric, setChartMetric] = useState<ChartMetric>('revenue');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -220,32 +259,11 @@ export const BusinessDashboard = memo(function BusinessDashboard({
 
   const agg = period === 'custom' ? MOCK_CUSTOM_AGGREGATED : MOCK_AGGREGATED[period];
 
-  // Limit chart buckets for mobile
-  const chartData = useMemo(() => {
-    if (!isMobile) return agg.chartData;
-    if (period === 'today' || period === '7d') return agg.chartData;
-    const data = agg.chartData;
-    if (data.length <= 4) return data;
-    const step = (data.length - 1) / 3;
-    return [0, 1, 2, 3].map(i => data[Math.round(i * step)]);
-  }, [agg.chartData, isMobile, period]);
-
-  // Build mobile ticks: pick evenly-spaced indices so axis looks continuous
-  const mobileTickIndices = useMemo(() => {
-    const len = chartData.length;
-    if (len <= 4) return chartData.map((_, i) => i);
-    const maxTicks = 4;
-    const step = (len - 1) / (maxTicks - 1);
-    return Array.from({ length: maxTicks }, (_, i) => Math.round(i * step));
-  }, [chartData]);
-
-  // Shorten X labels on mobile
+  // Responsive chart data: aggregate buckets for smaller screens
   const displayChartData = useMemo(() => {
-    return chartData.map(d => ({
-      ...d,
-      shortLabel: d.label.includes('–') ? d.label.split('–')[0] : d.label,
-    }));
-  }, [chartData]);
+    const maxBuckets = isMobile ? 4 : isTablet ? 5 : 999;
+    return aggregateBuckets(agg.chartData, maxBuckets);
+  }, [agg.chartData, isMobile, isTablet]);
 
   // --- Live metrics ---
   const onlineCount = stations.filter(
@@ -410,13 +428,11 @@ export const BusinessDashboard = memo(function BusinessDashboard({
             <BarChart data={displayChartData} margin={{ left: 0, right: 0 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey={isMobile ? 'shortLabel' : 'label'}
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 fontSize={11}
-                ticks={isMobile ? mobileTickIndices.map(i => displayChartData[i]?.[isMobile ? 'shortLabel' : 'label']).filter(Boolean) : undefined}
-                interval={isMobile ? undefined : 'preserveStartEnd'}
-                minTickGap={isMobile ? undefined : 20}
+                interval={0}
               />
               <YAxis tickLine={false} axisLine={false} fontSize={12} width={48} />
               <Tooltip content={<ChartCustomTooltip chartMetric={chartMetric} />} />

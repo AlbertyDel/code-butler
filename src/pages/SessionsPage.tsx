@@ -8,7 +8,7 @@ import { useSessions } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { mockSessions, mockStations } from '@/lib/mock-data';
-import { Clock, Zap, History, BatteryCharging, Gauge } from 'lucide-react';
+import { Clock, Zap, History, BatteryCharging } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
@@ -126,7 +126,6 @@ const UnifiedSessionCard = memo(function UnifiedSessionCard({
   return prevProps.session.id === nextProps.session.id &&
     prevProps.session.status === nextProps.session.status &&
     prevProps.session.energyKwh === nextProps.session.energyKwh &&
-    prevProps.session.currentKw === nextProps.session.currentKw &&
     prevProps.station?.id === nextProps.station?.id;
 });
 

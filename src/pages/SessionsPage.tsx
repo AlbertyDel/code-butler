@@ -8,7 +8,7 @@ import { useSessions } from '@/hooks/useSessions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusinessState } from '@/contexts/BusinessStateContext';
 import { mockSessions, mockStations } from '@/lib/mock-data';
-import { Clock, Zap, History, BatteryCharging } from 'lucide-react';
+import { Clock, Zap, History, BatteryCharging, Gauge } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
@@ -112,11 +112,17 @@ const UnifiedSessionCard = memo(function UnifiedSessionCard({
               )}
             </div>
           </div>
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 space-y-1">
             <p className="text-lg font-semibold flex items-center gap-1 justify-end">
               <Zap className="h-4 w-4 text-primary" />
               {Number(session.energyKwh).toFixed(1)} кВт·ч
             </p>
+            {isActive && session.currentKw != null && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
+                <Gauge className="h-3 w-3" />
+                {session.currentKw} кВт
+              </p>
+            )}
           </div>
         </div>
       </CardContent>

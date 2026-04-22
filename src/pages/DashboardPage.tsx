@@ -284,30 +284,30 @@ const StatCard = memo(function StatCard({
   delta,
 }: StatCardProps) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-1">
-            <p className="text-xs text-muted-foreground whitespace-nowrap">{title}</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold tabular-nums">{value}</span>
-              {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="text-base font-medium text-muted-foreground whitespace-nowrap">{title}</p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[32px] leading-none font-bold tabular-nums tracking-tight">{value}</span>
+              {unit && <span className="text-base text-muted-foreground">{unit}</span>}
             </div>
             {delta !== undefined && (
-              <div className="flex items-center gap-1 text-xs">
+              <div className="flex items-center gap-1.5 text-xl">
                 {delta >= 0 ? (
-                  <TrendingUp className="h-3 w-3 text-primary" />
+                  <TrendingUp className="h-5 w-5 text-primary" />
                 ) : (
-                  <TrendingDown className="h-3 w-3 text-destructive" />
+                  <TrendingDown className="h-5 w-5 text-destructive" />
                 )}
-                <span className={delta >= 0 ? 'text-primary' : 'text-destructive'}>
+                <span className={`font-semibold ${delta >= 0 ? 'text-primary' : 'text-destructive'}`}>
                   {delta >= 0 ? '+' : ''}{delta}%
                 </span>
               </div>
             )}
           </div>
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <Icon className="h-3.5 w-3.5 text-primary" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <Icon className="h-6 w-6 text-primary" />
           </div>
         </div>
       </CardContent>

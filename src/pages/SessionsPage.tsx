@@ -26,8 +26,8 @@ const ITEMS_PER_PAGE = 10;
 const MOCK_BIZ_ACTIVE_SESSIONS: ChargingSession[] = [
   {
     id: 'biz-sess-a1',
-    stationId: 'mock-station-1',
-    connectorId: 'c1',
+    stationId: 'st-2',
+    connectorId: 'c-3',
     userId: 'user-ext-1',
     startTime: new Date(Date.now() - 45 * 60000).toISOString(),
     energyKwh: 32.4,
@@ -38,8 +38,8 @@ const MOCK_BIZ_ACTIVE_SESSIONS: ChargingSession[] = [
   },
   {
     id: 'biz-sess-a2',
-    stationId: 'mock-station-2',
-    connectorId: 'c2',
+    stationId: 'st-6',
+    connectorId: 'c-9',
     userId: 'user-ext-2',
     startTime: new Date(Date.now() - 120 * 60000).toISOString(),
     energyKwh: 18.7,
@@ -50,8 +50,8 @@ const MOCK_BIZ_ACTIVE_SESSIONS: ChargingSession[] = [
   },
   {
     id: 'biz-sess-a3',
-    stationId: 'mock-station-1',
-    connectorId: 'c1',
+    stationId: 'st-2',
+    connectorId: 'c-4',
     userId: 'user-ext-3',
     startTime: new Date(Date.now() - 10 * 60000).toISOString(),
     energyKwh: 4.2,
